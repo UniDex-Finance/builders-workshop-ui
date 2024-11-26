@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect } from 'react';
-import { useBalances } from '../../../../../hooks/use-balances';
-import { OrderFormState } from '../types';
+import { useState, useMemo, useEffect } from "react";
+import { useBalances } from "../../../../../hooks/use-balances";
+import { OrderFormState } from "../types";
 
 interface UseOrderFormProps {
   leverage: string;
@@ -23,7 +23,9 @@ interface UseOrderFormReturn {
 
 const MIN_MARGIN = 1; // Add this constant
 
-export function useOrderForm({ leverage }: UseOrderFormProps): UseOrderFormReturn {
+export function useOrderForm({
+  leverage,
+}: UseOrderFormProps): UseOrderFormReturn {
   const { balances } = useBalances();
   const [formState, setFormState] = useState<OrderFormState>({
     // Initialize with amount that corresponds to 1 USD margin
@@ -37,7 +39,7 @@ export function useOrderForm({ leverage }: UseOrderFormProps): UseOrderFormRetur
     takeProfitPercentage: "",
     stopLoss: "",
     stopLossPercentage: "",
-    entryPrice: 0
+    entryPrice: 0,
   });
 
   // Calculate max leveraged amount
@@ -51,9 +53,9 @@ export function useOrderForm({ leverage }: UseOrderFormProps): UseOrderFormRetur
     if (maxLeveragedAmount > 0) {
       const initialAmount = parseFloat(formState.amount);
       const percentage = (initialAmount / maxLeveragedAmount) * 100;
-      setFormState(prev => ({
+      setFormState((prev) => ({
         ...prev,
-        sliderValue: [Math.min(100, Math.max(0, percentage))]
+        sliderValue: [Math.min(100, Math.max(0, percentage))],
       }));
     }
   }, [maxLeveragedAmount]);
@@ -61,14 +63,14 @@ export function useOrderForm({ leverage }: UseOrderFormProps): UseOrderFormRetur
   // Update handleSliderChange to handle percentages more directly
   const handleSliderChange = (value: number[]) => {
     const percentage = value[0];
-    const newAmount = (maxLeveragedAmount * percentage / 100).toFixed(2);
+    const newAmount = ((maxLeveragedAmount * percentage) / 100).toFixed(2);
     const calculatedMargin = parseFloat(newAmount) / parseFloat(leverage);
-    
+
     if (calculatedMargin >= MIN_MARGIN) {
-      setFormState(prev => ({
+      setFormState((prev) => ({
         ...prev,
         sliderValue: value,
-        amount: newAmount
+        amount: newAmount,
       }));
     }
   };
@@ -87,10 +89,10 @@ export function useOrderForm({ leverage }: UseOrderFormProps): UseOrderFormRetur
         newSliderValue = [Math.min(100, Math.max(0, percentage))];
       }
 
-      setFormState(prev => ({
+      setFormState((prev) => ({
         ...prev,
         amount: newAmount,
-        sliderValue: newSliderValue
+        sliderValue: newSliderValue,
       }));
     }
   };
@@ -98,7 +100,7 @@ export function useOrderForm({ leverage }: UseOrderFormProps): UseOrderFormRetur
   // Handle margin input change
   const handleMarginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newMargin = e.target.value;
-    
+
     // Only update if margin is >= MIN_MARGIN or if input is empty
     if (parseFloat(newMargin) >= MIN_MARGIN || newMargin === "") {
       const leverageNum = parseFloat(leverage);
@@ -110,40 +112,40 @@ export function useOrderForm({ leverage }: UseOrderFormProps): UseOrderFormRetur
         newSliderValue = [Math.min(100, Math.max(0, percentage))];
       }
 
-      setFormState(prev => ({
+      setFormState((prev) => ({
         ...prev,
         amount: newAmount,
-        sliderValue: newSliderValue
+        sliderValue: newSliderValue,
       }));
     }
   };
 
   // Handle limit price input change
   const handleLimitPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormState(prev => ({
+    setFormState((prev) => ({
       ...prev,
-      limitPrice: e.target.value
+      limitPrice: e.target.value,
     }));
   };
 
   // Toggle between long and short
   const toggleDirection = () => {
-    setFormState(prev => ({
+    setFormState((prev) => ({
       ...prev,
-      isLong: !prev.isLong
+      isLong: !prev.isLong,
     }));
   };
 
   // Toggle TP/SL
   const toggleTPSL = () => {
-    setFormState(prev => ({
+    setFormState((prev) => ({
       ...prev,
       tpslEnabled: !prev.tpslEnabled,
       // Reset values when disabled
       takeProfit: !prev.tpslEnabled ? prev.takeProfit : "",
       takeProfitPercentage: !prev.tpslEnabled ? prev.takeProfitPercentage : "",
       stopLoss: !prev.tpslEnabled ? prev.stopLoss : "",
-      stopLossPercentage: !prev.tpslEnabled ? prev.stopLossPercentage : ""
+      stopLossPercentage: !prev.tpslEnabled ? prev.stopLossPercentage : "",
     }));
   };
 
@@ -152,7 +154,7 @@ export function useOrderForm({ leverage }: UseOrderFormProps): UseOrderFormRetur
     const entryPrice = parseFloat(formState?.entryPrice?.toString() ?? "0");
     if (!entryPrice || isNaN(entryPrice)) return "";
 
-    const multiplier = isProfit ? (1 + percentage / 100) : (1 - percentage / 100);
+    const multiplier = isProfit ? 1 + percentage / 100 : 1 - percentage / 100;
     return (entryPrice * multiplier).toFixed(2);
   };
 
@@ -161,7 +163,8 @@ export function useOrderForm({ leverage }: UseOrderFormProps): UseOrderFormRetur
     const entryPrice = parseFloat(formState?.entryPrice?.toString() ?? "0");
     const targetPrice = parseFloat(price);
 
-    if (!entryPrice || !targetPrice || isNaN(entryPrice) || isNaN(targetPrice)) return "";
+    if (!entryPrice || !targetPrice || isNaN(entryPrice) || isNaN(targetPrice))
+      return "";
 
     const percentage = ((targetPrice - entryPrice) / entryPrice) * 100;
     return isProfit ? percentage.toFixed(2) : (-percentage).toFixed(2);
@@ -169,18 +172,18 @@ export function useOrderForm({ leverage }: UseOrderFormProps): UseOrderFormRetur
 
   // Handle take profit changes
   const handleTakeProfitChange = (value: string, isPrice: boolean = true) => {
-    setFormState(prev => {
+    setFormState((prev) => {
       if (isPrice) {
         return {
           ...prev,
           takeProfit: value,
-          takeProfitPercentage: calculatePercentage(value, true)
+          takeProfitPercentage: calculatePercentage(value, true),
         };
       } else {
         return {
           ...prev,
           takeProfitPercentage: value,
-          takeProfit: calculatePrice(parseFloat(value), true)
+          takeProfit: calculatePrice(parseFloat(value), true),
         };
       }
     });
@@ -188,18 +191,18 @@ export function useOrderForm({ leverage }: UseOrderFormProps): UseOrderFormRetur
 
   // Handle stop loss changes
   const handleStopLossChange = (value: string, isPrice: boolean = true) => {
-    setFormState(prev => {
+    setFormState((prev) => {
       if (isPrice) {
         return {
           ...prev,
           stopLoss: value,
-          stopLossPercentage: calculatePercentage(value, false)
+          stopLossPercentage: calculatePercentage(value, false),
         };
       } else {
         return {
           ...prev,
           stopLossPercentage: value,
-          stopLoss: calculatePrice(parseFloat(value), false)
+          stopLoss: calculatePrice(parseFloat(value), false),
         };
       }
     });
