@@ -323,7 +323,9 @@ export function OrderCard({
             <Button
               variant={formState.isLong ? "default" : "outline"}
               className={`w-full ${
-                formState.isLong ? "bg-green-600 hover:bg-green-700" : ""
+                formState.isLong
+                  ? "bg-green-600 hover:bg-green-700 text-white"
+                  : ""
               }`}
               onClick={() => formState.isLong || toggleDirection()}
             >
@@ -332,7 +334,9 @@ export function OrderCard({
             <Button
               variant={!formState.isLong ? "default" : "outline"}
               className={`w-full ${
-                !formState.isLong ? "bg-red-600 hover:bg-red-700" : ""
+                !formState.isLong
+                  ? "bg-red-600 hover:bg-red-700 text-white"
+                  : ""
               }`}
               onClick={() => !formState.isLong || toggleDirection()}
             >
