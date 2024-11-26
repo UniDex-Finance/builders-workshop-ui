@@ -20,8 +20,8 @@ import { useReferralContract } from "../../../../hooks/use-referral-contract";
 
 const TRADING_FEE_RATE = 0.001; // 0.1% fee
 const DEFAULT_REFERRER = "0x0000000000000000000000000000000000000000";
-const STORAGE_KEY_CODE = 'unidex-referral-code';
-const STORAGE_KEY_ADDRESS = 'unidex-referral-address';
+const STORAGE_KEY_CODE = "unidex-referral-code";
+const STORAGE_KEY_ADDRESS = "unidex-referral-address";
 
 export function OrderCard({
   leverage,
@@ -63,7 +63,7 @@ export function OrderCard({
       // Fall back to stored code if no valid URL parameter
       const storedCode = localStorage.getItem(STORAGE_KEY_CODE);
       const storedAddress = localStorage.getItem(STORAGE_KEY_ADDRESS);
-      
+
       if (storedCode) {
         setReferrerCode(storedCode);
         setTempReferrerCode(storedCode);
@@ -79,7 +79,7 @@ export function OrderCard({
   const {
     formState,
     handleAmountChange,
-    handleMarginChange,  // Add this
+    handleMarginChange, // Add this
     handleLimitPriceChange,
     handleSliderChange,
     toggleDirection,
@@ -102,7 +102,8 @@ export function OrderCard({
   const onectWalletBalance = parseFloat(balances?.formattedUsdcBalance || "0");
   const combinedBalance = marginWalletBalance + onectWalletBalance;
   const hasInsufficientBalance = totalRequired > combinedBalance;
-  const needsDeposit = totalRequired > marginWalletBalance && totalRequired <= combinedBalance;
+  const needsDeposit =
+    totalRequired > marginWalletBalance && totalRequired <= combinedBalance;
 
   const tradeDetails = useTradeCalculations({
     amount: formState.amount,
@@ -180,14 +181,14 @@ export function OrderCard({
   };
 
   const handleReferrerKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.currentTarget.blur(); // Trigger blur event to validate
     }
   };
 
   useEffect(() => {
     if (referrerCode && resolvedReferrer === DEFAULT_REFERRER) {
-      getReferralAddress(referrerCode).then(address => {
+      getReferralAddress(referrerCode).then((address) => {
         if (address !== DEFAULT_REFERRER) {
           setResolvedReferrer(address);
           localStorage.setItem(STORAGE_KEY_ADDRESS, address);
@@ -261,7 +262,10 @@ export function OrderCard({
       ? market?.availableLiquidity?.long
       : market?.availableLiquidity?.short;
 
-    if (availableLiquidity !== undefined && calculatedSize > availableLiquidity) {
+    if (
+      availableLiquidity !== undefined &&
+      calculatedSize > availableLiquidity
+    ) {
       return "Not Enough Liquidity";
     }
 
@@ -364,7 +368,7 @@ export function OrderCard({
               formState={formState}
               calculatedMargin={calculatedMargin}
               handleAmountChange={handleAmountChange}
-              handleMarginChange={handleMarginChange}  // Add this
+              handleMarginChange={handleMarginChange} // Add this
               handleSliderChange={handleSliderChange}
               toggleTPSL={toggleTPSL}
               handleTakeProfitChange={(value) => handleTakeProfitChange(value)}
@@ -379,7 +383,7 @@ export function OrderCard({
               formState={formState}
               calculatedMargin={calculatedMargin}
               handleAmountChange={handleAmountChange}
-              handleMarginChange={handleMarginChange}  // Add this
+              handleMarginChange={handleMarginChange} // Add this
               handleLimitPriceChange={handleLimitPriceChange}
               handleSliderChange={handleSliderChange}
               toggleTPSL={toggleTPSL}
@@ -390,9 +394,9 @@ export function OrderCard({
             />
           </TabsContent>
 
-          <TradeDetails 
-            details={tradeDetails} 
-            pair={market?.pair} 
+          <TradeDetails
+            details={tradeDetails}
+            pair={market?.pair}
             tradingFee={tradingFee}
             totalRequired={totalRequired}
             referrerSection={referrerSection}
@@ -419,21 +423,21 @@ export function OrderCard({
               disabled={
                 // Only check these conditions if we have a smart account
                 smartAccount?.address
-                  ? (placingOrders ||
-                     isNetworkSwitching ||
-                     (activeTab === "market" && !tradeDetails.entryPrice) ||
-                     (activeTab === "limit" && !formState.limitPrice) ||
-                     hasInsufficientBalance ||
-                     !isValid(formState.amount) ||
-                     (() => {
-                       const availableLiquidity = formState.isLong
-                         ? market?.availableLiquidity?.long
-                         : market?.availableLiquidity?.short;
-                       return (
-                         availableLiquidity !== undefined &&
-                         calculatedSize > availableLiquidity
-                       );
-                     })())
+                  ? placingOrders ||
+                    isNetworkSwitching ||
+                    (activeTab === "market" && !tradeDetails.entryPrice) ||
+                    (activeTab === "limit" && !formState.limitPrice) ||
+                    hasInsufficientBalance ||
+                    !isValid(formState.amount) ||
+                    (() => {
+                      const availableLiquidity = formState.isLong
+                        ? market?.availableLiquidity?.long
+                        : market?.availableLiquidity?.short;
+                      return (
+                        availableLiquidity !== undefined &&
+                        calculatedSize > availableLiquidity
+                      );
+                    })()
                   : false // Not disabled when showing "Establish Connection"
               }
               onClick={handleButtonClick}

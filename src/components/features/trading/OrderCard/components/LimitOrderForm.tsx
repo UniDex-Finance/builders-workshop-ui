@@ -23,7 +23,7 @@ export function LimitOrderForm({
   formState,
   calculatedMargin,
   handleAmountChange,
-  handleMarginChange,  // Add this
+  handleMarginChange, // Add this
   handleLimitPriceChange,
   handleSliderChange,
   toggleTPSL,
@@ -39,9 +39,9 @@ export function LimitOrderForm({
           <Input
             type="number"
             placeholder="0.00"
-            value={formState.amount || ''}
+            value={formState.amount || ""}
             onChange={handleAmountChange}
-            className="text-right pr-7"
+            className="text-right pr-10"
             label="Size"
             suppressHydrationWarning
           />
@@ -53,9 +53,9 @@ export function LimitOrderForm({
           <Input
             type="number"
             placeholder="0.00"
-            value={formState.limitPrice || ''}
+            value={formState.limitPrice || ""}
             onChange={handleLimitPriceChange}
-            className="text-right pr-7"
+            className="text-right pr-10"
             label="Limit Price"
             suppressHydrationWarning
           />
@@ -67,9 +67,9 @@ export function LimitOrderForm({
           <Input
             type="number"
             placeholder="0.00"
-            value={calculatedMargin ? calculatedMargin.toFixed(2) : ''}
+            value={calculatedMargin ? calculatedMargin.toFixed(2) : ""}
             onChange={handleMarginChange}
-            className="text-right pr-7"
+            className="text-right pr-10"
             label="Margin"
             suppressHydrationWarning
           />
@@ -112,16 +112,20 @@ export function LimitOrderForm({
           </Button>
         </div>
 
-
-        <div className="pt-2 space-y-4"> {/* Changed from space-y-2 */}
+        <div className="pt-2 space-y-4">
+          {" "}
+          {/* Changed from space-y-2 */}
           <div className="flex items-center justify-between">
             <span className="text-sm">Leverage:</span>
             <div className="relative w-16">
               <Input
                 type="number"
-                value={leverage || ''}
+                value={leverage || ""}
                 onChange={(e) => {
-                  const value = Math.min(Math.max(1, Number(e.target.value)), 100);
+                  const value = Math.min(
+                    Math.max(1, Number(e.target.value)),
+                    100
+                  );
                   onLeverageChange(value.toString());
                 }}
                 className="text-sm text-center h-9 no-spinners" // Changed text-right to text-center

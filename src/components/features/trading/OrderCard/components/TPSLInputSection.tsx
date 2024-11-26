@@ -89,7 +89,7 @@ const TPSLInputSection = ({
                 placeholder="0.00"
                 value={takeProfit}
                 onChange={handleTPPriceChange}
-                className="text-right pr-7"
+                className="text-right pr-10"
                 label="TP"
               />
               <div className="absolute text-sm -translate-y-1/2 right-3 top-1/2 text-muted-foreground">
