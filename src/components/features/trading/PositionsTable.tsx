@@ -61,7 +61,7 @@ export function PositionsTable({ address }: PositionsTableProps) {
   const handleClosePosition = (position: Position) => {
     const positionSize = parseFloat(position.size);
     closePosition(
-      Number(position.positionId),
+      position.positionId,
       position.isLong,
       Number(position.markPrice),
       positionSize

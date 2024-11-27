@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { usePublicClient } from 'wagmi';
 import { useToast } from './use-toast';
 import { useSmartAccount } from './use-smart-account';
+import { useGTradeSdk } from './use-gtrade-sdk';
+import { encodeFunctionData, parseUnits } from 'viem';
+import { useMarketData } from './use-market-data';
 
 interface ClosePositionResponse {
   calldata: string;
@@ -21,6 +24,35 @@ interface ModifyCollateralResponse {
   requiredGasFee: string;
 }
 
+const GTRADE_CONTRACT = "0xFF162c694eAA571f685030649814282eA457f169";
+const GNS_CONTRACT = "0x7A5218439eA0Dd533C506194B25BF0Da8B889C39";
+
+const GTRADE_ABI = [
+  {
+    inputs: [
+      { name: "_index", type: "uint32" },
+      { name: "_expectedPrice", type: "uint64" }
+    ],
+    name: "closeTradeMarket",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+] as const;
+
+const GNS_ABI = [
+  {
+    inputs: [
+      { name: "pairIndex", type: "uint256" },
+      { name: "index", type: "uint256" }
+    ],
+    name: "closePosition",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  }
+] as const;
+
 export function usePositionActions() {
   const [closingPositions, setClosingPositions] = useState<{ [key: number]: boolean }>({});
   const [settingTPSL, setSettingTPSL] = useState<{ [key: number]: boolean }>({});
@@ -28,14 +60,16 @@ export function usePositionActions() {
   const publicClient = usePublicClient();
   const { toast } = useToast();
   const { smartAccount, kernelClient } = useSmartAccount();
+  const tradingSdk = useGTradeSdk();
+  const { marketData, allMarkets } = useMarketData();
 
   const closePosition = async (
-    positionId: number,
+    positionId: string | number,
     isLong: boolean,
     currentPrice: number,
     size: number
   ) => {
-    if (!kernelClient || !smartAccount?.address || !publicClient) {
+    if (!kernelClient || !smartAccount?.address) {
       toast({
         title: "Error",
         description: "Please connect your wallet first",
@@ -47,18 +81,51 @@ export function usePositionActions() {
     try {
       setClosingPositions(prev => ({ ...prev, [positionId]: true }));
 
-      toast({
-        title: "Closing Position",
-        description: "Preparing transaction...",
-      });
+      if (typeof positionId === 'string') {
+        if (positionId.startsWith('g-')) {
+          const index = parseInt(positionId.split('-')[1]);
+          const slippagePrice = BigInt(Math.floor(currentPrice * 1e8));
+
+          const calldata = encodeFunctionData({
+            abi: GTRADE_ABI,
+            functionName: 'closeTradeMarket',
+            args: [index, slippagePrice],
+          });
+          console.log('calldata', calldata);
+          console.log('args', index, slippagePrice);
+
+          await kernelClient.sendTransaction({
+            to: GTRADE_CONTRACT,
+            data: calldata,
+          });
+          
+          return;
+        }
+        
+        if (positionId.startsWith('gns-')) {
+          const [_, pairIndex, index] = positionId.split('-');
+          
+          const calldata = encodeFunctionData({
+            abi: GNS_ABI,
+            functionName: 'closePosition',
+            args: [BigInt(pairIndex), BigInt(index)],
+          });
+
+          await kernelClient.sendTransaction({
+            to: GNS_CONTRACT,
+            data: calldata,
+          });
+          
+          return;
+        }
+
+        positionId = parseInt(positionId);
+      }
 
       const allowedPrice = isLong ? currentPrice * 0.95 : currentPrice * 1.05;
-
       const response = await fetch('https://unidexv4-api-production.up.railway.app/api/closeposition', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           positionId,
           sizeDelta: size,
@@ -71,20 +138,9 @@ export function usePositionActions() {
       }
 
       const data: ClosePositionResponse = await response.json();
-
-      toast({
-        title: "Confirm Transaction",
-        description: "Please confirm the transaction in your wallet",
-      });
-
       await kernelClient.sendTransaction({
         to: data.vaultAddress,
         data: data.calldata,
-      });
-
-      toast({
-        title: "Success",
-        description: "Position closed successfully",
       });
 
     } catch (err) {
