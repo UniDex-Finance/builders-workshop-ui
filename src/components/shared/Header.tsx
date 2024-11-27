@@ -1,22 +1,27 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import Image from 'next/image';
+import Image from "next/image";
 import { Button } from "../ui/button";
 import DepositBox from "../features/trading/deposit";
 import Link from "next/link";
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/react";
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from "@nextui-org/react";
 import { Menu, ChevronDown, Wallet } from "lucide-react";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faQuestionCircle, 
-  faBook, 
-  faComments, 
-  faBug, 
-  faChartLine 
-} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faQuestionCircle,
+  faBook,
+  faComments,
+  faBug,
+  faChartLine,
+} from "@fortawesome/free-solid-svg-icons";
 
 export function Header() {
   return (
-    <header className="flex items-center px-4 h-14">
+    <header className="flex items-center px-4 h-12 pt-2 mb-1">
       <div className="flex items-center space-x-4">
         <Link href="/" className="hover:opacity-80">
           {/* Desktop Logo */}
@@ -40,7 +45,7 @@ export function Header() {
             />
           </div>
         </Link>
-        
+
         {/* Desktop Navigation */}
         <nav className="items-center hidden space-x-4 md:flex">
           <Link href="/">
@@ -61,20 +66,22 @@ export function Header() {
                 More <ChevronDown size={16} />
               </Button>
             </DropdownTrigger>
-            <DropdownMenu 
+            <DropdownMenu
               aria-label="More actions"
               className="w-[240px]"
               itemClasses={{
                 base: "gap-4",
                 title: "text-sm",
-                description: "text-xs text-default-400"
+                description: "text-xs text-default-400",
               }}
             >
               <DropdownItem
                 key="help"
                 description="Get help and support"
                 startContent={<FontAwesomeIcon icon={faQuestionCircle} />}
-                onClick={() => window.open("https://samplelink.com/help", "_blank")}
+                onClick={() =>
+                  window.open("https://samplelink.com/help", "_blank")
+                }
               >
                 Help & Support
               </DropdownItem>
@@ -82,7 +89,9 @@ export function Header() {
                 key="documentation"
                 description="Read the documentation"
                 startContent={<FontAwesomeIcon icon={faBook} />}
-                onClick={() => window.open("https://samplelink.com/documentation", "_blank")}
+                onClick={() =>
+                  window.open("https://samplelink.com/documentation", "_blank")
+                }
               >
                 Documentation
               </DropdownItem>
@@ -90,7 +99,9 @@ export function Header() {
                 key="feedback"
                 description="Provide your feedback"
                 startContent={<FontAwesomeIcon icon={faComments} />}
-                onClick={() => window.open("https://samplelink.com/feedback", "_blank")}
+                onClick={() =>
+                  window.open("https://samplelink.com/feedback", "_blank")
+                }
               >
                 Give Feedback
               </DropdownItem>
@@ -98,7 +109,9 @@ export function Header() {
                 key="bug-bounty"
                 description="Participate in our bug bounty program"
                 startContent={<FontAwesomeIcon icon={faBug} />}
-                onClick={() => window.open("https://samplelink.com/bug-bounty", "_blank")}
+                onClick={() =>
+                  window.open("https://samplelink.com/bug-bounty", "_blank")
+                }
               >
                 Bug Bounty
               </DropdownItem>
@@ -106,7 +119,9 @@ export function Header() {
                 key="stats"
                 description="View the latest stats"
                 startContent={<FontAwesomeIcon icon={faChartLine} />}
-                onClick={() => window.open("https://samplelink.com/stats", "_blank")}
+                onClick={() =>
+                  window.open("https://samplelink.com/stats", "_blank")
+                }
               >
                 Stats
               </DropdownItem>
@@ -125,63 +140,75 @@ export function Header() {
                 <Menu size={20} />
               </Button>
             </DropdownTrigger>
-            <DropdownMenu 
+            <DropdownMenu
               aria-label="Mobile navigation"
               className="w-[240px]"
               itemClasses={{
                 base: "gap-4",
                 title: "text-sm",
-                description: "text-xs text-default-400"
+                description: "text-xs text-default-400",
               }}
             >
-              <DropdownItem onClick={() => window.location.href = "/staking"}>
+              <DropdownItem onClick={() => (window.location.href = "/staking")}>
                 Stake
               </DropdownItem>
-              <DropdownItem onClick={() => window.location.href = "/"}>
+              <DropdownItem onClick={() => (window.location.href = "/")}>
                 Trade
               </DropdownItem>
-              <DropdownItem onClick={() => window.location.href = "/swaps"}>
+              <DropdownItem onClick={() => (window.location.href = "/swaps")}>
                 Swaps
               </DropdownItem>
-              <DropdownItem onClick={() => window.location.href = "/usdm"}>
+              <DropdownItem onClick={() => (window.location.href = "/usdm")}>
                 USD.m
               </DropdownItem>
               <DropdownItem
                 key="help"
                 description="Get help and support"
-                onClick={() => window.open("https://samplelink.com/help", "_blank")}
+                onClick={() =>
+                  window.open("https://samplelink.com/help", "_blank")
+                }
               >
                 Help & Support
               </DropdownItem>
               <DropdownItem
                 key="documentation"
                 description="Read the documentation"
-                onClick={() => window.open("https://samplelink.com/documentation", "_blank")}
+                onClick={() =>
+                  window.open("https://samplelink.com/documentation", "_blank")
+                }
               >
                 Documentation
               </DropdownItem>
               <DropdownItem
                 key="feedback"
                 description="Provide your feedback"
-                onClick={() => window.open("https://samplelink.com/feedback", "_blank")}
+                onClick={() =>
+                  window.open("https://samplelink.com/feedback", "_blank")
+                }
               >
                 Give Feedback
               </DropdownItem>
               <DropdownItem
                 key="bug-bounty"
                 description="Participate in our bug bounty program"
-                onClick={() => window.open("https://samplelink.com/bug-bounty", "_blank")}
+                onClick={() =>
+                  window.open("https://samplelink.com/bug-bounty", "_blank")
+                }
               >
                 Bug Bounty
               </DropdownItem>
               <DropdownItem
                 key="stats"
                 description="View the latest stats"
-                onClick={() => window.open("https://samplelink.com/stats", "_blank")}
+                onClick={() =>
+                  window.open("https://samplelink.com/stats", "_blank")
+                }
               >
                 Stats
               </DropdownItem>
-              <DropdownItem onClick={() => window.location.href = "/referral"}>
+              <DropdownItem
+                onClick={() => (window.location.href = "/referral")}
+              >
                 Referrals
               </DropdownItem>
             </DropdownMenu>
@@ -207,11 +234,11 @@ export function Header() {
             return (
               <div
                 {...(!ready && {
-                  'aria-hidden': true,
-                  'style': {
+                  "aria-hidden": true,
+                  style: {
                     opacity: 0,
-                    pointerEvents: 'none',
-                    userSelect: 'none',
+                    pointerEvents: "none",
+                    userSelect: "none",
                   },
                 })}
               >
@@ -219,15 +246,15 @@ export function Header() {
                   if (!connected) {
                     return (
                       <>
-                        <Button 
-                          onClick={openConnectModal} 
+                        <Button
+                          onClick={openConnectModal}
                           variant="outline"
                           className="hidden sm:inline-flex h-9 px-3 bg-[#1f1f29] hover:bg-[#1f1f29]/90 [&>*]:text-white [&>*]:font-normal [&>*]:!important"
                         >
                           Connect
                         </Button>
-                        <Button 
-                          onClick={openConnectModal} 
+                        <Button
+                          onClick={openConnectModal}
                           variant="outline"
                           size="icon"
                           className="sm:hidden h-9 w-9 bg-[#1f1f29] hover:bg-[#1f1f29]/90 [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
@@ -240,7 +267,7 @@ export function Header() {
 
                   if (chain.unsupported) {
                     return (
-                      <Button 
+                      <Button
                         onClick={openChainModal}
                         variant="destructive"
                         className="h-9 px-3 bg-[#1f1f29] hover:bg-[#1f1f29]/90 [&>*]:text-white [&>*]:font-normal [&>*]:!important"
