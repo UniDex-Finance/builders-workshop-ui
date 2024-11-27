@@ -31,7 +31,9 @@ export function PositionsTable({ address }: PositionsTableProps) {
   const { closePosition, closingPositions } = usePositionActions();
   const [activeTab, setActiveTab] = useState<ActiveTab>("positions");
   const [hoveredPosition, setHoveredPosition] = useState<string | null>(null);
-  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
+  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(
+    null
+  );
   const cellRefs = useRef<{ [key: string]: HTMLTableCellElement | null }>({});
 
   useEffect(() => {
@@ -70,23 +72,23 @@ export function PositionsTable({ address }: PositionsTableProps) {
 
   return (
     <div className="w-full mb-4 border rounded-lg bg-[hsl(var(--component-background))]">
-      <div className="flex items-center p-2 border-b">
+      <div className="flex items-center p-2 border-b space-x-4">
         <Button
-          variant={activeTab === "positions" ? "default" : "ghost"}
+          variant={activeTab === "positions" ? "outline2" : "ghost2"}
           size="sm"
           onClick={() => setActiveTab("positions")}
         >
           Positions
         </Button>
         <Button
-          variant={activeTab === "orders" ? "default" : "ghost"}
+          variant={activeTab === "orders" ? "outline2" : "ghost2"}
           size="sm"
           onClick={() => setActiveTab("orders")}
         >
           Orders
         </Button>
         <Button
-          variant={activeTab === "trades" ? "default" : "ghost"}
+          variant={activeTab === "trades" ? "outline2" : "ghost2"}
           size="sm"
           onClick={() => setActiveTab("trades")}
         >
@@ -117,9 +119,7 @@ export function PositionsTable({ address }: PositionsTableProps) {
                 error={ordersError}
               />
             )}
-            {activeTab === "trades" && (
-              <TradesContent />
-            )}
+            {activeTab === "trades" && <TradesContent />}
           </Table>
         </div>
       </div>
