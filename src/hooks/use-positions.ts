@@ -145,9 +145,9 @@ export function usePositions() {
     args: smartAccount?.address ? [smartAccount.address as `0x${string}`] : undefined,
     query: {
       enabled: Boolean(smartAccount?.address),
-      refetchInterval: 5000,
+      refetchInterval: 4000,
       // Add stale time to prevent unnecessary refetches
-      staleTime: 4000,
+      staleTime: 3000,
     },
     chainId: arbitrum.id
   });
