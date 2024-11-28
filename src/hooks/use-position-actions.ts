@@ -2,9 +2,6 @@ import { useState } from 'react';
 import { usePublicClient } from 'wagmi';
 import { useToast } from './use-toast';
 import { useSmartAccount } from './use-smart-account';
-import { useGTradeSdk } from './use-gtrade-sdk';
-import { encodeFunctionData, parseUnits } from 'viem';
-import { useMarketData } from './use-market-data';
 
 interface ClosePositionResponse {
   calldata: string;
@@ -24,34 +21,16 @@ interface ModifyCollateralResponse {
   requiredGasFee: string;
 }
 
-const GTRADE_CONTRACT = "0xFF162c694eAA571f685030649814282eA457f169";
-const GNS_CONTRACT = "0x7A5218439eA0Dd533C506194B25BF0Da8B889C39";
+interface GTradeCloseResponse {
+  success: boolean;
+  transaction: {
+    to: string;
+    data: string;
+    value: string;
+  };
+}
 
-const GTRADE_ABI = [
-  {
-    inputs: [
-      { name: "_index", type: "uint32" },
-      { name: "_expectedPrice", type: "uint64" }
-    ],
-    name: "closeTradeMarket",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-] as const;
-
-const GNS_ABI = [
-  {
-    inputs: [
-      { name: "pairIndex", type: "uint256" },
-      { name: "index", type: "uint256" }
-    ],
-    name: "closePosition",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  }
-] as const;
+const GTRADE_API_URL = "https://unidexv4-api-production.up.railway.app/api/gtrade";
 
 export function usePositionActions() {
   const [closingPositions, setClosingPositions] = useState<{ [key: number]: boolean }>({});
@@ -60,8 +39,6 @@ export function usePositionActions() {
   const publicClient = usePublicClient();
   const { toast } = useToast();
   const { smartAccount, kernelClient } = useSmartAccount();
-  const tradingSdk = useGTradeSdk();
-  const { marketData, allMarkets } = useMarketData();
 
   const closePosition = async (
     positionId: string | number,
@@ -82,38 +59,45 @@ export function usePositionActions() {
       setClosingPositions(prev => ({ ...prev, [positionId]: true }));
 
       if (typeof positionId === 'string') {
-        if (positionId.startsWith('g-')) {
-          const index = parseInt(positionId.split('-')[1]);
-          const slippagePrice = BigInt(Math.floor(currentPrice * 1e8));
-
-          const calldata = encodeFunctionData({
-            abi: GTRADE_ABI,
-            functionName: 'closeTradeMarket',
-            args: [index, slippagePrice],
+        // Handle gTrade positions (both 'g-' and 'gns-' prefixes)
+        if (positionId.startsWith('g-') || positionId.startsWith('gns-')) {
+          let index: number;
+          
+          if (positionId.startsWith('g-')) {
+            index = parseInt(positionId.split('-')[1]);
+          } else {
+            // For gns- format, we need the index from the last part
+            const [_, __, indexStr] = positionId.split('-');
+            index = parseInt(indexStr);
+          }
+          
+          // Use gTrade API endpoint
+          const response = await fetch(`${GTRADE_API_URL}/position/close`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              index,
+              expectedPrice: currentPrice,
+              userAddress: smartAccount.address,
+            }),
           });
-          console.log('calldata', calldata);
-          console.log('args', index, slippagePrice);
+
+          if (!response.ok) {
+            throw new Error('Failed to get close position data from gTrade API');
+          }
+
+          const data: GTradeCloseResponse = await response.json();
+          
+          if (!data.success) {
+            throw new Error('Failed to generate close position transaction');
+          }
 
           await kernelClient.sendTransaction({
-            to: GTRADE_CONTRACT,
-            data: calldata,
-          });
-          
-          return;
-        }
-        
-        if (positionId.startsWith('gns-')) {
-          const [_, pairIndex, index] = positionId.split('-');
-          
-          const calldata = encodeFunctionData({
-            abi: GNS_ABI,
-            functionName: 'closePosition',
-            args: [BigInt(pairIndex), BigInt(index)],
-          });
-
-          await kernelClient.sendTransaction({
-            to: GNS_CONTRACT,
-            data: calldata,
+            to: data.transaction.to,
+            data: data.transaction.data,
+            value: data.transaction.value,
           });
           
           return;
@@ -122,6 +106,7 @@ export function usePositionActions() {
         positionId = parseInt(positionId);
       }
 
+      // Handle UniDEX positions
       const allowedPrice = isLong ? currentPrice * 0.95 : currentPrice * 1.05;
       const response = await fetch('https://unidexv4-api-production.up.railway.app/api/closeposition', {
         method: 'POST',
@@ -254,7 +239,7 @@ export function usePositionActions() {
       setModifyingCollateral(prev => ({ ...prev, [positionId]: true }));
 
       toast({
-        title: `${isAdd ? 'Adding' : 'Removing'} Collateral`,
+        title: "Modifying Collateral",
         description: "Preparing transaction...",
       });
 
@@ -272,7 +257,7 @@ export function usePositionActions() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to modify collateral');
+        throw new Error('Failed to get modify collateral data');
       }
 
       const data: ModifyCollateralResponse = await response.json();
@@ -289,7 +274,7 @@ export function usePositionActions() {
 
       toast({
         title: "Success",
-        description: `Successfully ${isAdd ? 'added' : 'removed'} collateral`,
+        description: "Collateral modified successfully",
       });
 
     } catch (err) {
@@ -306,10 +291,10 @@ export function usePositionActions() {
 
   return {
     closePosition,
-    closingPositions,
     addTPSL,
-    settingTPSL,
     modifyCollateral,
-    modifyingCollateral
+    closingPositions,
+    settingTPSL,
+    modifyingCollateral,
   };
 }
