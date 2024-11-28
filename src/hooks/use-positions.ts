@@ -137,7 +137,7 @@ export function usePositions() {
   const { prices } = usePrices();
   const { smartAccount } = useSmartAccount();
 
-  // Existing UniDEX contract read with 5s polling
+  // Use only the contract polling, remove manual interval
   const { data: contractResult, isError, isLoading, refetch } = useReadContract({
     address: LENS_CONTRACT_ADDRESS,
     abi: lensAbi,
@@ -145,12 +145,14 @@ export function usePositions() {
     args: smartAccount?.address ? [smartAccount.address as `0x${string}`] : undefined,
     query: {
       enabled: Boolean(smartAccount?.address),
-      refetchInterval: 5000
+      refetchInterval: 5000,
+      // Add stale time to prevent unnecessary refetches
+      staleTime: 4000,
     },
     chainId: arbitrum.id
   });
 
-  // Fetch gTrade positions from API
+  // Memoize the fetch function to prevent unnecessary recreations
   const fetchGTradePositions = async (address: string): Promise<Position[]> => {
     try {
       const response = await fetch(`${GTRADE_API_URL}?address=${address}`);
@@ -198,7 +200,8 @@ export function usePositions() {
     }
   };
 
-  // Effect to fetch all positions
+  // Update positions only when contract data or smart account changes
+  // Remove prices from dependencies unless absolutely needed
   useEffect(() => {
     async function fetchAllPositions() {
       if (!smartAccount?.address) {
@@ -252,27 +255,36 @@ export function usePositions() {
           }
         }
 
-        // Combine both position types
         setPositions([...unidexPositions, ...gTradePositions]);
       } catch (error) {
         console.error('Error fetching positions:', error);
       }
     }
 
-    // Set up polling for positions
-    const intervalId = setInterval(fetchAllPositions, 5000);
-    fetchAllPositions(); // Initial fetch
+    fetchAllPositions();
+  }, [contractResult, smartAccount?.address]);
 
-    return () => clearInterval(intervalId);
-  }, [contractResult, prices, smartAccount?.address]);
+  // Separate effect for updating prices only
+  useEffect(() => {
+    if (positions.length === 0) return;
+    
+    const updatedPositions = positions.map(position => {
+      const priceKey = getPriceKeyFromTokenId(position.positionId);
+      const currentPrice = priceKey && prices[priceKey]?.price;
+      
+      return {
+        ...position,
+        markPrice: currentPrice ? currentPrice.toFixed(2) : position.markPrice,
+      };
+    });
+
+    setPositions(updatedPositions);
+  }, [prices]);
 
   return {
     positions,
     loading: isLoading,
     error: isError ? new Error('Failed to fetch positions') : null,
-    refetch: async () => {
-      refetch();
-      // Manual refresh will happen via polling
-    }
+    refetch
   };
 }
