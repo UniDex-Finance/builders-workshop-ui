@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useMarketData } from "../../../hooks/use-market-data";
 import { usePrices } from "../../../lib/websocket-price-context";
 import { ChevronDown } from "lucide-react";
@@ -16,6 +16,7 @@ import {
   TokenPairDisplay,
   PrefetchTokenImages,
 } from "../../../hooks/use-token-icon";
+import { useGTradeMarketData } from "../../../hooks/use-gtrade-market-data";
 
 interface PairHeaderProps {
   selectedPair: string;
@@ -30,9 +31,35 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
 }) => {
   const [rateTimeframe, setRateTimeframe] = useState<TimeframeRate>("1h");
   const [searchQuery, setSearchQuery] = React.useState("");
-  const { marketData, allMarkets, loading, error } = useMarketData({
+  
+  const { marketData: unidexMarketData, allMarkets, loading: unidexLoading, error: unidexError } = useMarketData({
     selectedPair,
   });
+  const { markets: gtradeMarkets, loading: gtradeLoading, error: gtradeError } = useGTradeMarketData();
+
+  const gtradeMarket = gtradeMarkets.find(m => m.name === selectedPair);
+
+  const combinedData = useMemo(() => {
+    if (!unidexMarketData || !gtradeMarket) return null;
+
+    return {
+      longOpenInterest: unidexMarketData.longOpenInterest + (gtradeMarket.openInterest.long || 0),
+      shortOpenInterest: unidexMarketData.shortOpenInterest + (gtradeMarket.openInterest.short || 0),
+      maxLongOpenInterest: unidexMarketData.maxLongOpenInterest + (gtradeMarket.openInterest.max || 0),
+      maxShortOpenInterest: unidexMarketData.maxShortOpenInterest + (gtradeMarket.openInterest.max || 0),
+      longShortRatio: {
+        longPercentage: ((unidexMarketData.longOpenInterest + gtradeMarket.openInterest.long) / 
+          (unidexMarketData.longOpenInterest + unidexMarketData.shortOpenInterest + 
+           gtradeMarket.openInterest.long + gtradeMarket.openInterest.short)) * 100,
+        shortPercentage: ((unidexMarketData.shortOpenInterest + gtradeMarket.openInterest.short) / 
+          (unidexMarketData.longOpenInterest + unidexMarketData.shortOpenInterest + 
+           gtradeMarket.openInterest.long + gtradeMarket.openInterest.short)) * 100,
+      },
+      borrowRateForLong: unidexMarketData.borrowRateForLong,
+      borrowRateForShort: unidexMarketData.borrowRateForShort,
+      fundingRate: unidexMarketData.fundingRate,
+    };
+  }, [unidexMarketData, gtradeMarket]);
 
   const { prices } = usePrices();
   const basePair = selectedPair.split("/")[0].toLowerCase();
@@ -63,15 +90,15 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
     return `${rate.toFixed(4)}%`;
   };
 
-  if (error) {
+  if (unidexError || gtradeError) {
     return (
       <div className="flex items-center justify-center p-4 text-red-500">
-        Error loading market data: {error.message}
+        Error loading market data: {unidexError?.message || gtradeError?.message}
       </div>
     );
   }
 
-  if (loading) {
+  if (unidexLoading || gtradeLoading) {
     return (
       <div className="flex items-center justify-center p-4">
         Loading market data...
@@ -79,7 +106,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
     );
   }
 
-  if (!marketData) {
+  if (!combinedData) {
     return (
       <div className="flex items-center justify-center p-4">
         No market data available for {selectedPair}
@@ -197,15 +224,15 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
             <div>
               <div className="text-muted-foreground">Long OI</div>
               <div>
-                ${marketData.longOpenInterest.toLocaleString()} / $
-                {marketData.maxLongOpenInterest.toLocaleString()}
+                ${combinedData.longOpenInterest.toLocaleString()} / $
+                {combinedData.maxLongOpenInterest.toLocaleString()}
               </div>
             </div>
             <div>
               <div className="text-muted-foreground">Short OI</div>
               <div>
-                ${marketData.shortOpenInterest.toLocaleString()} / $
-                {marketData.maxShortOpenInterest.toLocaleString()}
+                ${combinedData.shortOpenInterest.toLocaleString()} / $
+                {combinedData.maxShortOpenInterest.toLocaleString()}
               </div>
             </div>
           </div>
@@ -215,17 +242,17 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
             <div className="w-full">
               <div className="flex justify-between text-xs mb-1.5">
                 <span className="text-green-500">
-                  <span className="text-muted-foreground">(L)</span> {marketData.longShortRatio.longPercentage.toFixed(1)}%
+                  <span className="text-muted-foreground">(L)</span> {combinedData.longShortRatio.longPercentage.toFixed(1)}%
                 </span>
                 <span className="text-red-500">
-                  {marketData.longShortRatio.shortPercentage.toFixed(1)}% <span className="text-muted-foreground">(S)</span>
+                  {combinedData.longShortRatio.shortPercentage.toFixed(1)}% <span className="text-muted-foreground">(S)</span>
                 </span>
               </div>
               <div className="w-full h-2 overflow-hidden rounded-full bg-red-500/20">
                 <div
                   className="h-full transition-all duration-300 ease-in-out rounded-l-full bg-green-500/50"
                   style={{
-                    width: `${marketData.longShortRatio.longPercentage}%`,
+                    width: `${combinedData.longShortRatio.longPercentage}%`,
                   }}
                 />
               </div>
@@ -238,13 +265,13 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
               <div>
                 <div className="text-muted-foreground">Borrowing (L)</div>
                 <div className="text-red-500">
-                  {getAnnualizedRate(marketData.borrowRateForLong).toFixed(4)}%
+                  {getAnnualizedRate(combinedData.borrowRateForLong).toFixed(4)}%
                 </div>
               </div>
               <div>
                 <div className="text-muted-foreground">Borrowing (S)</div>
                 <div className="text-red-500">
-                  {getAnnualizedRate(marketData.borrowRateForShort).toFixed(4)}%
+                  {getAnnualizedRate(combinedData.borrowRateForShort).toFixed(4)}%
                 </div>
               </div>
             </div>
@@ -264,12 +291,12 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
               </div>
               <div
                 className={
-                  getAnnualizedRate(marketData.fundingRate) >= 0
+                  getAnnualizedRate(combinedData.fundingRate) >= 0
                     ? "text-green-500"
                     : "text-red-500"
                 }
               >
-                {getAnnualizedRate(marketData.fundingRate).toFixed(4)}%
+                {getAnnualizedRate(combinedData.fundingRate).toFixed(4)}%
               </div>
             </div>
           </div>
