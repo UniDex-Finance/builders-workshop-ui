@@ -36,18 +36,19 @@ export function Footer() {
         </TooltipProvider>
 
         <a
-          href="https://discord.gg/your-discord"
+          href="https://discord.gg/W2TByeuD7R"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center text-sm text-muted-foreground hover:text-primary"
         >
-          Help & Support
+          <span className="hidden sm:inline">Help & Support</span>
+          <span className="sm:hidden">Get Support</span>
           <ExternalLink className="w-3 h-3 ml-1" />
         </a>
       </div>
 
       <div className="flex items-center space-x-3">
-        <div className="text-sm text-muted-foreground">
+        <div className="hidden text-sm sm:block text-muted-foreground">
           {chainName}
         </div>
         <TooltipProvider>
