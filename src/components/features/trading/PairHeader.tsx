@@ -42,11 +42,52 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
   const combinedData = useMemo(() => {
     if (!unidexMarketData || !gtradeMarket) return null;
 
+    const formatBorrowRate = (rate: number) => {
+      return rate < 0.0001 ? 0 : Number(rate.toFixed(4));
+    };
+
+    const calculateWeightedBorrowRate = (
+      rate1: number,     // unidex rate
+      rate2: number,     // gtrade rate
+      weight1: number,   // unidex liquidity
+      weight2: number    // gtrade liquidity
+    ) => {
+      const formattedRate1 = formatBorrowRate(rate1);
+      const formattedRate2 = formatBorrowRate(rate2);
+      
+      // If both rates are 0, return 0
+      if (formattedRate1 === 0 && formattedRate2 === 0) return 0;
+      // If one rate is 0, use only the non-zero rate
+      if (formattedRate1 === 0) return formattedRate2;
+      if (formattedRate2 === 0) return formattedRate1;
+
+      // Calculate total weight
+      const totalWeight = weight1 + weight2;
+      if (totalWeight === 0) return 0;
+
+      // Calculate weighted average
+      return ((formattedRate1 * weight1) + (formattedRate2 * weight2)) / totalWeight;
+    };
+
+    const avgBorrowRateLong = calculateWeightedBorrowRate(
+      unidexMarketData.borrowRateForLong,
+      gtradeMarket.borrowingFees.borrowRateForLong,
+      unidexMarketData.maxLongOpenInterest - unidexMarketData.longOpenInterest,
+      gtradeMarket.openInterest.max - gtradeMarket.openInterest.long
+    );
+
+    const avgBorrowRateShort = calculateWeightedBorrowRate(
+      unidexMarketData.borrowRateForShort,
+      gtradeMarket.borrowingFees.borrowRateForShort,
+      unidexMarketData.maxShortOpenInterest - unidexMarketData.shortOpenInterest,
+      gtradeMarket.openInterest.max - gtradeMarket.openInterest.short
+    );
+
     return {
-      longOpenInterest: unidexMarketData.longOpenInterest + (gtradeMarket.openInterest.long || 0),
-      shortOpenInterest: unidexMarketData.shortOpenInterest + (gtradeMarket.openInterest.short || 0),
-      maxLongOpenInterest: unidexMarketData.maxLongOpenInterest + (gtradeMarket.openInterest.max || 0),
-      maxShortOpenInterest: unidexMarketData.maxShortOpenInterest + (gtradeMarket.openInterest.max || 0),
+      longOpenInterest: unidexMarketData.longOpenInterest + gtradeMarket.openInterest.long,
+      shortOpenInterest: unidexMarketData.shortOpenInterest + gtradeMarket.openInterest.short,
+      maxLongOpenInterest: unidexMarketData.maxLongOpenInterest + gtradeMarket.openInterest.max,
+      maxShortOpenInterest: unidexMarketData.maxShortOpenInterest + gtradeMarket.openInterest.max,
       longShortRatio: {
         longPercentage: ((unidexMarketData.longOpenInterest + gtradeMarket.openInterest.long) / 
           (unidexMarketData.longOpenInterest + unidexMarketData.shortOpenInterest + 
@@ -55,8 +96,8 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
           (unidexMarketData.longOpenInterest + unidexMarketData.shortOpenInterest + 
            gtradeMarket.openInterest.long + gtradeMarket.openInterest.short)) * 100,
       },
-      borrowRateForLong: unidexMarketData.borrowRateForLong,
-      borrowRateForShort: unidexMarketData.borrowRateForShort,
+      borrowRateForLong: avgBorrowRateLong,
+      borrowRateForShort: avgBorrowRateShort,
       fundingRate: unidexMarketData.fundingRate,
     };
   }, [unidexMarketData, gtradeMarket]);

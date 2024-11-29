@@ -6,6 +6,7 @@ interface GTradeMarket {
   marketKey: number;
   from: string;
   to: string;
+  category: number;
   leverage: {
     min: number;
     max: number;
@@ -15,15 +16,24 @@ interface GTradeMarket {
     short: number;
     max: number;
   };
-  spread: number;
-  fees: {
+  borrowingFees: {
+    borrowRateForLong: number;
+    borrowRateForShort: number;
+    dailyRateForLong: number;
+    dailyRateForShort: number;
+  };
+  tradingFees: {
     totalPositionSizeFeeP: number;
     totalLiqCollateralFeeP: number;
     oraclePositionSizeFeeP: number;
     minPositionSizeUsd: number;
   };
+  spread: number;
   isSuspended: boolean;
-  unidexPair?: string;
+  utilization: {
+    long: number;
+    short: number;
+  };
 }
 
 interface GTradeMarketsResponse {
