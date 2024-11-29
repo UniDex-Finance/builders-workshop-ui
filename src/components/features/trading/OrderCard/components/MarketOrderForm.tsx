@@ -39,7 +39,7 @@ export function MarketOrderForm({
             placeholder="0.00"
             value={formState.amount || ''}
             onChange={handleAmountChange}
-            className="text-right pr-7"
+            className="pr-10 text-right no-spinners"
             label="Size"
             suppressHydrationWarning
           />
@@ -53,7 +53,7 @@ export function MarketOrderForm({
             placeholder="0.00"
             value={calculatedMargin ? calculatedMargin.toFixed(2) : ''}
             onChange={handleMarginChange}
-            className="text-right pr-7"
+            className="pr-10 text-right no-spinners"
             label="Margin"
             suppressHydrationWarning
           />

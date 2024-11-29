@@ -46,14 +46,14 @@ export function Header() {
           <Link href="/">
             <Button variant="ghost">Trade</Button>
           </Link>
-          <Link href="/swaps">
-            <Button variant="ghost">Swaps</Button>
-          </Link>
           <Link href="/staking">
             <Button variant="ghost">Stake</Button>
           </Link>
           <Link href="/usdm">
             <Button variant="ghost">USD.m</Button>
+          </Link>
+          <Link href="/referrals">
+            <Button variant="ghost">Referrals</Button>
           </Link>
           <Dropdown>
             <DropdownTrigger>
@@ -74,7 +74,7 @@ export function Header() {
                 key="help"
                 description="Get help and support"
                 startContent={<FontAwesomeIcon icon={faQuestionCircle} />}
-                onClick={() => window.open("https://samplelink.com/help", "_blank")}
+                onClick={() => window.open("https://discord.gg/W2TByeuD7R", "_blank")}
               >
                 Help & Support
               </DropdownItem>
@@ -82,7 +82,7 @@ export function Header() {
                 key="documentation"
                 description="Read the documentation"
                 startContent={<FontAwesomeIcon icon={faBook} />}
-                onClick={() => window.open("https://samplelink.com/documentation", "_blank")}
+                onClick={() => window.open("https://docs.unidex.exchange/introduction", "_blank")}
               >
                 Documentation
               </DropdownItem>
@@ -106,15 +106,12 @@ export function Header() {
                 key="stats"
                 description="View the latest stats"
                 startContent={<FontAwesomeIcon icon={faChartLine} />}
-                onClick={() => window.open("https://samplelink.com/stats", "_blank")}
+                onClick={() => window.open("https://dune.com/supakawaiidesu/unidex-molten-stats", "_blank")}
               >
                 Stats
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
-          <Link href="/referrals">
-            <Button variant="ghost">Referrals</Button>
-          </Link>
         </nav>
 
         {/* Mobile Navigation */}
@@ -140,11 +137,11 @@ export function Header() {
               <DropdownItem onClick={() => window.location.href = "/"}>
                 Trade
               </DropdownItem>
-              <DropdownItem onClick={() => window.location.href = "/swaps"}>
-                Swaps
-              </DropdownItem>
               <DropdownItem onClick={() => window.location.href = "/usdm"}>
                 USD.m
+              </DropdownItem>
+              <DropdownItem onClick={() => window.location.href = "/referral"}>
+                Referrals
               </DropdownItem>
               <DropdownItem
                 key="help"
@@ -180,9 +177,6 @@ export function Header() {
                 onClick={() => window.open("https://samplelink.com/stats", "_blank")}
               >
                 Stats
-              </DropdownItem>
-              <DropdownItem onClick={() => window.location.href = "/referral"}>
-                Referrals
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
