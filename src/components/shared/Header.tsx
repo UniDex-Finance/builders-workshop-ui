@@ -21,7 +21,7 @@ import {
 
 export function Header() {
   return (
-    <header className="flex items-center px-4 h-12 pt-2 mb-1">
+    <header className="flex items-center px-4 md:px-6 h-14 pt-2 md:pt-3 mb-1">
       <div className="flex items-center space-x-4">
         <Link href="/" className="hover:opacity-80">
           {/* Desktop Logo */}
