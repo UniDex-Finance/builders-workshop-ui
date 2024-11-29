@@ -98,7 +98,7 @@ export function MarketOrderForm({
           </Button>
         </div>
 
-        <div className="pt-2 space-y-4"> {/* Changed from space-y-2 */}
+        <div className="pt-2 space-y-3"> {/* Changed from space-y-2 */}
           <div className="flex items-center justify-between">
             <span className="text-sm">Leverage:</span>
             <div className="relative w-16">
@@ -109,7 +109,7 @@ export function MarketOrderForm({
                   const value = Math.min(Math.max(1, Number(e.target.value)), 100);
                   onLeverageChange(value.toString());
                 }}
-                className="text-sm text-center h-9 no-spinners" // Changed text-right to text-center
+                className="h-8 text-sm text-center no-spinners" // Changed text-right to text-center
                 suppressHydrationWarning
               />
             </div>

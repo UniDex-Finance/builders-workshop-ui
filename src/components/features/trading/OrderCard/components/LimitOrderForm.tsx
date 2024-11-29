@@ -124,7 +124,7 @@ export function LimitOrderForm({
                   const value = Math.min(Math.max(1, Number(e.target.value)), 100);
                   onLeverageChange(value.toString());
                 }}
-                className="text-sm text-center h-9 no-spinners" // Changed text-right to text-center
+                className="h-8 text-sm text-center no-spinners" // Changed text-right to text-center
                 suppressHydrationWarning
               />
             </div>
