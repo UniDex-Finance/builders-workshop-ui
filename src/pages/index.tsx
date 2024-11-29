@@ -27,13 +27,13 @@ export default function TradingInterface() {
   useEffect(() => {
     const basePair = selectedPair.split("/")[0].toLowerCase();
     const price = prices[basePair]?.price;
-    const formattedPrice = price 
+    const formattedPrice = price
       ? new Intl.NumberFormat("en-US", {
           maximumFractionDigits: 2,
           minimumFractionDigits: 2,
         }).format(price)
       : "...";
-    
+
     document.title = `UniDex | ${selectedPair} $${formattedPrice}`;
   }, [selectedPair, prices]);
 
@@ -49,7 +49,7 @@ export default function TradingInterface() {
               leverage={leverage}
               onLeverageChange={setLeverage}
               assetId={assetId}
-              initialReferralCode={typeof ref === 'string' ? ref : undefined}
+              initialReferralCode={typeof ref === "string" ? ref : undefined}
             />
           </div>
         </div>

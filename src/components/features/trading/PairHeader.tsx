@@ -166,14 +166,11 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
 
   return (
     <div className="w-full">
-      <div className="p-2 my-2 border rounded-lg shadow-sm bg-[hsl(var(--component-background))] overflow-hidden">
-        <div className="overflow-x-auto">
-          <div
-            className="flex items-center text-sm flex-nowrap"
-            style={{ width: "fit-content", minWidth: "1200px" }}
-          >
+      <div className="p-2 my-2 border rounded-lg shadow-sm bg-[hsl(var(--component-background))]">
+        <div className="overflow-hidden">
+          <div className="flex flex-wrap items-center text-sm gap-x-6 gap-y-6 lg:gap-x-2 lg:gap-y-2">
             {/* Price Group with Pair Selector */}
-            <div className="flex min-w-[130px] pr-2 border-r">
+            <div className="flex w-full md:w-auto md:min-w-[130px] pr-2 md:border-r">
               <Select value={selectedPair} onValueChange={onPairChange}>
                 <SelectTrigger className="w-full h-full p-0 bg-transparent border-0 shadow-none cursor-pointer focus:ring-0 hover:bg-muted/60">
                   <div className="flex items-center px-4">
@@ -260,7 +257,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
             </div>
 
             {/* Open Interest Group */}
-            <div className="flex items-center space-x-8 px-4 border-r min-w-[300px]">
+            <div className="flex items-center space-x-8 px-4 w-full md:w-auto md:border-r md:min-w-[400px]">
               <div>
                 <div className="text-muted-foreground">Long OI</div>
                 <div>
@@ -278,7 +275,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
             </div>
 
             {/* Long/Short Ratio Group */}
-            <div className="flex items-center px-4 border-r min-w-[200px]">
+            <div className="flex items-center px-4 w-full md:w-auto md:border-r md:min-w-[200px]">
               <div className="w-full">
                 <div className="flex justify-between text-xs mb-1.5">
                   <span className="text-green-500">
@@ -302,8 +299,8 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
             </div>
 
             {/* Borrow Rates Group */}
-            <div className="flex items-center px-4 min-w-[220px]">
-              <div className="flex gap-4">
+            <div className="flex items-center px-4 w-full md:w-auto md:min-w-[220px]">
+              <div className="flex flex-row space-x-8 lg:space-x-4">
                 <div>
                   <div className="text-muted-foreground">Borrowing (L)</div>
                   <div className="text-red-500">
@@ -326,7 +323,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
             </div>
 
             {/* Funding Rate Group */}
-            <div className="flex items-center px-4 border-l min-w-[160px]">
+            <div className="flex items-center px-4 w-full md:w-auto md:border-l md:min-w-[160px]">
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">Funding Rate</span>
