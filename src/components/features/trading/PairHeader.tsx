@@ -17,6 +17,7 @@ import {
   PrefetchTokenImages,
 } from "../../../hooks/use-token-icon";
 import { useGTradeMarketData } from "../../../hooks/use-gtrade-market-data";
+import { usePairPrecision } from "../../../hooks/use-pair-precision";
 
 interface PairHeaderProps {
   selectedPair: string;
@@ -31,6 +32,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
 }) => {
   const [rateTimeframe, setRateTimeframe] = useState<TimeframeRate>("1h");
   const [searchQuery, setSearchQuery] = React.useState("");
+  const { formatPairPrice } = usePairPrecision();
   
   const { marketData: unidexMarketData, allMarkets, loading: unidexLoading, error: unidexError } = useMarketData({
     selectedPair,
@@ -120,11 +122,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
   const formatPrice = (pair: string) => {
     const basePair = pair.split("/")[0].toLowerCase();
     const price = prices[basePair]?.price;
-    if (!price) return "...";
-    return new Intl.NumberFormat("en-US", {
-      maximumFractionDigits: 4,
-      minimumFractionDigits: 4,
-    }).format(price);
+    return formatPairPrice(pair, price);
   };
 
   const formatFundingRate = (rate: number) => {
@@ -192,8 +190,8 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                     <div className="flex items-center gap-2 px-2 mb-1 text-muted-foreground">
                       <span>{selectedPair}</span>
                     </div>
-                    <div className="px-2 font-mono font-bold text-left text-md ">
-                      {currentPrice ? currentPrice.toLocaleString() : "Loading..."}
+                    <div className="px-2 font-mono font-bold text-left text-md min-w-[120px]">
+                      {formatPairPrice(selectedPair, currentPrice)}
                     </div>
                   </div>
                 </div>
