@@ -60,6 +60,9 @@ export function Header() {
           <Link href="/usdm">
             <Button variant="ghost">USD.m</Button>
           </Link>
+          <Link href="/referrals">
+            <Button variant="ghost">Referrals</Button>
+          </Link>
           <Dropdown>
             <DropdownTrigger>
               <Button variant="ghost" className="gap-1">
@@ -127,9 +130,6 @@ export function Header() {
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
-          <Link href="/referrals">
-            <Button variant="ghost">Referrals</Button>
-          </Link>
         </nav>
 
         {/* Mobile Navigation */}
