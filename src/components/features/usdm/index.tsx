@@ -6,7 +6,6 @@ import { PositionCard } from "./PositionCard"
 import { ActionsCard } from "./ActionsCard"
 import { StatsActions } from "./StatsActions"
 import { StatsDisplay } from "./StatsDisplay"
-import { UsdmStakingCard } from "./UsdmStakingCard"
 
 export function Usdm() {
   const [isStaking, setIsStaking] = useState(false)
@@ -25,7 +24,6 @@ export function Usdm() {
             <div className="space-y-6">
               <StatsDisplay />
               <PositionCard />
-              <UsdmStakingCard />
             </div>
 
             <div className="space-y-6">
