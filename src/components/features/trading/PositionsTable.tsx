@@ -96,8 +96,8 @@ export function PositionsTable({ address }: PositionsTableProps) {
           History
         </Button>
       </div>
-      <div className="w-full overflow-x-auto">
-        <div className="min-w-[800px]">
+      <div className="w-full overflow-x-auto md:overflow-visible">
+        <div className="min-w-full md:min-w-[800px]">
           <Table>
             {activeTab === "positions" && (
               <PositionsContent
