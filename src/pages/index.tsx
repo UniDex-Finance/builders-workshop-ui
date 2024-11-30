@@ -50,7 +50,7 @@ export default function TradingInterface() {
         </div>
 
         {/* Left Side - Trading Panel */}
-        <aside className="w-full md:w-[320px] md:min-w-[320px] md:max-w-[320px] px-2">
+        <aside className="w-full md:w-[320px] md:min-w-[320px] md:max-w-[320px] px-2 md:mt-[8px]">
           <div className="mb-2">
             <OrderCard
               leverage={leverage}
