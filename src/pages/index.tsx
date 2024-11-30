@@ -43,14 +43,14 @@ export default function TradingInterface() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header />
 
-      <main className="flex flex-col flex-1 overflow-y-auto md:flex-row">
+      <main className="flex flex-col flex-1 md:flex-row md:gap-12">
         {/* PairHeader for mobile - shown above OrderCard */}
         <div className="w-full px-2 md:hidden">
           <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
         </div>
 
-        {/* Trading Panel */}
-        <div className="w-full px-2 md:w-auto md:mt-2">
+        {/* Left Side - Trading Panel */}
+        <aside className="w-full md:w-[320px] md:min-w-[320px] md:max-w-[320px] px-2">
           <div className="mb-2">
             <OrderCard
               leverage={leverage}
@@ -59,10 +59,10 @@ export default function TradingInterface() {
               initialReferralCode={typeof ref === 'string' ? ref : undefined}
             />
           </div>
-        </div>
+        </aside>
 
-        {/* Chart and Positions Container */}
-        <div className="flex flex-col w-full px-2">
+        {/* Right Side - Chart and Positions Container */}
+        <div className="flex flex-col flex-1 min-w-0 px-2 overflow-x-auto md:pl-0">
           <div className="hidden md:block">
             <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
           </div>
@@ -73,7 +73,7 @@ export default function TradingInterface() {
               height={chartHeight}
               onHeightChange={setChartHeight}
             />
-            <div className="flex-1 mt-3">
+            <div className="flex-1 mt-3 overflow-x-auto">
               <PositionsTable address={address} />
             </div>
           </div>
