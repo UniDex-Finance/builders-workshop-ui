@@ -310,7 +310,7 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
           </Collapsible>
 
           <Button 
-            className="w-full h-14 bg-[#7C5CFF] hover:bg-[#6B4FE0] text-base"
+            className="w-full h-14 bg-[#7C5CFF] hover:bg-[#6B4FE0] text-base text-white"
             onClick={handleTransaction}
             disabled={!canSubmit()}
           >

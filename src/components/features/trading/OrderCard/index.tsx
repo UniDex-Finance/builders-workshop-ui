@@ -4,7 +4,6 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from "../../../ui/button";
 import { Card, CardContent } from "../../../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../ui/tabs";
-import { useMarketOrderActions } from "../../../../hooks/use-market-order-actions";
 import { useSmartAccount } from "../../../../hooks/use-smart-account";
 import { useMarketData } from "../../../../hooks/use-market-data";
 import { usePrices } from "../../../../lib/websocket-price-context";
