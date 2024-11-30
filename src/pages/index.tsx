@@ -24,6 +24,8 @@ export default function TradingInterface() {
   );
   const assetId = selectedMarket ? selectedMarket.assetId : "";
 
+  const [chartHeight, setChartHeight] = useState<number>(500);
+
   useEffect(() => {
     const basePair = selectedPair.split("/")[0].toLowerCase();
     const price = prices[basePair]?.price;
@@ -59,17 +61,21 @@ export default function TradingInterface() {
           </div>
         </div>
 
-        {/* Chart and Positions */}
+        {/* Chart and Positions Container */}
         <div className="flex flex-col w-full px-2">
-          {/* PairHeader for desktop - shown above chart */}
           <div className="hidden md:block">
             <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
           </div>
-          <div className="relative h-[350px] md:h-[500px] mb-2">
-            <Chart selectedPair={selectedPair} />
-          </div>
-          <div className="mb-2">
-            <PositionsTable address={address} />
+          
+          <div className="flex flex-col flex-1">
+            <Chart 
+              selectedPair={selectedPair} 
+              height={chartHeight}
+              onHeightChange={setChartHeight}
+            />
+            <div className="flex-1 mt-3">
+              <PositionsTable address={address} />
+            </div>
           </div>
         </div>
       </main>

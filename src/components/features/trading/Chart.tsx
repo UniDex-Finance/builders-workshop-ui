@@ -28,10 +28,44 @@ const SPECIAL_PAIRS: Record<string, string> = {
 
 interface ChartProps {
   selectedPair?: string;
+  height: number;
+  onHeightChange: (height: number) => void;
 }
 
-export function Chart({ selectedPair = "ETH/USD" }: ChartProps) {
+export function Chart({ selectedPair = "ETH/USD", height, onHeightChange }: ChartProps) {
   const widgetRef = useRef<any>(null);
+  const isDragging = useRef(false);
+  const startY = useRef(0);
+  const startHeight = useRef(0);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    isDragging.current = true;
+    startY.current = e.clientY;
+    startHeight.current = height;
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging.current) return;
+    
+    const deltaY = e.clientY - startY.current;
+    const newHeight = Math.max(300, Math.min(800, startHeight.current + deltaY));
+    onHeightChange(newHeight);
+    
+    // Force the widget to recalculate its size
+    if (widgetRef.current) {
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 0);
+    }
+  };
+
+  const handleMouseUp = () => {
+    isDragging.current = false;
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+  };
 
   // Function to get the correct symbol format based on the pair
   const getFormattedSymbol = (pair: string) => {
@@ -152,9 +186,27 @@ export function Chart({ selectedPair = "ETH/USD" }: ChartProps) {
   }, [selectedPair]); // Re-initialize when selectedPair changes
 
   return (
-    <div
-      id="tv_chart_container"
-      className="absolute inset-0 w-full h-full overflow-hidden rounded-xl"
-    />
+    <div 
+      className="relative rounded-xl"
+      style={{ 
+        height: `${height}px`,
+        resize: 'vertical',
+        overflow: 'auto',
+        border: '1px solid rgba(107, 114, 128, 0.3)',
+        paddingBottom: '16px',
+        backgroundColor: '#17161d',
+        minHeight: '300px',
+        maxHeight: '800px',
+        cursor: 'ns-resize',
+        zIndex: 10,
+        position: 'relative'
+      }}
+    >
+      <div
+        id="tv_chart_container"
+        className="w-full h-full"
+        style={{ pointerEvents: 'auto' }}
+      />
+    </div>
   );
 }
