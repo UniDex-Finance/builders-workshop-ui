@@ -42,9 +42,14 @@ export default function TradingInterface() {
       <Header />
 
       <main className="flex flex-col flex-1 overflow-y-auto md:flex-row">
+        {/* PairHeader for mobile - shown above OrderCard */}
+        <div className="w-full px-2 md:hidden">
+          <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
+        </div>
+
         {/* Trading Panel */}
-        <div className="w-full px-2 md:w-auto">
-          <div className="pt-2">
+        <div className="w-full px-2 md:w-auto md:mt-2">
+          <div className="mb-2">
             <OrderCard
               leverage={leverage}
               onLeverageChange={setLeverage}
@@ -56,11 +61,14 @@ export default function TradingInterface() {
 
         {/* Chart and Positions */}
         <div className="flex flex-col w-full px-2">
-          <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
-          <div className="relative h-[350px] md:h-[500px]">
+          {/* PairHeader for desktop - shown above chart */}
+          <div className="hidden md:block">
+            <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
+          </div>
+          <div className="relative h-[350px] md:h-[500px] mb-2">
             <Chart selectedPair={selectedPair} />
           </div>
-          <div className="mt-2 md:mt-2">
+          <div className="mb-2">
             <PositionsTable address={address} />
           </div>
         </div>

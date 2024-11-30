@@ -26,6 +26,25 @@ interface PairHeaderProps {
 
 type TimeframeRate = "1h" | "1d" | "1y";
 
+const formatCompactNumber = (num: number) => {
+  // For numbers less than 100,000, use regular formatting with commas
+  if (num < 100000) {
+    return num.toLocaleString(undefined, { 
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 2
+    });
+  }
+  
+  // For larger numbers, use compact notation
+  const formatter = new Intl.NumberFormat('en-US', {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+    minimumFractionDigits: 1
+  });
+  
+  return formatter.format(num);
+};
+
 export const PairHeader: React.FC<PairHeaderProps> = ({
   selectedPair,
   onPairChange,
@@ -263,15 +282,15 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
             <div>
               <div className="text-muted-foreground">Long OI</div>
               <div>
-                ${combinedData.longOpenInterest.toLocaleString()} / $
-                {combinedData.maxLongOpenInterest.toLocaleString()}
+                ${formatCompactNumber(combinedData.longOpenInterest)} / $
+                {formatCompactNumber(combinedData.maxLongOpenInterest)}
               </div>
             </div>
             <div>
               <div className="text-muted-foreground">Short OI</div>
               <div>
-                ${combinedData.shortOpenInterest.toLocaleString()} / $
-                {combinedData.maxShortOpenInterest.toLocaleString()}
+                ${formatCompactNumber(combinedData.shortOpenInterest)} / $
+                {formatCompactNumber(combinedData.maxShortOpenInterest)}
               </div>
             </div>
           </div>
