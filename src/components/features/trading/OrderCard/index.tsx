@@ -373,19 +373,19 @@ const totalRequired = calculatedMargin + tradingFee;
             <TabsList className="flex gap-4 p-0 bg-transparent border-0">
               <TabsTrigger
                 value="market"
-                className="bg-transparent border-0 p-0 data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary"
+                className="bg-transparent border-0 p-0 text-[13px] data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary"
               >
                 Market
               </TabsTrigger>
               <TabsTrigger
                 value="limit"
-                className="bg-transparent border-0 p-0 data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary"
+                className="bg-transparent border-0 p-0 text-[13px] data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary"
               >
                 Limit
               </TabsTrigger>
               <TabsTrigger
                 value="stop"
-                className="bg-transparent border-0 p-0 data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary"
+                className="bg-transparent border-0 p-0 text-[13px] data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary"
               >
                 Stop
               </TabsTrigger>

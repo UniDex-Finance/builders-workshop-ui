@@ -28,7 +28,7 @@ export function TradeDetails({
   };
 
   return (
-    <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+    <div className="mt-4 space-y-2 text-[13px] text-muted-foreground">
       <div className="flex items-center justify-between">
         <span>Route</span>
         <div className="flex items-center gap-1.5">
@@ -68,8 +68,8 @@ export function TradeDetails({
         <span>
           {tradingFee.toFixed(2)} USDC ({
             routingInfo.selectedRoute === 'gtrade' 
-              ? '0.06' // gTrade's fixed fee percentage
-              : (fees.tradingFeePercent) // Unidex fee percentage
+              ? '0.06' 
+              : (fees.tradingFeePercent)
           }%)
         </span>
       </div>

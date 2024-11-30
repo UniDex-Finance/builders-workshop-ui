@@ -100,7 +100,7 @@ export function MarketOrderForm({
 
         <div className="pt-2 space-y-3"> {/* Changed from space-y-2 */}
           <div className="flex items-center justify-between">
-            <span className="text-sm">Leverage:</span>
+            <span className="text-[13px]">Leverage:</span>
             <div className="relative w-16">
               <Input
                 type="number"
