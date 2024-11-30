@@ -295,26 +295,8 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
             </div>
           </div>
 
-          {/* Borrow Rates Group */}
-          <div className="flex items-center px-4 min-w-[220px]">
-            <div className="flex gap-4">
-              <div>
-                <div className="text-xs text-muted-foreground">Borrowing (L)</div>
-                <div className="text-sm text-red-500">
-                  {getAnnualizedRate(combinedData.borrowRateForLong).toFixed(4)}%
-                </div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground">Borrowing (S)</div>
-                <div className="text-sm text-red-500">
-                  {getAnnualizedRate(combinedData.borrowRateForShort).toFixed(4)}%
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* Funding Rate Group */}
-          <div className="flex items-center px-4 border-l min-w-[160px]">
+          <div className="flex items-center px-4 border-r min-w-[160px]">
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">Funding Rate</span>
@@ -334,6 +316,24 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                 )}
               >
                 {getAnnualizedRate(combinedData.fundingRate).toFixed(4)}%
+              </div>
+            </div>
+          </div>
+
+          {/* Borrow Rates Group */}
+          <div className="flex items-center px-4 border-r min-w-[220px]">
+            <div className="flex gap-4">
+              <div>
+                <div className="text-xs text-muted-foreground">Borrowing (L)</div>
+                <div className="text-sm text-red-500">
+                  {getAnnualizedRate(combinedData.borrowRateForLong).toFixed(4)}%
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground">Borrowing (S)</div>
+                <div className="text-sm text-red-500">
+                  {getAnnualizedRate(combinedData.borrowRateForShort).toFixed(4)}%
+                </div>
               </div>
             </div>
           </div>
