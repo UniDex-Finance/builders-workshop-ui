@@ -78,25 +78,33 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
     relevantPositions.forEach(position => {
       const entryPrice = parseFloat(position.entryPrice);
       const color = position.isLong ? '#3df57b' : '#ea435c';
+      const side = position.isLong ? 'LONG' : 'SHORT';
+      const size = parseFloat(position.size).toFixed(2);
       
-      chart.createShape({
-        time: now,
-        price: entryPrice,
-        text: `${position.isLong ? 'Long' : 'Short'} Entry: $${entryPrice}`,
+      const shapeOptions = {
+        shape: 'horizontal_line',
         overrides: {
+          showPrice: false,
           linecolor: color,
-          linestyle: 2,
+          linestyle: 0,
           linewidth: 1,
           showLabel: true,
           textcolor: color,
           horzLabelsAlign: 'right',
           vertLabelsAlign: 'middle',
+          bold: true,
+          fontsize: 12,
+          text: `${side} ${size}`,
         },
+        ownerStudyId: null,
         zOrder: 'top',
-        name: `position-line-${position.positionId}`,
-      }, {
-        shape: 'horizontal_line',
-      });
+        lock: true,
+      };
+
+      chart.createMultipointShape(
+        [{ time: now, price: entryPrice }],
+        shapeOptions
+      );
     });
 
     // Update ref with current position IDs
