@@ -69,7 +69,6 @@ export function useGTradeMarketData() {
           });
 
           setMarkets(mappedMarkets);
-          console.log('Mapped gTrade markets:', mappedMarkets);
         } else {
           throw new Error('Failed to fetch gTrade markets');
         }

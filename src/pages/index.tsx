@@ -9,6 +9,7 @@ import { PairHeader } from "../components/features/trading/PairHeader";
 import { useMarketData } from "../hooks/use-market-data";
 import { usePrices } from "../lib/websocket-price-context";
 import { usePairFromUrl } from "../hooks/use-pair-from-url";
+import { usePositions } from "../hooks/use-positions";
 
 export default function TradingInterface() {
   const { selectedPair, setPair } = usePairFromUrl();
@@ -18,6 +19,7 @@ export default function TradingInterface() {
   const { address } = useAccount();
   const { allMarkets } = useMarketData();
   const { prices } = usePrices();
+  const { positions, loading: positionsLoading } = usePositions();
 
   const selectedMarket = allMarkets.find(
     (market) => market.pair === selectedPair
@@ -72,6 +74,7 @@ export default function TradingInterface() {
               selectedPair={selectedPair} 
               height={chartHeight}
               onHeightChange={setChartHeight}
+              positions={positionsLoading ? [] : positions}
             />
             <div className="flex-1 mt-3 overflow-x-auto">
               <PositionsTable address={address} />

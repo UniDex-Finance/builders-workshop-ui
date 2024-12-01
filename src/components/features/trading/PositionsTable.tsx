@@ -9,6 +9,7 @@ import { PositionsContent } from "./PositionTable/PositionsContent";
 import { OrdersContent } from "./PositionTable/OrdersContent";
 import { TradesContent } from "./PositionTable/TradesContent";
 import { PnLTooltip } from "./PositionTable/PnLTooltip";
+import { Chart } from "./Chart";
 
 interface PositionsTableProps {
   address: string | undefined;
