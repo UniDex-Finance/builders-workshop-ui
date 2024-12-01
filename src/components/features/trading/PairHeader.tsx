@@ -18,6 +18,7 @@ import {
 } from "../../../hooks/use-token-icon";
 import { useGTradeMarketData } from "../../../hooks/use-gtrade-market-data";
 import { usePairPrecision } from "../../../hooks/use-pair-precision";
+import { use24hChange } from "../../../hooks/use-24h-change";
 
 interface PairHeaderProps {
   selectedPair: string;
@@ -148,6 +149,8 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
     return `${rate.toFixed(4)}%`;
   };
 
+  const { absoluteChange, percentageChange, loading: changeLoading, error: changeError } = use24hChange(selectedPair);
+
   if (unidexError || gtradeError) {
     return (
       <div className="flex items-center justify-center p-4 text-red-500">
@@ -199,169 +202,169 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
       <div className="p-2 my-2 border rounded-lg shadow-sm bg-[hsl(var(--component-background))] overflow-hidden">
         <div className="overflow-x-auto">
           <div className="flex items-center text-xs flex-nowrap" style={{ width: "fit-content", minWidth: '1200px' }}>
-          {/* Price Group with Pair Selector */}
-          <div className="flex min-w-[130px] pr-2 border-r">
-            <Select value={selectedPair} onValueChange={onPairChange}>
-              <SelectTrigger className="w-full h-full p-0 bg-transparent border-0 shadow-none cursor-pointer focus:ring-0 hover:bg-muted/60">
-                <div className="flex items-center px-4">
-                  <TokenIcon pair={selectedPair} size={28} className="mr-2" />
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-2 px-2 mb-1 text-xs text-muted-foreground">
-                      <span>{selectedPair}</span>
-                    </div>
-                    <div className="px-2 font-mono font-bold text-left text-sm min-w-[90px]">
-                      {formatPairPrice(selectedPair, currentPrice)}
-                    </div>
-                  </div>
-                </div>
-              </SelectTrigger>
-              <SelectContent 
-                className="w-[900px] bg-[hsl(var(--component-background))] overflow-hidden p-0"
-              >
-                <div className="flex flex-col h-[500px]">
-                  <PrefetchTokenImages pairs={allMarkets.map((market) => market.pair)} />
-                  <div className="sticky top-0 z-20 bg-[hsl(var(--component-background))] shadow-sm">
-                    <div className="px-4 py-2 border-b">
-                      <div className="relative">
-                        <Search className="absolute left-2 top-2.5 h-3 w-3 text-muted-foreground" />
-                        <input
-                          type="text"
-                          placeholder="Search pairs..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full py-2 pl-8 pr-4 text-xs bg-transparent border rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-ring"
-                        />
+            {/* Price Group with Pair Selector */}
+            <div className="flex min-w-[130px] pr-2 border-r">
+              <Select value={selectedPair} onValueChange={onPairChange}>
+                <SelectTrigger className="w-full h-full p-0 bg-transparent border-0 shadow-none cursor-pointer focus:ring-0 hover:bg-muted/60">
+                  <div className="flex items-center px-4">
+                    <TokenIcon pair={selectedPair} size={28} className="mr-2" />
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2 px-2 mb-1 text-xs text-muted-foreground">
+                        <span>{selectedPair}</span>
+                      </div>
+                      <div className="px-2 font-mono font-bold text-left text-sm min-w-[90px]">
+                        {formatPairPrice(selectedPair, currentPrice)}
                       </div>
                     </div>
-                    <div className="grid grid-cols-5 px-4 py-2 text-xs font-medium border-b text-muted-foreground bg-muted/30">
-                      <div className="w-[180px]">Pair</div>
-                      <div className="w-[140px]">Market Price</div>
-                      <div className="w-[140px]">Long Liquidity</div>
-                      <div className="w-[140px]">Short Liquidity</div>
-                      <div className="w-[140px]">Funding Rate</div>
+                  </div>
+                </SelectTrigger>
+                <SelectContent 
+                  className="w-[900px] bg-[hsl(var(--component-background))] overflow-hidden p-0"
+                >
+                  <div className="flex flex-col h-[500px]">
+                    <PrefetchTokenImages pairs={allMarkets.map((market) => market.pair)} />
+                    <div className="sticky top-0 z-20 bg-[hsl(var(--component-background))] shadow-sm">
+                      <div className="px-4 py-2 border-b">
+                        <div className="relative">
+                          <Search className="absolute left-2 top-2.5 h-3 w-3 text-muted-foreground" />
+                          <input
+                            type="text"
+                            placeholder="Search pairs..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full py-2 pl-8 pr-4 text-xs bg-transparent border rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-ring"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-5 px-4 py-2 text-xs font-medium border-b text-muted-foreground bg-muted/30">
+                        <div className="w-[180px]">Pair</div>
+                        <div className="w-[140px]">Market Price</div>
+                        <div className="w-[140px]">Long Liquidity</div>
+                        <div className="w-[140px]">Short Liquidity</div>
+                        <div className="w-[140px]">Funding Rate</div>
+                      </div>
+                    </div>
+                    <div className="flex-1 overflow-y-auto">
+                      {filteredMarkets.map((market) => (
+                        <SelectItem
+                          key={market.pair}
+                          value={market.pair}
+                          className="px-4 py-2 cursor-pointer hover:bg-muted/60"
+                        >
+                          <div className="grid items-center grid-cols-5 text-xs">
+                            <div className="w-[180px]">
+                              <TokenPairDisplay pair={market.pair} />
+                            </div>
+                            <div className="w-[140px]">{formatPrice(market.pair)}</div>
+                            <div className="w-[140px]">${formatNumber(market.availableLiquidity.long)}</div>
+                            <div className="w-[140px]">${formatNumber(market.availableLiquidity.short)}</div>
+                            <div className="w-[140px]">
+                              <span
+                                className={cn(
+                                  market.fundingRate > 0
+                                    ? "text-[#22c55e]"
+                                    : market.fundingRate < 0
+                                    ? "text-[#ef4444]"
+                                    : "text-foreground"
+                                )}
+                              >
+                                {formatFundingRate(market.fundingRate)}
+                              </span>
+                            </div>
+                          </div>
+                        </SelectItem>
+                      ))}
                     </div>
                   </div>
-                  <div className="flex-1 overflow-y-auto">
-                    {filteredMarkets.map((market) => (
-                      <SelectItem
-                        key={market.pair}
-                        value={market.pair}
-                        className="px-4 py-2 cursor-pointer hover:bg-muted/60"
-                      >
-                        <div className="grid items-center grid-cols-5 text-xs">
-                          <div className="w-[180px]">
-                            <TokenPairDisplay pair={market.pair} />
-                          </div>
-                          <div className="w-[140px]">{formatPrice(market.pair)}</div>
-                          <div className="w-[140px]">${formatNumber(market.availableLiquidity.long)}</div>
-                          <div className="w-[140px]">${formatNumber(market.availableLiquidity.short)}</div>
-                          <div className="w-[140px]">
-                            <span
-                              className={cn(
-                                market.fundingRate > 0
-                                  ? "text-[#22c55e]"
-                                  : market.fundingRate < 0
-                                  ? "text-[#ef4444]"
-                                  : "text-foreground"
-                              )}
-                            >
-                              {formatFundingRate(market.fundingRate)}
-                            </span>
-                          </div>
-                        </div>
-                      </SelectItem>
-                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 24h Change Group */}
+            <div className="flex items-center px-4 border-r min-w-[160px]">
+              <div>
+                <div className="text-xs text-muted-foreground">24h Change</div>
+                <div className={cn(
+                  "text-sm font-medium",
+                  (!changeLoading && !changeError && percentageChange >= 0) ? "text-[#22c55e]" : "text-[#ef4444]"
+                )}>
+                  {!changeLoading && !changeError ? (
+                    <>
+                      {absoluteChange >= 0 ? "+" : ""}
+                      {formatPairPrice(selectedPair, Math.abs(absoluteChange))} /{" "}
+                      {percentageChange >= 0 ? "+" : ""}
+                      {percentageChange.toFixed(2)}%
+                    </>
+                  ) : (
+                    "- / -"
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Open Interest Group */}
+            <div className="flex items-center space-x-8 px-4 border-r min-w-[300px]">
+              <div>
+                <div className="text-xs text-muted-foreground">Long OI</div>
+                <div className="text-sm">
+                  ${formatCompactNumber(combinedData.longOpenInterest)} / $
+                  {formatCompactNumber(combinedData.maxLongOpenInterest)}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground">Short OI</div>
+                <div className="text-sm">
+                  ${formatCompactNumber(combinedData.shortOpenInterest)} / $
+                  {formatCompactNumber(combinedData.maxShortOpenInterest)}
+                </div>
+              </div>
+            </div>
+
+            {/* Funding Rate Group */}
+            <div className="flex items-center px-4 border-r min-w-[160px]">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Funding Rate</span>
+                  <button
+                    onClick={() => setRateTimeframe(nextTimeframe())}
+                    className="px-2 py-0.5 text-[10px] rounded bg-secondary hover:bg-secondary/80"
+                  >
+                    {rateTimeframe}
+                  </button>
+                </div>
+                <div
+                  className={cn(
+                    "text-sm",
+                    getAnnualizedRate(combinedData.fundingRate) >= 0
+                      ? "text-green-500"
+                      : "text-red-500"
+                  )}
+                >
+                  {getAnnualizedRate(combinedData.fundingRate).toFixed(4)}%
+                </div>
+              </div>
+            </div>
+
+            {/* Borrow Rates Group */}
+            <div className="flex items-center px-4 min-w-[220px]">
+              <div className="flex gap-4">
+                <div>
+                  <div className="text-xs text-muted-foreground">Borrowing (L)</div>
+                  <div className="text-sm text-red-500">
+                    {getAnnualizedRate(combinedData.borrowRateForLong).toFixed(4)}%
                   </div>
                 </div>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Open Interest Group */}
-          <div className="flex items-center space-x-8 px-4 border-r min-w-[300px]">
-            <div>
-              <div className="text-xs text-muted-foreground">Long OI</div>
-              <div className="text-sm">
-                ${formatCompactNumber(combinedData.longOpenInterest)} / $
-                {formatCompactNumber(combinedData.maxLongOpenInterest)}
-              </div>
-            </div>
-            <div>
-              <div className="text-xs text-muted-foreground">Short OI</div>
-              <div className="text-sm">
-                ${formatCompactNumber(combinedData.shortOpenInterest)} / $
-                {formatCompactNumber(combinedData.maxShortOpenInterest)}
-              </div>
-            </div>
-          </div>
-
-          {/* Funding Rate Group */}
-          <div className="flex items-center px-4 border-r min-w-[160px]">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Funding Rate</span>
-                <button
-                  onClick={() => setRateTimeframe(nextTimeframe())}
-                  className="px-2 py-0.5 text-[10px] rounded bg-secondary hover:bg-secondary/80"
-                >
-                  {rateTimeframe}
-                </button>
-              </div>
-              <div
-                className={cn(
-                  "text-sm",
-                  getAnnualizedRate(combinedData.fundingRate) >= 0
-                    ? "text-green-500"
-                    : "text-red-500"
-                )}
-              >
-                {getAnnualizedRate(combinedData.fundingRate).toFixed(4)}%
-              </div>
-            </div>
-          </div>
-
-          {/* Borrow Rates Group */}
-          <div className="flex items-center px-4 border-r min-w-[220px]">
-            <div className="flex gap-4">
-              <div>
-                <div className="text-xs text-muted-foreground">Borrowing (L)</div>
-                <div className="text-sm text-red-500">
-                  {getAnnualizedRate(combinedData.borrowRateForLong).toFixed(4)}%
+                <div>
+                  <div className="text-xs text-muted-foreground">Borrowing (S)</div>
+                  <div className="text-sm text-red-500">
+                    {getAnnualizedRate(combinedData.borrowRateForShort).toFixed(4)}%
+                  </div>
                 </div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground">Borrowing (S)</div>
-                <div className="text-sm text-red-500">
-                  {getAnnualizedRate(combinedData.borrowRateForShort).toFixed(4)}%
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Long/Short Ratio Group */}
-          <div className="flex items-center px-4 border-l min-w-[200px]">
-            <div className="w-full">
-              <div className="flex justify-between text-[10px] mb-1.5">
-                <span className="text-green-500">
-                  <span className="text-muted-foreground">(L)</span> {combinedData.longShortRatio.longPercentage.toFixed(1)}%
-                </span>
-                <span className="text-red-500">
-                  {combinedData.longShortRatio.shortPercentage.toFixed(1)}% <span className="text-muted-foreground">(S)</span>
-                </span>
-              </div>
-              <div className="w-full h-1.5 overflow-hidden rounded-full bg-red-500/20">
-                <div
-                  className="h-full transition-all duration-300 ease-in-out rounded-l-full bg-green-500/50"
-                  style={{
-                    width: `${combinedData.longShortRatio.longPercentage}%`,
-                  }}
-                />
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
     </div>
   );
 };
