@@ -120,6 +120,8 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange }: Char
             "scalesProperties.bgColor": "#17161d",
             "paneProperties.backgroundType": "solid",
             "paneProperties.legendProperties.showBackground": false,
+            "paneProperties.horzGridProperties.style": 2,
+            "paneProperties.vertGridProperties.style": 2,
           },
           load_last_chart: false,
           saved_data: null,
