@@ -2,13 +2,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { usePlatformPositions } from "@/hooks/use-platform-positions"
 import { ArrowUpDown } from "lucide-react"
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { usePairPrecision } from "@/hooks/use-pair-precision"
 
 type SortField = 'size' | 'margin' | 'pnl' | 'funding'
 type SortDirection = 'asc' | 'desc'
 
 export function UsdmPositionsTable() {
   const { data: positions, isLoading } = usePlatformPositions()
+  const { formatPairPrice } = usePairPrecision()
   const [sortField, setSortField] = useState<SortField>('size')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
@@ -26,11 +27,15 @@ export function UsdmPositionsTable() {
 
     switch (sortField) {
       case 'size':
-        return (parseFloat(a.positionValue) - parseFloat(b.positionValue)) * multiplier
+        const aSize = parseFloat(a.positionValue.replace(/[^0-9.-]+/g, ''))
+        const bSize = parseFloat(b.positionValue.replace(/[^0-9.-]+/g, ''))
+        return (aSize - bSize) * multiplier
       case 'margin':
         return (parseFloat(a.margin.replace('$', '')) - parseFloat(b.margin.replace('$', ''))) * multiplier
       case 'pnl':
-        return (parseFloat(a.pnl.value.replace(/[+$-]/g, '')) - parseFloat(b.pnl.value.replace(/[+$-]/g, ''))) * multiplier
+        const aPnl = parseFloat(a.pnl.value.replace(/[$,]/g, ''))
+        const bPnl = parseFloat(b.pnl.value.replace(/[$,]/g, ''))
+        return (aPnl - bPnl) * multiplier
       case 'funding':
         return (parseFloat(a.funding.value.replace('$', '')) - parseFloat(b.funding.value.replace('$', ''))) * multiplier
       default:
@@ -77,7 +82,7 @@ export function UsdmPositionsTable() {
                 <th className="px-3 py-2 font-medium text-right">Mark Price</th>
                 <SortableHeader field="pnl">PNL (ROE %)</SortableHeader>
                 <th className="px-3 py-2 font-medium text-right">Liq. Price</th>
-                <SortableHeader field="funding">Funding</SortableHeader>
+                <SortableHeader field="funding">Interest</SortableHeader>
               </tr>
             </thead>
             <tbody>
@@ -102,10 +107,10 @@ export function UsdmPositionsTable() {
                   </td>
                   <td className="px-3 py-2 text-left">{position.margin}</td>
                   <td className="px-3 py-2 text-right">
-                    ${position.entryPrice}
+                    ${formatPairPrice(position.pair, parseFloat(position.entryPrice))}
                   </td>
                   <td className="px-3 py-2 text-right">
-                    ${position.markPrice}
+                    ${formatPairPrice(position.pair, parseFloat(position.markPrice))}
                   </td>
                   <td className={`px-3 py-2 text-right ${
                     position.pnl.value.startsWith('-') ? 'text-red-500' : 'text-green-500'
@@ -113,7 +118,7 @@ export function UsdmPositionsTable() {
                     {position.pnl.value} ({position.pnl.percentage})
                   </td>
                   <td className="px-3 py-2 text-right">
-                    ${position.liqPrice}
+                    ${formatPairPrice(position.pair, parseFloat(position.liqPrice))}
                   </td>
                   <td className={`px-3 py-2 text-right ${
                     position.funding.isNegative ? 'text-red-500' : 'text-green-500'

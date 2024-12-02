@@ -18,6 +18,7 @@ interface PlatformPosition {
 
 interface FormattedPosition {
   coin: string
+  pair: string
   positionValue: string
   entryPrice: string
   isLong: boolean
@@ -60,23 +61,30 @@ const formatPosition = (position: PlatformPosition): FormattedPosition => {
   const borrowFeeNum = parseFloat(position.borrowFee)
   const averagePriceNum = parseFloat(position.averagePrice)
 
-  const dollarSize = (sizeNum * markPriceNum).toFixed(2)
+  // Format numbers with commas
+  const formatter = new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
+
+  const dollarSize = formatter.format(sizeNum)
   const pnlPercentage = ((pnlNum / collateralNum) * 100).toFixed(2)
-  
-  // Calculate leverage as size/margin
   const leverage = Math.round(sizeNum / collateralNum)
   
-  // Calculate total fees
+  // Add borrow fee and funding fee
+  // If funding fee is negative, it reduces the total cost
+  // Total can be positive (user receives) or negative (user pays)
   const totalFees = fundingFeeNum + borrowFeeNum
 
   return {
     coin: `${position.pair} ${leverage}×`,
-    positionValue: position.size,
+    pair: position.pair,
+    positionValue: dollarSize,
     entryPrice: position.averagePrice,
     markPrice: position.markPrice,
     isLong: position.isLong,
     pnl: {
-      value: pnlNum >= 0 ? `+$${pnlNum.toFixed(2)}` : `-$${Math.abs(pnlNum).toFixed(2)}`,
+      value: pnlNum >= 0 ? `+$${formatter.format(pnlNum)}` : `-$${formatter.format(Math.abs(pnlNum))}`,
       percentage: pnlNum >= 0 ? `+${pnlPercentage}%` : `-${Math.abs(parseFloat(pnlPercentage))}%`
     },
     liqPrice: calculateLiquidationPrice(
@@ -85,10 +93,10 @@ const formatPosition = (position: PlatformPosition): FormattedPosition => {
       collateralNum,
       sizeNum
     ),
-    margin: `$${collateralNum.toFixed(2)}`,
+    margin: `$${formatter.format(collateralNum)}`,
     funding: {
-      value: `$${Math.abs(totalFees).toFixed(2)}`,
-      isNegative: totalFees < 0
+      value: `$${formatter.format(Math.abs(totalFees))}`,
+      isNegative: totalFees > 0 // Negative when user pays (positive total), positive when user receives (negative total)
     }
   }
 }
