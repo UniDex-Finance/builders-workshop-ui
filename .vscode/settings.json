@@ -1,7 +1,4 @@
 {
   "typescript.tsdk": "node_modules/typescript/lib",
-  "editor.accessibilityPageSize": 14,
-  "editor.codeActionsOnSave": {},
-  "workbench.editor.tabSizingFixedMinWidth": 80,
-  "prettier.printWidth": 100
+  "prettier.printWidth": 120
 }

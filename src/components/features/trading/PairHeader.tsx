@@ -50,11 +50,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({ selectedPair, onPairChan
   } = useMarketData({
     selectedPair,
   });
-  const {
-    markets: gtradeMarkets,
-    loading: gtradeLoading,
-    error: gtradeError,
-  } = useGTradeMarketData();
+  const { markets: gtradeMarkets, loading: gtradeLoading, error: gtradeError } = useGTradeMarketData();
 
   const gtradeMarket = gtradeMarkets.find((m) => m.name === selectedPair);
 
@@ -133,9 +129,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({ selectedPair, onPairChan
   const basePair = selectedPair.split("/")[0].toLowerCase();
   const currentPrice = prices[basePair]?.price;
 
-  const filteredMarkets = allMarkets.filter((market) =>
-    market.pair.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredMarkets = allMarkets.filter((market) => market.pair.toLowerCase().includes(searchQuery.toLowerCase()));
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -154,12 +148,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({ selectedPair, onPairChan
     return `${rate.toFixed(4)}%`;
   };
 
-  const {
-    absoluteChange,
-    percentageChange,
-    loading: changeLoading,
-    error: changeError,
-  } = use24hChange(selectedPair);
+  const { absoluteChange, percentageChange, loading: changeLoading, error: changeError } = use24hChange(selectedPair);
 
   if (unidexError || gtradeError) {
     return (
@@ -174,11 +163,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({ selectedPair, onPairChan
   }
 
   if (!combinedData) {
-    return (
-      <div className="flex items-center justify-center p-4">
-        No market data available for {selectedPair}
-      </div>
-    );
+    return <div className="flex items-center justify-center p-4">No market data available for {selectedPair}</div>;
   }
 
   const getAnnualizedRate = (rate: number) => {
@@ -207,10 +192,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({ selectedPair, onPairChan
     <div className="w-full">
       <div className="p-2 my-2 border rounded-lg shadow-sm bg-[hsl(var(--component-background))] overflow-hidden">
         <div className="overflow-x-auto">
-          <div
-            className="flex items-center text-xs flex-nowrap"
-            style={{ width: "fit-content", minWidth: "1200px" }}
-          >
+          <div className="flex items-center text-xs flex-nowrap" style={{ width: "fit-content", minWidth: "1200px" }}>
             {/* Price Group with Pair Selector */}
             <div className="flex min-w-[130px] pr-2 border-r">
               <Select value={selectedPair} onValueChange={onPairChange}>
@@ -263,12 +245,8 @@ export const PairHeader: React.FC<PairHeaderProps> = ({ selectedPair, onPairChan
                               <TokenPairDisplay pair={market.pair} />
                             </div>
                             <div className="w-[140px]">{formatPrice(market.pair)}</div>
-                            <div className="w-[140px]">
-                              ${formatNumber(market.availableLiquidity.long)}
-                            </div>
-                            <div className="w-[140px]">
-                              ${formatNumber(market.availableLiquidity.short)}
-                            </div>
+                            <div className="w-[140px]">${formatNumber(market.availableLiquidity.long)}</div>
+                            <div className="w-[140px]">${formatNumber(market.availableLiquidity.short)}</div>
                             <div className="w-[140px]">
                               <span
                                 className={cn(
@@ -298,16 +276,13 @@ export const PairHeader: React.FC<PairHeaderProps> = ({ selectedPair, onPairChan
                 <div
                   className={cn(
                     "text-sm font-medium",
-                    !changeLoading && !changeError && percentageChange >= 0
-                      ? "text-[#22c55e]"
-                      : "text-[#ef4444]"
+                    !changeLoading && !changeError && percentageChange >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"
                   )}
                 >
                   {!changeLoading && !changeError ? (
                     <>
                       {absoluteChange >= 0 ? "+" : ""}
-                      {formatPairPrice(selectedPair, Math.abs(absoluteChange))} /{" "}
-                      {percentageChange >= 0 ? "+" : ""}
+                      {formatPairPrice(selectedPair, Math.abs(absoluteChange))} / {percentageChange >= 0 ? "+" : ""}
                       {percentageChange.toFixed(2)}%
                     </>
                   ) : (
@@ -332,12 +307,10 @@ export const PairHeader: React.FC<PairHeaderProps> = ({ selectedPair, onPairChan
                   </TooltipTrigger>
                   <TooltipContent className="bg-[#2b2b36] border-none">
                     <p className="text-sm text-white">
-                      There are currently ${formatCompactNumber(combinedData.longOpenInterest)}{" "}
-                      worth of {selectedPair} positions open with only $
-                      {formatCompactNumber(
-                        combinedData.maxLongOpenInterest - combinedData.longOpenInterest
-                      )}{" "}
-                      left before the open interest cap is reached
+                      There are currently ${formatCompactNumber(combinedData.longOpenInterest)} worth of {selectedPair}{" "}
+                      positions open with only $
+                      {formatCompactNumber(combinedData.maxLongOpenInterest - combinedData.longOpenInterest)} left
+                      before the open interest cap is reached
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -355,12 +328,10 @@ export const PairHeader: React.FC<PairHeaderProps> = ({ selectedPair, onPairChan
                   </TooltipTrigger>
                   <TooltipContent className="bg-[#2b2b36] border-none">
                     <p className="text-sm text-white">
-                      There are currently ${formatCompactNumber(combinedData.shortOpenInterest)}{" "}
-                      worth of {selectedPair} positions open with only $
-                      {formatCompactNumber(
-                        combinedData.maxShortOpenInterest - combinedData.shortOpenInterest
-                      )}{" "}
-                      left before the open interest cap is reached
+                      There are currently ${formatCompactNumber(combinedData.shortOpenInterest)} worth of {selectedPair}{" "}
+                      positions open with only $
+                      {formatCompactNumber(combinedData.maxShortOpenInterest - combinedData.shortOpenInterest)} left
+                      before the open interest cap is reached
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -385,9 +356,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({ selectedPair, onPairChan
                       <div
                         className={cn(
                           "text-sm",
-                          getAnnualizedRate(combinedData.fundingRate) >= 0
-                            ? "text-green-500"
-                            : "text-red-500"
+                          getAnnualizedRate(combinedData.fundingRate) >= 0 ? "text-green-500" : "text-red-500"
                         )}
                       >
                         {getAnnualizedRate(combinedData.fundingRate).toFixed(4)}%
@@ -397,9 +366,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({ selectedPair, onPairChan
                   <TooltipContent className="bg-[#2b2b36] border-none">
                     <p className="text-sm text-white whitespace-pre-line">
                       {getAnnualizedRate(combinedData.fundingRate) >= 0
-                        ? `Long positions are paying a rate of ${getAnnualizedRate(
-                            combinedData.fundingRate
-                          ).toFixed(
+                        ? `Long positions are paying a rate of ${getAnnualizedRate(combinedData.fundingRate).toFixed(
                             4
                           )}% to short positions every ${rateTimeframe}.\n\nTherefore, short positions are being paid a rate of ${getAnnualizedRate(
                             combinedData.fundingRate
