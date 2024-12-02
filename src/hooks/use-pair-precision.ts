@@ -1,19 +1,13 @@
 import { useMemo } from 'react';
 import { useMarketData } from './use-market-data';
 
-interface PrecisionConfig {
-  minDecimals: number;
-  maxDecimals: number;
-}
-
-// Default precision configuration
-const DEFAULT_PRECISION: PrecisionConfig = {
+// Move these outside the component to prevent recreating on each render
+const DEFAULT_PRECISION = {
   minDecimals: 5,
   maxDecimals: 5
-};
+} as const;
 
-// Special cases for specific pairs
-const PRECISION_OVERRIDES: Record<string, PrecisionConfig> = {
+const PRECISION_OVERRIDES = {
   'BTC/USD': { minDecimals: 2, maxDecimals: 2 },
   'ETH/USD': { minDecimals: 2, maxDecimals: 2 },
   'FTM/USD': { minDecimals: 4, maxDecimals: 4 },
@@ -30,43 +24,62 @@ const PRECISION_OVERRIDES: Record<string, PrecisionConfig> = {
   'GMCI30/USD': { minDecimals: 2, maxDecimals: 2 },
   'GMCL2/USD': { minDecimals: 2, maxDecimals: 2 },
   'GMMEME/USD': { minDecimals: 2, maxDecimals: 2 },
-};
+} as const;
+
+// Create a memoized formatter instance
+const createNumberFormatter = (minDecimals: number, maxDecimals: number) => 
+  new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: minDecimals,
+    maximumFractionDigits: maxDecimals,
+    useGrouping: true
+  });
+
+// Cache formatters to avoid recreating them
+const formatterCache = new Map<string, Intl.NumberFormat>();
 
 export const usePairPrecision = () => {
   const { allMarkets } = useMarketData({});
 
   const pairPrecisionMap = useMemo(() => {
-    const map = new Map<string, PrecisionConfig>();
+    const map = new Map();
     
-    // Initialize with all available pairs
     allMarkets.forEach(market => {
-      // Check if there's a specific override for this pair
-      const override = PRECISION_OVERRIDES[market.pair];
-      if (override) {
-        map.set(market.pair, override);
-      } else {
-        // If no override exists, use the default precision
-        map.set(market.pair, DEFAULT_PRECISION);
+      const override = PRECISION_OVERRIDES[market.pair as keyof typeof PRECISION_OVERRIDES];
+      const precision = override || DEFAULT_PRECISION;
+      map.set(market.pair, precision);
+      
+      // Pre-cache formatter for this precision configuration
+      const cacheKey = `${precision.minDecimals}-${precision.maxDecimals}`;
+      if (!formatterCache.has(cacheKey)) {
+        formatterCache.set(
+          cacheKey,
+          createNumberFormatter(precision.minDecimals, precision.maxDecimals)
+        );
       }
     });
 
     return map;
   }, [allMarkets]);
 
-  const formatPairPrice = (pair: string, price: number | undefined): string => {
-    if (price === undefined) return '...';
-    
-    const precision = pairPrecisionMap.get(pair) || DEFAULT_PRECISION;
-    
-    return new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: precision.minDecimals,
-      maximumFractionDigits: precision.maxDecimals,
-      useGrouping: true
-    }).format(price);
-  };
+  const formatPairPrice = useMemo(() => {
+    return (pair: string, price: number | undefined): string => {
+      if (price === undefined) return '...';
+      
+      const precision = pairPrecisionMap.get(pair) || DEFAULT_PRECISION;
+      const cacheKey = `${precision.minDecimals}-${precision.maxDecimals}`;
+      const formatter = formatterCache.get(cacheKey) || 
+        createNumberFormatter(precision.minDecimals, precision.maxDecimals);
+      
+      return formatter.format(price);
+    };
+  }, [pairPrecisionMap]);
+
+  const getPrecision = useMemo(() => {
+    return (pair: string) => pairPrecisionMap.get(pair) || DEFAULT_PRECISION;
+  }, [pairPrecisionMap]);
 
   return {
-    getPrecision: (pair: string) => pairPrecisionMap.get(pair) || DEFAULT_PRECISION,
+    getPrecision,
     formatPairPrice,
   };
 }; 

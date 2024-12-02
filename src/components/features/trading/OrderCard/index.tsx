@@ -352,7 +352,7 @@ const totalRequired = calculatedMargin + tradingFee;
     </div>
   );
 
-  // Memoize all handler functions
+  // Update the memoizedHandlers to include necessary dependencies
   const memoizedHandlers = React.useMemo(() => ({
     handleAmountChange: (e: React.ChangeEvent<HTMLInputElement>) => {
       handleAmountChange(e);
@@ -378,7 +378,25 @@ const totalRequired = calculatedMargin + tradingFee;
     handleLeverageChange: (value: string) => {
       onLeverageChange(value);
     }
-  }), []); // Empty dependency array since these handlers shouldn't change
+  }), [
+    handleAmountChange,
+    handleMarginChange,
+    handleSliderChange,
+    handleLimitPriceChange,
+    toggleTPSL,
+    handleTakeProfitChange,
+    handleStopLossChange,
+    onLeverageChange
+  ]); // Add dependencies for the handlers
+
+  // Update the formProps memo to include toggleDirection
+  const formProps = React.useMemo(() => ({
+    formState,
+    calculatedMargin,
+    leverage,
+    toggleDirection, // Add this
+    ...memoizedHandlers
+  }), [formState, calculatedMargin, leverage, toggleDirection, memoizedHandlers]);
 
   // Memoize trade details props
   const tradeDetailsProps = React.useMemo(() => ({
@@ -389,14 +407,6 @@ const totalRequired = calculatedMargin + tradingFee;
     referrerSection,
     routingInfo
   }), [tradeDetails, market?.pair, tradingFee, totalRequired, referrerSection, routingInfo]);
-
-  // Memoize form props
-  const formProps = React.useMemo(() => ({
-    formState,
-    calculatedMargin,
-    leverage,
-    ...memoizedHandlers
-  }), [formState, calculatedMargin, leverage]);
 
   return (
     <Card className="w-full md:w-[350px]">
