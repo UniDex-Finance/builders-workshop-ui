@@ -1,3 +1,4 @@
+import React from "react";
 import { Button } from "../../ui/button";
 import { Table } from "../../ui/table";
 import { usePositions, Position } from "../../../hooks/use-positions";
@@ -17,7 +18,7 @@ interface PositionsTableProps {
 
 type ActiveTab = "positions" | "orders" | "trades";
 
-export function PositionsTable({ address }: PositionsTableProps) {
+export const PositionsTable = React.memo(function PositionsTable({ address }: PositionsTableProps) {
   const {
     positions,
     loading: positionsLoading,
@@ -147,4 +148,4 @@ export function PositionsTable({ address }: PositionsTableProps) {
         )}
     </div>
   );
-}
+});

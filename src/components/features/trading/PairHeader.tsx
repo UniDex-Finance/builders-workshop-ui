@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback, memo } from "react";
 import { useMarketData } from "../../../hooks/use-market-data";
 import { usePrices } from "../../../lib/websocket-price-context";
 import { ChevronDown } from "lucide-react";
@@ -52,7 +52,7 @@ const formatCompactNumber = (num: number) => {
   return formatter.format(num);
 };
 
-export const PairHeader: React.FC<PairHeaderProps> = ({
+export const PairHeader: React.FC<PairHeaderProps> = memo(({
   selectedPair,
   onPairChange,
 }) => {
@@ -157,6 +157,16 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
 
   const { absoluteChange, percentageChange, loading: changeLoading, error: changeError } = use24hChange(selectedPair);
 
+  // Memoize the search handler
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  }, []);
+
+  // Memoize the timeframe change handler
+  const handleTimeframeChange = useCallback(() => {
+    setRateTimeframe(nextTimeframe());
+  }, []);
+
   if (unidexError || gtradeError) {
     return (
       <div className="flex items-center justify-center p-4 text-red-500">
@@ -237,7 +247,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                             type="text"
                             placeholder="Search pairs..."
                             value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onChange={handleSearchChange}
                             className="w-full py-2 pl-8 pr-4 text-xs bg-transparent border rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-ring"
                           />
                         </div>
@@ -357,7 +367,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">Funding Rate</span>
                         <button
-                          onClick={() => setRateTimeframe(nextTimeframe())}
+                          onClick={handleTimeframeChange}
                           className="px-2 py-0.5 text-[10px] rounded bg-secondary hover:bg-secondary/80"
                         >
                           {rateTimeframe}
@@ -409,6 +419,9 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
       </div>
     </div>
   );
-};
+});
+
+// Add display name for debugging
+PairHeader.displayName = 'PairHeader';
 
 export default PairHeader;

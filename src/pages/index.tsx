@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/router";
 import { useAccount } from "wagmi";
 import { Header } from "../components/shared/Header";
@@ -41,6 +41,24 @@ export default function TradingInterface() {
     document.title = `UniDex | ${selectedPair} $${formattedPrice}`;
   }, [selectedPair, prices]);
 
+  const handlePairChange = useCallback((newPair: string) => {
+    setPair(newPair);
+  }, [setPair]);
+
+  const handleLeverageChange = useCallback((newLeverage: string) => {
+    setLeverage(newLeverage);
+  }, []);
+
+  const handleChartHeightChange = useCallback((newHeight: number) => {
+    setChartHeight(newHeight);
+  }, []);
+
+  const filteredPositions = useMemo(() => {
+    return positionsLoading ? [] : positions;
+  }, [positionsLoading, positions]);
+
+  const memoizedAddress = useMemo(() => address, [address]);
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header />
@@ -48,7 +66,10 @@ export default function TradingInterface() {
       <main className="flex flex-col flex-1 md:flex-row md:gap-12">
         {/* PairHeader for mobile - shown above OrderCard */}
         <div className="w-full px-2 md:hidden">
-          <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
+          <PairHeader 
+            selectedPair={selectedPair} 
+            onPairChange={handlePairChange} 
+          />
         </div>
 
         {/* Left Side - Trading Panel */}
@@ -56,7 +77,7 @@ export default function TradingInterface() {
           <div className="mb-2">
             <OrderCard
               leverage={leverage}
-              onLeverageChange={setLeverage}
+              onLeverageChange={handleLeverageChange}
               assetId={assetId}
               initialReferralCode={typeof ref === 'string' ? ref : undefined}
             />
@@ -66,18 +87,21 @@ export default function TradingInterface() {
         {/* Right Side - Chart and Positions Container */}
         <div className="flex flex-col flex-1 min-w-0 px-2 overflow-x-auto md:pl-0">
           <div className="hidden md:block">
-            <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
+            <PairHeader 
+              selectedPair={selectedPair} 
+              onPairChange={handlePairChange} 
+            />
           </div>
           
           <div className="flex flex-col flex-1">
             <Chart 
               selectedPair={selectedPair} 
               height={chartHeight}
-              onHeightChange={setChartHeight}
-              positions={positionsLoading ? [] : positions}
+              onHeightChange={handleChartHeightChange}
+              positions={filteredPositions}
             />
             <div className="flex-1 mt-3 overflow-x-auto">
-              <PositionsTable address={address} />
+              <PositionsTable address={memoizedAddress} />
             </div>
           </div>
         </div>

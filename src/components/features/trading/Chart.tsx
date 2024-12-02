@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useCallback, memo } from "react";
 import type { ResolutionString } from "../../../../public/static/charting_library/charting_library";
 import datafeed from "../../../utils/datafeed.js";
 import { Position } from "../../../hooks/use-positions";
@@ -40,7 +40,8 @@ interface ChartProps {
   positions?: Position[];
 }
 
-export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positions = [] }: ChartProps) {
+// Memoize the Chart component
+export const Chart = memo(function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positions = [] }: ChartProps) {
   const widgetRef = useRef<any>(null);
   const isDragging = useRef(false);
   const startY = useRef(0);
@@ -248,16 +249,16 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
     };
   }, [selectedPair]);
 
-  // Also restore the resize handlers
-  const handleMouseDown = (e: React.MouseEvent) => {
+  // Memoize handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
     isDragging.current = true;
     startY.current = e.clientY;
     startHeight.current = height;
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-  };
+  }, [height, onHeightChange]);
 
-  const handleMouseMove = (e: MouseEvent) => {
+  const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isDragging.current) return;
     const deltaY = e.clientY - startY.current;
     const newHeight = Math.max(300, Math.min(800, startHeight.current + deltaY));
@@ -265,13 +266,13 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
     if (widgetRef.current) {
       setTimeout(() => window.dispatchEvent(new Event('resize')), 0);
     }
-  };
+  }, [onHeightChange]);
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     isDragging.current = false;
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
-  };
+  }, [handleMouseMove]);
 
   return (
     <div 
@@ -298,7 +299,10 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
       />
     </div>
   );
-}
+});
+
+// Add display name for debugging
+Chart.displayName = 'Chart';
 
 // Helper function to compare sets
 function areSetsEqual(a: Set<string>, b: Set<string>) {
