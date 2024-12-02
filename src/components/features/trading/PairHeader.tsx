@@ -9,6 +9,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../../ui/tooltip";
 import { Search } from "lucide-react";
 import { cn } from "../../../lib/utils";
 import {
@@ -304,45 +310,81 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
 
             {/* Open Interest Group */}
             <div className="flex items-center space-x-8 px-4 border-r min-w-[300px]">
-              <div>
-                <div className="text-xs text-muted-foreground">Long OI</div>
-                <div className="text-sm">
-                  ${formatCompactNumber(combinedData.longOpenInterest)} / $
-                  {formatCompactNumber(combinedData.maxLongOpenInterest)}
-                </div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground">Short OI</div>
-                <div className="text-sm">
-                  ${formatCompactNumber(combinedData.shortOpenInterest)} / $
-                  {formatCompactNumber(combinedData.maxShortOpenInterest)}
-                </div>
-              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="cursor-help">
+                      <div className="text-xs text-muted-foreground">Long OI</div>
+                      <div className="text-sm">
+                        ${formatCompactNumber(combinedData.longOpenInterest)} / $
+                        {formatCompactNumber(combinedData.maxLongOpenInterest)}
+                      </div>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-[#2b2b36] border-none">
+                    <p className="text-sm text-white">
+                      There are currently ${formatCompactNumber(combinedData.longOpenInterest)} worth of {selectedPair} positions open with only ${formatCompactNumber(combinedData.maxLongOpenInterest - combinedData.longOpenInterest)} left before the open interest cap is reached
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="cursor-help">
+                      <div className="text-xs text-muted-foreground">Short OI</div>
+                      <div className="text-sm">
+                        ${formatCompactNumber(combinedData.shortOpenInterest)} / $
+                        {formatCompactNumber(combinedData.maxShortOpenInterest)}
+                      </div>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-[#2b2b36] border-none">
+                    <p className="text-sm text-white">
+                      There are currently ${formatCompactNumber(combinedData.shortOpenInterest)} worth of {selectedPair} positions open with only ${formatCompactNumber(combinedData.maxShortOpenInterest - combinedData.shortOpenInterest)} left before the open interest cap is reached
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
 
             {/* Funding Rate Group */}
             <div className="flex items-center px-4 border-r min-w-[160px]">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">Funding Rate</span>
-                  <button
-                    onClick={() => setRateTimeframe(nextTimeframe())}
-                    className="px-2 py-0.5 text-[10px] rounded bg-secondary hover:bg-secondary/80"
-                  >
-                    {rateTimeframe}
-                  </button>
-                </div>
-                <div
-                  className={cn(
-                    "text-sm",
-                    getAnnualizedRate(combinedData.fundingRate) >= 0
-                      ? "text-green-500"
-                      : "text-red-500"
-                  )}
-                >
-                  {getAnnualizedRate(combinedData.fundingRate).toFixed(4)}%
-                </div>
-              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="cursor-help">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">Funding Rate</span>
+                        <button
+                          onClick={() => setRateTimeframe(nextTimeframe())}
+                          className="px-2 py-0.5 text-[10px] rounded bg-secondary hover:bg-secondary/80"
+                        >
+                          {rateTimeframe}
+                        </button>
+                      </div>
+                      <div
+                        className={cn(
+                          "text-sm",
+                          getAnnualizedRate(combinedData.fundingRate) >= 0
+                            ? "text-green-500"
+                            : "text-red-500"
+                        )}
+                      >
+                        {getAnnualizedRate(combinedData.fundingRate).toFixed(4)}%
+                      </div>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-[#2b2b36] border-none">
+                    <p className="text-sm text-white whitespace-pre-line">
+                      {getAnnualizedRate(combinedData.fundingRate) >= 0 
+                        ? `Long positions are paying a rate of ${getAnnualizedRate(combinedData.fundingRate).toFixed(4)}% to short positions every ${rateTimeframe}.\n\nTherefore, short positions are being paid a rate of ${getAnnualizedRate(combinedData.fundingRate).toFixed(4)}% every ${rateTimeframe}.`
+                        : `Short positions are paying a rate of ${Math.abs(getAnnualizedRate(combinedData.fundingRate)).toFixed(4)}% to long positions every ${rateTimeframe}.\n\nTherefore, long positions are being paid a rate of ${Math.abs(getAnnualizedRate(combinedData.fundingRate)).toFixed(4)}% every ${rateTimeframe}.`
+                      }
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
 
             {/* Borrow Rates Group */}
