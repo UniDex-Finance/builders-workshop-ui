@@ -6,6 +6,7 @@ import { PositionCard } from "./PositionCard"
 import { ActionsCard } from "./ActionsCard"
 import { StatsActions } from "./StatsActions"
 import { StatsDisplay } from "./StatsDisplay"
+import { UsdmPositionsTable } from "./UsdmPositionsTable"
 
 export function Usdm() {
   const [isStaking, setIsStaking] = useState(false)
@@ -31,6 +32,8 @@ export function Usdm() {
               <ActionsCard isStaking={isStaking} setIsStaking={setIsStaking} />
             </div>
           </div>
+
+          <UsdmPositionsTable />
         </div>
       </div>
     </div>
