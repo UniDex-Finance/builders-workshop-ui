@@ -30,16 +30,24 @@ export const MarketOrderForm = React.memo(function MarketOrderForm({
   leverage,
   onLeverageChange,
 }: MarketOrderFormProps) {
-  // Create memoized handlers
-  const memoizedSliderChange = React.useCallback(
-    (value: number[]) => handleSliderChange(value),
-    [handleSliderChange]
-  );
+  // Memoize percentage button handlers
+  const percentageHandlers = React.useMemo(() => ({
+    handle25: () => handleSliderChange([25]),
+    handle50: () => handleSliderChange([50]),
+    handle75: () => handleSliderChange([75]),
+    handle100: () => handleSliderChange([100])
+  }), [handleSliderChange]);
 
-  const memoizedLeverageChange = React.useCallback(
-    (value: string) => onLeverageChange(value),
-    [onLeverageChange]
-  );
+  // Memoize leverage input handler
+  const handleLeverageInput = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Math.min(Math.max(1, Number(e.target.value)), 100);
+    onLeverageChange(value.toString());
+  }, [onLeverageChange]);
+
+  // Memoize leverage slider handler
+  const handleLeverageSlider = React.useCallback((value: number[]) => {
+    onLeverageChange(value[0].toString());
+  }, [onLeverageChange]);
 
   return (
     <div className="space-y-4">
@@ -78,7 +86,7 @@ export const MarketOrderForm = React.memo(function MarketOrderForm({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleSliderChange([25])}
+            onClick={percentageHandlers.handle25}
             className="w-full text-xs"
           >
             25%
@@ -86,7 +94,7 @@ export const MarketOrderForm = React.memo(function MarketOrderForm({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleSliderChange([50])}
+            onClick={percentageHandlers.handle50}
             className="w-full text-xs"
           >
             50%
@@ -94,7 +102,7 @@ export const MarketOrderForm = React.memo(function MarketOrderForm({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleSliderChange([75])}
+            onClick={percentageHandlers.handle75}
             className="w-full text-xs"
           >
             75%
@@ -102,7 +110,7 @@ export const MarketOrderForm = React.memo(function MarketOrderForm({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleSliderChange([100])}
+            onClick={percentageHandlers.handle100}
             className="w-full text-xs"
           >
             100%
@@ -116,10 +124,7 @@ export const MarketOrderForm = React.memo(function MarketOrderForm({
               <Input
                 type="number"
                 value={leverage || ''}
-                onChange={(e) => {
-                  const value = Math.min(Math.max(1, Number(e.target.value)), 100);
-                  onLeverageChange(value.toString());
-                }}
+                onChange={handleLeverageInput}
                 className="h-8 text-sm text-center no-spinners" // Changed text-right to text-center
                 suppressHydrationWarning
               />
@@ -131,7 +136,7 @@ export const MarketOrderForm = React.memo(function MarketOrderForm({
               min={1}
               max={100}
               step={1}
-              onValueChange={(value) => onLeverageChange(value[0].toString())}
+              onValueChange={handleLeverageSlider}
             />
             <div className="flex justify-between px-1 text-xs text-muted-foreground">
               <span>1x</span>
@@ -156,5 +161,15 @@ export const MarketOrderForm = React.memo(function MarketOrderForm({
         />
       </div>
     </div>
+  );
+}, (prevProps, nextProps) => {
+  // Custom comparison function
+  return (
+    prevProps.formState === nextProps.formState &&
+    prevProps.calculatedMargin === nextProps.calculatedMargin &&
+    prevProps.leverage === nextProps.leverage &&
+    prevProps.handleAmountChange === nextProps.handleAmountChange &&
+    prevProps.handleMarginChange === nextProps.handleMarginChange &&
+    prevProps.handleSliderChange === nextProps.handleSliderChange
   );
 });

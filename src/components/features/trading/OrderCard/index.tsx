@@ -352,6 +352,52 @@ const totalRequired = calculatedMargin + tradingFee;
     </div>
   );
 
+  // Memoize all handler functions
+  const memoizedHandlers = React.useMemo(() => ({
+    handleAmountChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+      handleAmountChange(e);
+    },
+    handleMarginChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+      handleMarginChange(e);
+    },
+    handleSliderChange: (value: number[]) => {
+      handleSliderChange(value);
+    },
+    handleLimitPriceChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+      handleLimitPriceChange(e);
+    },
+    toggleTPSL: () => {
+      toggleTPSL();
+    },
+    handleTakeProfitChange: (value: string) => {
+      handleTakeProfitChange(value);
+    },
+    handleStopLossChange: (value: string) => {
+      handleStopLossChange(value);
+    },
+    handleLeverageChange: (value: string) => {
+      onLeverageChange(value);
+    }
+  }), []); // Empty dependency array since these handlers shouldn't change
+
+  // Memoize trade details props
+  const tradeDetailsProps = React.useMemo(() => ({
+    details: tradeDetails,
+    pair: market?.pair,
+    tradingFee,
+    totalRequired,
+    referrerSection,
+    routingInfo
+  }), [tradeDetails, market?.pair, tradingFee, totalRequired, referrerSection, routingInfo]);
+
+  // Memoize form props
+  const formProps = React.useMemo(() => ({
+    formState,
+    calculatedMargin,
+    leverage,
+    ...memoizedHandlers
+  }), [formState, calculatedMargin, leverage]);
+
   return (
     <Card className="w-full md:w-[350px]">
       <CardContent className="p-4">
@@ -406,43 +452,19 @@ const totalRequired = calculatedMargin + tradingFee;
 
           <TabsContent value="market">
             <MarketOrderForm
-              formState={formState}
-              calculatedMargin={calculatedMargin}
-              handleAmountChange={handleAmountChange}
-              handleMarginChange={handleMarginChange}  // Add this
-              handleSliderChange={handleSliderChange}
-              toggleTPSL={toggleTPSL}
-              handleTakeProfitChange={(value) => handleTakeProfitChange(value)}
-              handleStopLossChange={(value) => handleStopLossChange(value)}
-              leverage={leverage}
-              onLeverageChange={onLeverageChange}
+              {...formProps}
+              onLeverageChange={memoizedHandlers.handleLeverageChange}
             />
           </TabsContent>
 
           <TabsContent value="limit">
             <LimitOrderForm
-              formState={formState}
-              calculatedMargin={calculatedMargin}
-              handleAmountChange={handleAmountChange}
-              handleMarginChange={handleMarginChange}  // Add this
-              handleLimitPriceChange={handleLimitPriceChange}
-              handleSliderChange={handleSliderChange}
-              toggleTPSL={toggleTPSL}
-              handleTakeProfitChange={(value) => handleTakeProfitChange(value)}
-              handleStopLossChange={(value) => handleStopLossChange(value)}
-              leverage={leverage}
-              onLeverageChange={onLeverageChange}
+              {...formProps}
+              onLeverageChange={memoizedHandlers.handleLeverageChange}
             />
           </TabsContent>
 
-<TradeDetails 
-  details={tradeDetails} 
-  pair={market?.pair} 
-  tradingFee={tradingFee}
-  totalRequired={totalRequired}
-  referrerSection={referrerSection}
-  routingInfo={routingInfo}
-/>
+          <TradeDetails {...tradeDetailsProps} />
 
           {!isConnected ? (
             <div className="w-full mt-4">
@@ -495,6 +517,12 @@ const totalRequired = calculatedMargin + tradingFee;
         </Tabs>
       </CardContent>
     </Card>
+  );
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.leverage === nextProps.leverage &&
+    prevProps.assetId === nextProps.assetId &&
+    prevProps.initialReferralCode === nextProps.initialReferralCode
   );
 });
 

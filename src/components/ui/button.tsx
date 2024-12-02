@@ -43,16 +43,30 @@ export interface ButtonProps
 const Button = React.memo(
   React.forwardRef<HTMLButtonElement, ButtonProps>(
     ({ className, variant, size, asChild = false, ...props }, ref) => {
+      const buttonClassName = React.useMemo(
+        () => cn(buttonVariants({ variant, size, className })),
+        [variant, size, className]
+      );
+
       const Comp = asChild ? Slot : "button"
       return (
         <Comp
-          className={cn(buttonVariants({ variant, size, className }))}
+          className={buttonClassName}
           ref={ref}
           {...props}
         />
       )
     }
-  )
+  ),
+  (prevProps, nextProps) => {
+    return (
+      prevProps.className === nextProps.className &&
+      prevProps.variant === nextProps.variant &&
+      prevProps.size === nextProps.size &&
+      prevProps.disabled === nextProps.disabled &&
+      prevProps.onClick === nextProps.onClick
+    );
+  }
 )
 Button.displayName = "Button"
 

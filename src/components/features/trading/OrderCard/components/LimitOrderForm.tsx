@@ -19,11 +19,11 @@ interface LimitOrderFormProps {
   onLeverageChange: (value: string) => void;
 }
 
-export function LimitOrderForm({
+export const LimitOrderForm = React.memo(function LimitOrderForm({
   formState,
   calculatedMargin,
   handleAmountChange,
-  handleMarginChange,  // Add this
+  handleMarginChange,
   handleLimitPriceChange,
   handleSliderChange,
   toggleTPSL,
@@ -32,9 +32,29 @@ export function LimitOrderForm({
   leverage,
   onLeverageChange,
 }: LimitOrderFormProps) {
+  // Memoize percentage button handlers
+  const percentageHandlers = React.useMemo(() => ({
+    handle25: () => handleSliderChange([25]),
+    handle50: () => handleSliderChange([50]),
+    handle75: () => handleSliderChange([75]),
+    handle100: () => handleSliderChange([100])
+  }), [handleSliderChange]);
+
+  // Memoize leverage input handler
+  const handleLeverageInput = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Math.min(Math.max(1, Number(e.target.value)), 100);
+    onLeverageChange(value.toString());
+  }, [onLeverageChange]);
+
+  // Memoize leverage slider handler
+  const handleLeverageSlider = React.useCallback((value: number[]) => {
+    onLeverageChange(value[0].toString());
+  }, [onLeverageChange]);
+
   return (
     <div className="space-y-4">
       <div className="space-y-1">
+        {/* Size Input */}
         <div className="relative">
           <Input
             type="number"
@@ -49,6 +69,8 @@ export function LimitOrderForm({
             USD
           </div>
         </div>
+
+        {/* Limit Price Input */}
         <div className="relative">
           <Input
             type="number"
@@ -63,6 +85,8 @@ export function LimitOrderForm({
             USD
           </div>
         </div>
+
+        {/* Margin Input */}
         <div className="relative">
           <Input
             type="number"
@@ -77,11 +101,13 @@ export function LimitOrderForm({
             USD
           </div>
         </div>
+
+        {/* Percentage Buttons */}
         <div className="grid grid-cols-4 gap-2 pt-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleSliderChange([25])}
+            onClick={percentageHandlers.handle25}
             className="w-full text-xs"
           >
             25%
@@ -89,7 +115,7 @@ export function LimitOrderForm({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleSliderChange([50])}
+            onClick={percentageHandlers.handle50}
             className="w-full text-xs"
           >
             50%
@@ -97,7 +123,7 @@ export function LimitOrderForm({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleSliderChange([75])}
+            onClick={percentageHandlers.handle75}
             className="w-full text-xs"
           >
             75%
@@ -105,26 +131,23 @@ export function LimitOrderForm({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleSliderChange([100])}
+            onClick={percentageHandlers.handle100}
             className="w-full text-xs"
           >
             100%
           </Button>
         </div>
 
-
-        <div className="pt-2 space-y-4"> {/* Changed from space-y-2 */}
+        {/* Leverage Section */}
+        <div className="pt-2 space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-[13px]">Leverage:</span>
             <div className="relative w-16">
               <Input
                 type="number"
                 value={leverage || ''}
-                onChange={(e) => {
-                  const value = Math.min(Math.max(1, Number(e.target.value)), 100);
-                  onLeverageChange(value.toString());
-                }}
-                className="h-8 text-sm text-center no-spinners" // Changed text-right to text-center
+                onChange={handleLeverageInput}
+                className="h-8 text-sm text-center no-spinners"
                 suppressHydrationWarning
               />
             </div>
@@ -135,7 +158,7 @@ export function LimitOrderForm({
               min={1}
               max={100}
               step={1}
-              onValueChange={(value) => onLeverageChange(value[0].toString())}
+              onValueChange={handleLeverageSlider}
             />
             <div className="flex justify-between px-1 text-xs text-muted-foreground">
               <span>1x</span>
@@ -161,4 +184,14 @@ export function LimitOrderForm({
       </div>
     </div>
   );
-}
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.formState === nextProps.formState &&
+    prevProps.calculatedMargin === nextProps.calculatedMargin &&
+    prevProps.leverage === nextProps.leverage &&
+    prevProps.handleAmountChange === nextProps.handleAmountChange &&
+    prevProps.handleMarginChange === nextProps.handleMarginChange &&
+    prevProps.handleLimitPriceChange === nextProps.handleLimitPriceChange &&
+    prevProps.handleSliderChange === nextProps.handleSliderChange
+  );
+});
