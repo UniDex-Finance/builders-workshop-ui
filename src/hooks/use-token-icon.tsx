@@ -3,7 +3,7 @@
  * It includes utilities for displaying token icons with proper fallbacks and type safety.
  */
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 
 /**
  * Supported trading pairs and their corresponding icon file names.
@@ -119,11 +119,9 @@ interface TokenIconProps {
 
 /**
  * Component to display a token pair's icon with fallback.
- * @param props.pair - The trading pair (e.g., "ETH/USD")
- * @param props.size - Optional size in pixels (default: 24)
- * @param props.className - Optional additional CSS classes
+ * Memoized to prevent unnecessary re-renders.
  */
-export const TokenIcon: React.FC<TokenIconProps> = ({ 
+export const TokenIcon: React.FC<TokenIconProps> = memo(({ 
   pair, 
   size = 24,
   className = ''
@@ -156,7 +154,9 @@ export const TokenIcon: React.FC<TokenIconProps> = ({
       />
     </div>
   );
-};
+});
+
+TokenIcon.displayName = 'TokenIcon';
 
 interface TokenPairDisplayProps {
   pair: string;
@@ -166,11 +166,9 @@ interface TokenPairDisplayProps {
 
 /**
  * Component to display a token pair with its icon.
- * @param props.pair - The trading pair (e.g., "ETH/USD")
- * @param props.iconSize - Optional icon size in pixels (default: 24)
- * @param props.className - Optional additional CSS classes
+ * Memoized to prevent unnecessary re-renders.
  */
-export const TokenPairDisplay: React.FC<TokenPairDisplayProps> = ({ 
+export const TokenPairDisplay: React.FC<TokenPairDisplayProps> = memo(({ 
   pair,
   iconSize = 24,
   className = ''
@@ -181,7 +179,9 @@ export const TokenPairDisplay: React.FC<TokenPairDisplayProps> = ({
       <span>{pair}</span>
     </div>
   );
-};
+});
+
+TokenPairDisplay.displayName = 'TokenPairDisplay';
 
 /**
  * Legacy component maintained for backward compatibility.
