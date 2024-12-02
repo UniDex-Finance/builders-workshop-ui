@@ -16,5 +16,5 @@ const nextConfig = {
 };
 
 module.exports = MillionLint.next({
-  enabled: false,
+  enabled: true,
 })(withPWA(nextConfig));
