@@ -113,7 +113,6 @@ export function LimitOrderForm({
         </div>
 
         <div className="pt-2 space-y-4">
-          {" "}
           {/* Changed from space-y-2 */}
           <div className="flex items-center justify-between">
             <span className="text-[13px]">Leverage:</span>
@@ -122,10 +121,7 @@ export function LimitOrderForm({
                 type="number"
                 value={leverage || ""}
                 onChange={(e) => {
-                  const value = Math.min(
-                    Math.max(1, Number(e.target.value)),
-                    100
-                  );
+                  const value = Math.min(Math.max(1, Number(e.target.value)), 100);
                   onLeverageChange(value.toString());
                 }}
                 className="h-8 text-sm text-center no-spinners" // Changed text-right to text-center

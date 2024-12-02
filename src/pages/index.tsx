@@ -21,9 +21,7 @@ export default function TradingInterface() {
   const { prices } = usePrices();
   const { positions, loading: positionsLoading } = usePositions();
 
-  const selectedMarket = allMarkets.find(
-    (market) => market.pair === selectedPair
-  );
+  const selectedMarket = allMarkets.find((market) => market.pair === selectedPair);
   const assetId = selectedMarket ? selectedMarket.assetId : "";
 
   const [chartHeight, setChartHeight] = useState<number>(500);
@@ -68,10 +66,10 @@ export default function TradingInterface() {
           <div className="hidden md:block">
             <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
           </div>
-          
+
           <div className="flex flex-col flex-1">
-            <Chart 
-              selectedPair={selectedPair} 
+            <Chart
+              selectedPair={selectedPair}
               height={chartHeight}
               onHeightChange={setChartHeight}
               positions={positionsLoading ? [] : positions}

@@ -23,9 +23,7 @@ interface UseOrderFormReturn {
 
 const MIN_MARGIN = 1; // Add this constant
 
-export function useOrderForm({
-  leverage,
-}: UseOrderFormProps): UseOrderFormReturn {
+export function useOrderForm({ leverage }: UseOrderFormProps): UseOrderFormReturn {
   const { balances } = useBalances();
   const [formState, setFormState] = useState<OrderFormState>({
     // Initialize with amount that corresponds to 1 USD margin
@@ -63,6 +61,7 @@ export function useOrderForm({
   // Update handleSliderChange to handle percentages more directly
   const handleSliderChange = (value: number[]) => {
     const percentage = value[0];
+
     const newAmount = ((maxLeveragedAmount * percentage) / 100).toFixed(2);
     const calculatedMargin = parseFloat(newAmount) / parseFloat(leverage);
 
@@ -163,8 +162,7 @@ export function useOrderForm({
     const entryPrice = parseFloat(formState?.entryPrice?.toString() ?? "0");
     const targetPrice = parseFloat(price);
 
-    if (!entryPrice || !targetPrice || isNaN(entryPrice) || isNaN(targetPrice))
-      return "";
+    if (!entryPrice || !targetPrice || isNaN(entryPrice) || isNaN(targetPrice)) return "";
 
     const percentage = ((targetPrice - entryPrice) / entryPrice) * 100;
     return isProfit ? percentage.toFixed(2) : (-percentage).toFixed(2);

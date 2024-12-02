@@ -1,13 +1,13 @@
 // hooks/use-gtrade-order-actions.ts
-import { useState } from 'react';
-import { parseUnits } from 'viem';
-import { useGTradeSdk } from './use-gtrade-sdk';
-import { useSmartAccount } from './use-smart-account';
-import { useToast } from './use-toast';
-import { encodeFunctionData } from 'viem';
-import { usePublicClient } from 'wagmi';
-import { GTRADE_PAIR_MAPPING } from './use-gtrade-pairs';
-import { TRADING_PAIRS } from './use-market-data';
+import { useState } from "react";
+import { parseUnits } from "viem";
+import { useGTradeSdk } from "./use-gtrade-sdk";
+import { useSmartAccount } from "./use-smart-account";
+import { useToast } from "./use-toast";
+import { encodeFunctionData } from "viem";
+import { usePublicClient } from "wagmi";
+import { GTRADE_PAIR_MAPPING } from "./use-gtrade-pairs";
+import { TRADING_PAIRS } from "./use-market-data";
 
 const GTRADE_CONTRACT = "0xFF162c694eAA571f685030649814282eA457f169";
 const USDC_TOKEN = "0xaf88d065e77c8cc2239327c5edb3a432268e5831";
@@ -51,7 +51,7 @@ export function useGTradeOrderActions() {
     size: number,
     orderType: "market" | "limit",
     takeProfit?: string,
-    stopLoss?: string,
+    stopLoss?: string
   ) => {
     if (!kernelClient || !smartAccount?.address || !publicClient) {
       toast({
@@ -66,7 +66,7 @@ export function useGTradeOrderActions() {
       // Convert UnidexV4 pair to gTrade pair
       const unidexPairName = TRADING_PAIRS[unidexPair.toString()];
       const gTradePairIndex = GTRADE_PAIR_MAPPING[unidexPairName];
-      
+
       if (gTradePairIndex === undefined) {
         throw new Error(`Pair ${unidexPairName} not supported on gTrade`);
       }
@@ -81,7 +81,7 @@ export function useGTradeOrderActions() {
       const currentAllowance = await publicClient.readContract({
         address: USDC_TOKEN,
         abi: ERC20_ABI,
-        functionName: 'allowance',
+        functionName: "allowance",
         args: [smartAccount.address, GTRADE_CONTRACT],
       });
 
@@ -96,7 +96,7 @@ export function useGTradeOrderActions() {
         sl: stopLoss ? parseFloat(stopLoss) : 0,
         collateralIndex: 3, // USDC
         tradeType: orderType === "market" ? 0 : 1,
-        maxSlippage: 1 + (slippagePercent / 100),
+        maxSlippage: 1 + slippagePercent / 100,
       };
       // Build trade transaction
       const tx = await tradingSdk?.build.openTrade(args);
@@ -105,7 +105,7 @@ export function useGTradeOrderActions() {
       if (currentAllowance < marginInWei) {
         const approveCalldata = encodeFunctionData({
           abi: ERC20_ABI,
-          functionName: 'approve',
+          functionName: "approve",
           args: [GTRADE_CONTRACT, marginInWei],
         });
 
@@ -125,7 +125,7 @@ export function useGTradeOrderActions() {
         // Just send the trade transaction
         if (tx) {
           await kernelClient.sendTransaction({
-            to: tx.to as `0x${string}`, 
+            to: tx.to as `0x${string}`,
             data: tx.data as `0x${string}`,
           });
         }
@@ -133,14 +133,18 @@ export function useGTradeOrderActions() {
 
       toast({
         title: "Success",
-        description: `${orderType.charAt(0).toUpperCase() + orderType.slice(1)} order placed successfully on gTrade`,
+        description: `${
+          orderType.charAt(0).toUpperCase() + orderType.slice(1)
+        } order placed successfully on gTrade`,
       });
-
     } catch (err) {
       console.error(`Error placing ${orderType} order on gTrade:`, err);
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : `Failed to place ${orderType} order`,
+        description:
+          err instanceof Error
+            ? err.message
+            : `Failed to place ${orderType} order`,
         variant: "destructive",
       });
     } finally {

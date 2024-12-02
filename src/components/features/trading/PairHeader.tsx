@@ -2,26 +2,11 @@ import React, { useState, useMemo } from "react";
 import { useMarketData } from "../../../hooks/use-market-data";
 import { usePrices } from "../../../lib/websocket-price-context";
 import { ChevronDown } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../../ui/tooltip";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../ui/tooltip";
 import { Search } from "lucide-react";
 import { cn } from "../../../lib/utils";
-import {
-  TokenIcon,
-  TokenPairDisplay,
-  PrefetchTokenImages,
-} from "../../../hooks/use-token-icon";
+import { TokenIcon, TokenPairDisplay, PrefetchTokenImages } from "../../../hooks/use-token-icon";
 import { useGTradeMarketData } from "../../../hooks/use-gtrade-market-data";
 import { usePairPrecision } from "../../../hooks/use-pair-precision";
 import { use24hChange } from "../../../hooks/use-24h-change";
@@ -52,10 +37,7 @@ const formatCompactNumber = (num: number) => {
   return formatter.format(num);
 };
 
-export const PairHeader: React.FC<PairHeaderProps> = ({
-  selectedPair,
-  onPairChange,
-}) => {
+export const PairHeader: React.FC<PairHeaderProps> = ({ selectedPair, onPairChange }) => {
   const [rateTimeframe, setRateTimeframe] = useState<TimeframeRate>("1h");
   const [searchQuery, setSearchQuery] = React.useState("");
   const { formatPairPrice } = usePairPrecision();
@@ -103,9 +85,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
       if (totalWeight === 0) return 0;
 
       // Calculate weighted average
-      return (
-        (formattedRate1 * weight1 + formattedRate2 * weight2) / totalWeight
-      );
+      return (formattedRate1 * weight1 + formattedRate2 * weight2) / totalWeight;
     };
 
     const avgBorrowRateLong = calculateWeightedBorrowRate(
@@ -118,32 +98,25 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
     const avgBorrowRateShort = calculateWeightedBorrowRate(
       unidexMarketData.borrowRateForShort,
       gtradeMarket.borrowingFees.borrowRateForShort,
-      unidexMarketData.maxShortOpenInterest -
-        unidexMarketData.shortOpenInterest,
+      unidexMarketData.maxShortOpenInterest - unidexMarketData.shortOpenInterest,
       gtradeMarket.openInterest.max - gtradeMarket.openInterest.short
     );
 
     return {
-      longOpenInterest:
-        unidexMarketData.longOpenInterest + gtradeMarket.openInterest.long,
-      shortOpenInterest:
-        unidexMarketData.shortOpenInterest + gtradeMarket.openInterest.short,
-      maxLongOpenInterest:
-        unidexMarketData.maxLongOpenInterest + gtradeMarket.openInterest.max,
-      maxShortOpenInterest:
-        unidexMarketData.maxShortOpenInterest + gtradeMarket.openInterest.max,
+      longOpenInterest: unidexMarketData.longOpenInterest + gtradeMarket.openInterest.long,
+      shortOpenInterest: unidexMarketData.shortOpenInterest + gtradeMarket.openInterest.short,
+      maxLongOpenInterest: unidexMarketData.maxLongOpenInterest + gtradeMarket.openInterest.max,
+      maxShortOpenInterest: unidexMarketData.maxShortOpenInterest + gtradeMarket.openInterest.max,
       longShortRatio: {
         longPercentage:
-          ((unidexMarketData.longOpenInterest +
-            gtradeMarket.openInterest.long) /
+          ((unidexMarketData.longOpenInterest + gtradeMarket.openInterest.long) /
             (unidexMarketData.longOpenInterest +
               unidexMarketData.shortOpenInterest +
               gtradeMarket.openInterest.long +
               gtradeMarket.openInterest.short)) *
           100,
         shortPercentage:
-          ((unidexMarketData.shortOpenInterest +
-            gtradeMarket.openInterest.short) /
+          ((unidexMarketData.shortOpenInterest + gtradeMarket.openInterest.short) /
             (unidexMarketData.longOpenInterest +
               unidexMarketData.shortOpenInterest +
               gtradeMarket.openInterest.long +
@@ -191,18 +164,13 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
   if (unidexError || gtradeError) {
     return (
       <div className="flex items-center justify-center p-4 text-red-500">
-        Error loading market data:{" "}
-        {unidexError?.message || gtradeError?.message}
+        Error loading market data: {unidexError?.message || gtradeError?.message}
       </div>
     );
   }
 
   if (unidexLoading || gtradeLoading) {
-    return (
-      <div className="flex items-center justify-center p-4">
-        Loading market data...
-      </div>
-    );
+    return <div className="flex items-center justify-center p-4">Loading market data...</div>;
   }
 
   if (!combinedData) {
@@ -261,9 +229,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                 </SelectTrigger>
                 <SelectContent className="w-[900px] bg-[hsl(var(--component-background))] overflow-hidden p-0">
                   <div className="flex flex-col h-[500px]">
-                    <PrefetchTokenImages
-                      pairs={allMarkets.map((market) => market.pair)}
-                    />
+                    <PrefetchTokenImages pairs={allMarkets.map((market) => market.pair)} />
                     <div className="sticky top-0 z-20 bg-[hsl(var(--component-background))] shadow-sm">
                       <div className="px-4 py-2 border-b">
                         <div className="relative">
@@ -296,9 +262,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                             <div className="w-[180px]">
                               <TokenPairDisplay pair={market.pair} />
                             </div>
-                            <div className="w-[140px]">
-                              {formatPrice(market.pair)}
-                            </div>
+                            <div className="w-[140px]">{formatPrice(market.pair)}</div>
                             <div className="w-[140px]">
                               ${formatNumber(market.availableLiquidity.long)}
                             </div>
@@ -342,11 +306,8 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                   {!changeLoading && !changeError ? (
                     <>
                       {absoluteChange >= 0 ? "+" : ""}
-                      {formatPairPrice(
-                        selectedPair,
-                        Math.abs(absoluteChange)
-                      )}{" "}
-                      / {percentageChange >= 0 ? "+" : ""}
+                      {formatPairPrice(selectedPair, Math.abs(absoluteChange))} /{" "}
+                      {percentageChange >= 0 ? "+" : ""}
                       {percentageChange.toFixed(2)}%
                     </>
                   ) : (
@@ -362,23 +323,19 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="cursor-help">
-                      <div className="text-xs text-muted-foreground">
-                        Long OI
-                      </div>
+                      <div className="text-xs text-muted-foreground">Long OI</div>
                       <div className="text-sm">
-                        ${formatCompactNumber(combinedData.longOpenInterest)} /
-                        ${formatCompactNumber(combinedData.maxLongOpenInterest)}
+                        ${formatCompactNumber(combinedData.longOpenInterest)} / $
+                        {formatCompactNumber(combinedData.maxLongOpenInterest)}
                       </div>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent className="bg-[#2b2b36] border-none">
                     <p className="text-sm text-white">
-                      There are currently $
-                      {formatCompactNumber(combinedData.longOpenInterest)} worth
-                      of {selectedPair} positions open with only $
+                      There are currently ${formatCompactNumber(combinedData.longOpenInterest)}{" "}
+                      worth of {selectedPair} positions open with only $
                       {formatCompactNumber(
-                        combinedData.maxLongOpenInterest -
-                          combinedData.longOpenInterest
+                        combinedData.maxLongOpenInterest - combinedData.longOpenInterest
                       )}{" "}
                       left before the open interest cap is reached
                     </p>
@@ -389,24 +346,19 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="cursor-help">
-                      <div className="text-xs text-muted-foreground">
-                        Short OI
-                      </div>
+                      <div className="text-xs text-muted-foreground">Short OI</div>
                       <div className="text-sm">
-                        ${formatCompactNumber(combinedData.shortOpenInterest)} /
-                        $
+                        ${formatCompactNumber(combinedData.shortOpenInterest)} / $
                         {formatCompactNumber(combinedData.maxShortOpenInterest)}
                       </div>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent className="bg-[#2b2b36] border-none">
                     <p className="text-sm text-white">
-                      There are currently $
-                      {formatCompactNumber(combinedData.shortOpenInterest)}{" "}
+                      There are currently ${formatCompactNumber(combinedData.shortOpenInterest)}{" "}
                       worth of {selectedPair} positions open with only $
                       {formatCompactNumber(
-                        combinedData.maxShortOpenInterest -
-                          combinedData.shortOpenInterest
+                        combinedData.maxShortOpenInterest - combinedData.shortOpenInterest
                       )}{" "}
                       left before the open interest cap is reached
                     </p>
@@ -422,9 +374,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                   <TooltipTrigger asChild>
                     <div className="cursor-help">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">
-                          Funding Rate
-                        </span>
+                        <span className="text-xs text-muted-foreground">Funding Rate</span>
                         <button
                           onClick={() => setRateTimeframe(nextTimeframe())}
                           className="px-2 py-0.5 text-[10px] rounded bg-secondary hover:bg-secondary/80"
@@ -440,8 +390,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                             : "text-red-500"
                         )}
                       >
-                        {getAnnualizedRate(combinedData.fundingRate).toFixed(4)}
-                        %
+                        {getAnnualizedRate(combinedData.fundingRate).toFixed(4)}%
                       </div>
                     </div>
                   </TooltipTrigger>
@@ -472,25 +421,15 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
             <div className="flex items-center px-4 min-w-[220px]">
               <div className="flex gap-4">
                 <div>
-                  <div className="text-xs text-muted-foreground">
-                    Borrowing (L)
-                  </div>
+                  <div className="text-xs text-muted-foreground">Borrowing (L)</div>
                   <div className="text-sm text-red-500">
-                    {getAnnualizedRate(combinedData.borrowRateForLong).toFixed(
-                      4
-                    )}
-                    %
+                    {getAnnualizedRate(combinedData.borrowRateForLong).toFixed(4)}%
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground">
-                    Borrowing (S)
-                  </div>
+                  <div className="text-xs text-muted-foreground">Borrowing (S)</div>
                   <div className="text-sm text-red-500">
-                    {getAnnualizedRate(combinedData.borrowRateForShort).toFixed(
-                      4
-                    )}
-                    %
+                    {getAnnualizedRate(combinedData.borrowRateForShort).toFixed(4)}%
                   </div>
                 </div>
               </div>
