@@ -37,13 +37,13 @@ export function MarketOrderForm({
           <Input
             type="number"
             placeholder="0.00"
-            value={formState.amount || ''}
+            value={formState.amount || ""}
             onChange={handleAmountChange}
             className="pr-10 text-right no-spinners"
             label="Size"
             suppressHydrationWarning
           />
-          <div className="absolute text-sm -translate-y-1/2 right-3 top-1/2 text-muted-foreground">
+          <div className="absolute text-sm -translate-y-1/2 right-3 top-1/2 text-muted-foreground pl-2">
             USD
           </div>
         </div>
@@ -51,7 +51,7 @@ export function MarketOrderForm({
           <Input
             type="number"
             placeholder="0.00"
-            value={calculatedMargin ? calculatedMargin.toFixed(2) : ''}
+            value={calculatedMargin ? calculatedMargin.toFixed(2) : ""}
             onChange={handleMarginChange}
             className="pr-10 text-right no-spinners"
             label="Margin"
@@ -98,15 +98,20 @@ export function MarketOrderForm({
           </Button>
         </div>
 
-        <div className="pt-2 space-y-3"> {/* Changed from space-y-2 */}
+        <div className="pt-2 space-y-3">
+          {" "}
+          {/* Changed from space-y-2 */}
           <div className="flex items-center justify-between">
             <span className="text-[13px]">Leverage:</span>
             <div className="relative w-16">
               <Input
                 type="number"
-                value={leverage || ''}
+                value={leverage || ""}
                 onChange={(e) => {
-                  const value = Math.min(Math.max(1, Number(e.target.value)), 100);
+                  const value = Math.min(
+                    Math.max(1, Number(e.target.value)),
+                    100
+                  );
                   onLeverageChange(value.toString());
                 }}
                 className="h-8 text-sm text-center no-spinners" // Changed text-right to text-center

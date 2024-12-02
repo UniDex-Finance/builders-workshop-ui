@@ -18,7 +18,8 @@ export default function DepositBox() {
   const [isOpen, setIsOpen] = useState(false);
   const [smartAccountAmount, setSmartAccountAmount] = useState("");
   const [tradingAmount, setTradingAmount] = useState("");
-  const [selectedNetwork, setSelectedNetwork] = useState<NetworkType>("arbitrum");
+  const [selectedNetwork, setSelectedNetwork] =
+    useState<NetworkType>("arbitrum");
 
   const depositBoxRef = useRef<HTMLDivElement>(null);
 
@@ -190,13 +191,15 @@ export default function DepositBox() {
       <Button
         variant="outline"
         onClick={() => setIsOpen(!isOpen)}
-        className="bg-[hsl(var(--component-background))]"
+        // className="bg-[hsl(var(--component-background))]"
+        className="hidden sm:inline-flex h-9 px-3 bg-[#1f1f29] hover:bg-[#1f1f29]/90 [&>*]:text-white [&>*]:font-normal [&>*]:!important"
       >
         Deposit / Withdraw
       </Button>
 
       {isOpen && (
-        <Card className={`
+        <Card
+          className={`
           fixed 
           z-50 
           p-6 
@@ -222,7 +225,8 @@ export default function DepositBox() {
           md:w-[480px]
           md:rounded-lg
           md:max-h-none
-        `}>
+        `}
+        >
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Wallet Management</h3>
             <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)}>
@@ -276,14 +280,14 @@ export default function DepositBox() {
               />
               <Tabs defaultValue="smart-account" className="w-full">
                 <TabsList className="w-full bg-[#272734]">
-                  <TabsTrigger 
-                    value="smart-account" 
+                  <TabsTrigger
+                    value="smart-account"
                     className="flex-1 data-[state=active]:bg-[#1f1f29]"
                   >
                     1CT Wallet
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="trading" 
+                  <TabsTrigger
+                    value="trading"
                     className="flex-1 data-[state=active]:bg-[#1f1f29]"
                   >
                     Margin Balance

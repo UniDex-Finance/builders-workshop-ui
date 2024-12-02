@@ -32,7 +32,9 @@ export function PositionsTable({ address }: PositionsTableProps) {
   const { closePosition, closingPositions } = usePositionActions();
   const [activeTab, setActiveTab] = useState<ActiveTab>("positions");
   const [hoveredPosition, setHoveredPosition] = useState<string | null>(null);
-  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
+  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(
+    null
+  );
   const cellRefs = useRef<{ [key: string]: HTMLTableCellElement | null }>({});
 
   useEffect(() => {
@@ -71,12 +73,14 @@ export function PositionsTable({ address }: PositionsTableProps) {
 
   return (
     <div className="w-full mb-4 border rounded-lg bg-[hsl(var(--component-background))]">
-      <div className="flex items-center p-2 border-b">
+      <div className="flex items-center p-2 border-b space-x-4">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setActiveTab("positions")}
-          className={activeTab === "positions" ? "text-white" : "text-muted-foreground"}
+          className={
+            activeTab === "positions" ? "text-white" : "text-muted-foreground"
+          }
         >
           Positions
         </Button>
@@ -84,7 +88,9 @@ export function PositionsTable({ address }: PositionsTableProps) {
           variant="ghost"
           size="sm"
           onClick={() => setActiveTab("orders")}
-          className={activeTab === "orders" ? "text-white" : "text-muted-foreground"}
+          className={
+            activeTab === "orders" ? "text-white" : "text-muted-foreground"
+          }
         >
           Orders
         </Button>
@@ -92,7 +98,9 @@ export function PositionsTable({ address }: PositionsTableProps) {
           variant="ghost"
           size="sm"
           onClick={() => setActiveTab("trades")}
-          className={activeTab === "trades" ? "text-white" : "text-muted-foreground"}
+          className={
+            activeTab === "trades" ? "text-white" : "text-muted-foreground"
+          }
         >
           History
         </Button>
@@ -121,9 +129,7 @@ export function PositionsTable({ address }: PositionsTableProps) {
                 error={ordersError}
               />
             )}
-            {activeTab === "trades" && (
-              <TradesContent />
-            )}
+            {activeTab === "trades" && <TradesContent />}
           </Table>
         </div>
       </div>

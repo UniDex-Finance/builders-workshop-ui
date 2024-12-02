@@ -1,25 +1,33 @@
 import React, { useEffect, useState } from "react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ExternalLink } from "lucide-react";
-import { useChainId } from 'wagmi';
+import { useChainId } from "wagmi";
 
 export function Footer() {
   const chainId = useChainId();
-  const [buildId, setBuildId] = useState<string>('');
+  const [buildId, setBuildId] = useState<string>("");
 
   useEffect(() => {
-    const metaBuildId = (document.querySelector('meta[name="build-id"]') as HTMLMetaElement)?.content;
-    setBuildId(metaBuildId || 'development');
+    const metaBuildId = (
+      document.querySelector('meta[name="build-id"]') as HTMLMetaElement
+    )?.content;
+    setBuildId(metaBuildId || "development");
   }, []);
 
-  const chainName = {
-    42161: 'Arbitrum',
-    10: 'Optimism',
-    11155111: 'Sepolia',
-  }[chainId] ?? 'Not Connected';
+  const chainName =
+    {
+      42161: "Arbitrum",
+      10: "Optimism",
+      11155111: "Sepolia",
+    }[chainId] ?? "Not Connected";
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-between h-8 px-4 border-t bg-background border-border">
+    <footer className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-between h-10 px-4 border-t bg-background border-border">
       <div className="flex items-center space-x-3">
         <TooltipProvider>
           <Tooltip>

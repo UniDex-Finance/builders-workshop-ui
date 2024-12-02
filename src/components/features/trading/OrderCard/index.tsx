@@ -16,13 +16,12 @@ import { useTradeCalculations } from "./hooks/useTradeCalculations";
 import { OrderCardProps, RoutingInfo } from "./types";
 import { useBalances } from "../../../../hooks/use-balances";
 import { useReferralContract } from "../../../../hooks/use-referral-contract";
-import { useRouting, RouteId } from '../../../../hooks/use-routing';
+import { useRouting, RouteId } from "../../../../hooks/use-routing";
 import { toast } from "@/hooks/use-toast";
 
-
 const DEFAULT_REFERRER = "0x0000000000000000000000000000000000000000";
-const STORAGE_KEY_CODE = 'unidex-referral-code';
-const STORAGE_KEY_ADDRESS = 'unidex-referral-address';
+const STORAGE_KEY_CODE = "unidex-referral-code";
+const STORAGE_KEY_ADDRESS = "unidex-referral-address";
 
 export function OrderCard({
   leverage,
@@ -31,7 +30,8 @@ export function OrderCard({
   initialReferralCode,
 }: OrderCardProps) {
   const { isConnected } = useAccount();
-  const { smartAccount, setupSessionKey, error, isNetworkSwitching } = useSmartAccount();
+  const { smartAccount, setupSessionKey, error, isNetworkSwitching } =
+    useSmartAccount();
   const [activeTab, setActiveTab] = useState("market");
   const { allMarkets } = useMarketData();
   const { prices } = usePrices();
@@ -64,28 +64,35 @@ export function OrderCard({
     leverage
   );
 
-  const isValidRoutes = (routes: any): routes is Record<RouteId, { tradingFee: number; available: boolean; reason?: string; }> => {
+  const isValidRoutes = (
+    routes: any
+  ): routes is Record<
+    RouteId,
+    { tradingFee: number; available: boolean; reason?: string }
+  > => {
     return routes !== undefined && routes !== null;
   };
   const routingInfo: RoutingInfo = {
-    selectedRoute: bestRoute || 'unidexv4',
-    routes: isValidRoutes(routes) ? routes : {
-      unidexv4: {
-        tradingFee: 0,
-        available: true,
-        minMargin: 1
-      },
-      gtrade: {
-        tradingFee: 0,
-        available: false,
-        minMargin: 6,
-        reason: "Route not available"
-      }
-    },
+    selectedRoute: bestRoute || "unidexv4",
+    routes: isValidRoutes(routes)
+      ? routes
+      : {
+          unidexv4: {
+            tradingFee: 0,
+            available: true,
+            minMargin: 1,
+          },
+          gtrade: {
+            tradingFee: 0,
+            available: false,
+            minMargin: 6,
+            reason: "Route not available",
+          },
+        },
     routeNames: {
-      unidexv4: 'UniDex',
-      gtrade: 'gTrade'
-    }
+      unidexv4: "UniDex",
+      gtrade: "gTrade",
+    },
   };
 
   useEffect(() => {
@@ -106,7 +113,7 @@ export function OrderCard({
       // Fall back to stored code if no valid URL parameter
       const storedCode = localStorage.getItem(STORAGE_KEY_CODE);
       const storedAddress = localStorage.getItem(STORAGE_KEY_ADDRESS);
-      
+
       if (storedCode) {
         setReferrerCode(storedCode);
         setTempReferrerCode(storedCode);
@@ -123,18 +130,20 @@ export function OrderCard({
     ? parseFloat(formState.amount) / parseFloat(leverage)
     : 0;
 
-// Update the trading fee calculation
-const calculatedSize = formState.amount ? parseFloat(formState.amount) : 0;
-const tradingFee = calculatedSize * (isValidRoutes(routes) && bestRoute ? routes[bestRoute].tradingFee : 0);
-const totalRequired = calculatedMargin + tradingFee;
+  // Update the trading fee calculation
+  const calculatedSize = formState.amount ? parseFloat(formState.amount) : 0;
+  const tradingFee =
+    calculatedSize *
+    (isValidRoutes(routes) && bestRoute ? routes[bestRoute].tradingFee : 0);
+  const totalRequired = calculatedMargin + tradingFee;
 
   const marginWalletBalance = parseFloat(balances?.formattedMusdBalance || "0");
   const onectWalletBalance = parseFloat(balances?.formattedUsdcBalance || "0");
   const combinedBalance = marginWalletBalance + onectWalletBalance;
   const hasInsufficientBalance = totalRequired > combinedBalance;
-  const needsDeposit = totalRequired > marginWalletBalance && totalRequired <= combinedBalance;
+  const needsDeposit =
+    totalRequired > marginWalletBalance && totalRequired <= combinedBalance;
 
-  
   const tradeDetails = useTradeCalculations({
     amount: formState.amount,
     leverage,
@@ -211,14 +220,14 @@ const totalRequired = calculatedMargin + tradingFee;
   };
 
   const handleReferrerKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.currentTarget.blur(); // Trigger blur event to validate
     }
   };
 
   useEffect(() => {
     if (referrerCode && resolvedReferrer === DEFAULT_REFERRER) {
-      getReferralAddress(referrerCode).then(address => {
+      getReferralAddress(referrerCode).then((address) => {
         if (address !== DEFAULT_REFERRER) {
           setResolvedReferrer(address);
           localStorage.setItem(STORAGE_KEY_ADDRESS, address);
@@ -242,10 +251,10 @@ const totalRequired = calculatedMargin + tradingFee;
 
   const handlePlaceOrder = async () => {
     if (!isConnected || !smartAccount?.address) return;
-  
+
     try {
       setPlacingOrders(true);
-  
+
       const orderParams = {
         pair: parseInt(assetId, 10),
         isLong: formState.isLong,
@@ -256,17 +265,17 @@ const totalRequired = calculatedMargin + tradingFee;
         orderType: activeTab as "market" | "limit",
         takeProfit: formState.tpslEnabled ? formState.takeProfit : undefined,
         stopLoss: formState.tpslEnabled ? formState.stopLoss : undefined,
-        referrer: resolvedReferrer
+        referrer: resolvedReferrer,
       };
-  
+
       // The routing logic will now handle the order appropriately based on the selected route
       await executeOrder(orderParams);
-  
     } catch (error) {
-      console.error('Error placing order:', error);
+      console.error("Error placing order:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to place order",
+        description:
+          error instanceof Error ? error.message : "Failed to place order",
         variant: "destructive",
       });
     } finally {
@@ -283,7 +292,7 @@ const totalRequired = calculatedMargin + tradingFee;
       return "Enter Limit Price";
     if (placingOrders) return "Placing Order...";
     if (hasInsufficientBalance) return "Insufficient Balance";
-    
+
     // Add minimum margin check based on selected route
     const selectedRoute = routingInfo.routes[routingInfo.selectedRoute];
     if (calculatedMargin < selectedRoute.minMargin) {
@@ -294,7 +303,10 @@ const totalRequired = calculatedMargin + tradingFee;
       ? market?.availableLiquidity?.long
       : market?.availableLiquidity?.short;
 
-    if (availableLiquidity !== undefined && calculatedSize > availableLiquidity) {
+    if (
+      availableLiquidity !== undefined &&
+      calculatedSize > availableLiquidity
+    ) {
       return "Not Enough Liquidity";
     }
 
@@ -352,7 +364,9 @@ const totalRequired = calculatedMargin + tradingFee;
             <Button
               variant={formState.isLong ? "default" : "outline"}
               className={`w-full ${
-                formState.isLong ? "bg-green-600 hover:bg-green-700" : ""
+                formState.isLong
+                  ? "bg-green-600 hover:bg-green-700 text-white"
+                  : ""
               }`}
               onClick={() => formState.isLong || toggleDirection()}
             >
@@ -361,7 +375,9 @@ const totalRequired = calculatedMargin + tradingFee;
             <Button
               variant={!formState.isLong ? "default" : "outline"}
               className={`w-full ${
-                !formState.isLong ? "bg-red-600 hover:bg-red-700" : ""
+                !formState.isLong
+                  ? "bg-red-600 hover:bg-red-700 text-white"
+                  : ""
               }`}
               onClick={() => !formState.isLong || toggleDirection()}
             >
@@ -397,7 +413,7 @@ const totalRequired = calculatedMargin + tradingFee;
               formState={formState}
               calculatedMargin={calculatedMargin}
               handleAmountChange={handleAmountChange}
-              handleMarginChange={handleMarginChange}  // Add this
+              handleMarginChange={handleMarginChange} // Add this
               handleSliderChange={handleSliderChange}
               toggleTPSL={toggleTPSL}
               handleTakeProfitChange={(value) => handleTakeProfitChange(value)}
@@ -412,7 +428,7 @@ const totalRequired = calculatedMargin + tradingFee;
               formState={formState}
               calculatedMargin={calculatedMargin}
               handleAmountChange={handleAmountChange}
-              handleMarginChange={handleMarginChange}  // Add this
+              handleMarginChange={handleMarginChange} // Add this
               handleLimitPriceChange={handleLimitPriceChange}
               handleSliderChange={handleSliderChange}
               toggleTPSL={toggleTPSL}
@@ -423,14 +439,14 @@ const totalRequired = calculatedMargin + tradingFee;
             />
           </TabsContent>
 
-<TradeDetails 
-  details={tradeDetails} 
-  pair={market?.pair} 
-  tradingFee={tradingFee}
-  totalRequired={totalRequired}
-  referrerSection={referrerSection}
-  routingInfo={routingInfo}
-/>
+          <TradeDetails
+            details={tradeDetails}
+            pair={market?.pair}
+            tradingFee={tradingFee}
+            totalRequired={totalRequired}
+            referrerSection={referrerSection}
+            routingInfo={routingInfo}
+          />
 
           {!isConnected ? (
             <div className="w-full mt-4">
@@ -453,21 +469,21 @@ const totalRequired = calculatedMargin + tradingFee;
               disabled={
                 // Only check these conditions if we have a smart account
                 smartAccount?.address
-                  ? (placingOrders ||
-                     isNetworkSwitching ||
-                     (activeTab === "market" && !tradeDetails.entryPrice) ||
-                     (activeTab === "limit" && !formState.limitPrice) ||
-                     hasInsufficientBalance ||
-                     !isValid(formState.amount) ||
-                     (() => {
-                       const availableLiquidity = formState.isLong
-                         ? market?.availableLiquidity?.long
-                         : market?.availableLiquidity?.short;
-                       return (
-                         availableLiquidity !== undefined &&
-                         calculatedSize > availableLiquidity
-                       );
-                     })())
+                  ? placingOrders ||
+                    isNetworkSwitching ||
+                    (activeTab === "market" && !tradeDetails.entryPrice) ||
+                    (activeTab === "limit" && !formState.limitPrice) ||
+                    hasInsufficientBalance ||
+                    !isValid(formState.amount) ||
+                    (() => {
+                      const availableLiquidity = formState.isLong
+                        ? market?.availableLiquidity?.long
+                        : market?.availableLiquidity?.short;
+                      return (
+                        availableLiquidity !== undefined &&
+                        calculatedSize > availableLiquidity
+                      );
+                    })()
                   : false // Not disabled when showing "Establish Connection"
               }
               onClick={handleButtonClick}
