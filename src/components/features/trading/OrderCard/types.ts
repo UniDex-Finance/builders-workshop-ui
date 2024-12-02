@@ -21,7 +21,6 @@ export interface Market {
   };
 }
 
-
 // Basic order params
 export interface OrderParams {
   pair: number;
@@ -30,7 +29,7 @@ export interface OrderParams {
   slippagePercent: number;
   margin: number;
   size: number;
-  orderType: "market" | "limit";
+  orderType: 'market' | 'limit';
   takeProfit?: string;
   stopLoss?: string;
   referrer?: string;
@@ -50,11 +49,14 @@ export interface RouteInfo {
 
 export interface RoutingResult {
   bestRoute: RouteId;
-  routes: Record<RouteId, {
-    tradingFee: number;
-    available: boolean;
-    reason?: string;
-  }>;
+  routes: Record<
+    RouteId,
+    {
+      tradingFee: number;
+      available: boolean;
+      reason?: string;
+    }
+  >;
 }
 
 // Component Props and State types
@@ -101,11 +103,14 @@ export interface TradeDetailsProps {
 
 export interface RoutingInfo {
   selectedRoute: RouteId;
-  routes: Record<RouteId, {
-    minMargin: number;
-    tradingFee: number;
-    available: boolean;
-    reason?: string;
-  }>;
+  routes: Record<
+    RouteId,
+    {
+      minMargin: number;
+      tradingFee: number;
+      available: boolean;
+      reason?: string;
+    }
+  >;
   routeNames: Record<RouteId, string>;
 }

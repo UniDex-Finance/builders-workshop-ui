@@ -1,47 +1,41 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useAccount } from "wagmi";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { Button } from "../../../ui/button";
-import { Card, CardContent } from "../../../ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../ui/tabs";
-import { useSmartAccount } from "../../../../hooks/use-smart-account";
-import { useMarketData } from "../../../../hooks/use-market-data";
-import { usePrices } from "../../../../lib/websocket-price-context";
-import { MarketOrderForm } from "./components/MarketOrderForm";
-import { LimitOrderForm } from "./components/LimitOrderForm";
-import { TradeDetails } from "./components/TradeDetails";
-import { WalletBox } from "../WalletEquity";
-import { useOrderForm } from "./hooks/useOrderForm";
-import { useTradeCalculations } from "./hooks/useTradeCalculations";
-import { OrderCardProps, RoutingInfo } from "./types";
-import { useBalances } from "../../../../hooks/use-balances";
-import { useReferralContract } from "../../../../hooks/use-referral-contract";
-import { useRouting, RouteId } from "../../../../hooks/use-routing";
-import { toast } from "@/hooks/use-toast";
+import React, { useState, useEffect, useRef } from 'react';
+import { useAccount } from 'wagmi';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { Button } from '../../../ui/button';
+import { Card, CardContent } from '../../../ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../ui/tabs';
+import { useSmartAccount } from '../../../../hooks/use-smart-account';
+import { useMarketData } from '../../../../hooks/use-market-data';
+import { usePrices } from '../../../../lib/websocket-price-context';
+import { MarketOrderForm } from './components/MarketOrderForm';
+import { LimitOrderForm } from './components/LimitOrderForm';
+import { TradeDetails } from './components/TradeDetails';
+import { WalletBox } from '../WalletEquity';
+import { useOrderForm } from './hooks/useOrderForm';
+import { useTradeCalculations } from './hooks/useTradeCalculations';
+import { OrderCardProps, RoutingInfo } from './types';
+import { useBalances } from '../../../../hooks/use-balances';
+import { useReferralContract } from '../../../../hooks/use-referral-contract';
+import { useRouting, RouteId } from '../../../../hooks/use-routing';
+import { toast } from '@/hooks/use-toast';
 
-const DEFAULT_REFERRER = "0x0000000000000000000000000000000000000000";
-const STORAGE_KEY_CODE = "unidex-referral-code";
-const STORAGE_KEY_ADDRESS = "unidex-referral-address";
+const DEFAULT_REFERRER = '0x0000000000000000000000000000000000000000';
+const STORAGE_KEY_CODE = 'unidex-referral-code';
+const STORAGE_KEY_ADDRESS = 'unidex-referral-address';
 
-export function OrderCard({
-  leverage,
-  onLeverageChange,
-  assetId,
-  initialReferralCode,
-}: OrderCardProps) {
+export function OrderCard({ leverage, onLeverageChange, assetId, initialReferralCode }: OrderCardProps) {
   const { isConnected } = useAccount();
-  const { smartAccount, setupSessionKey, error, isNetworkSwitching } =
-    useSmartAccount();
-  const [activeTab, setActiveTab] = useState("market");
+  const { smartAccount, setupSessionKey, error, isNetworkSwitching } = useSmartAccount();
+  const [activeTab, setActiveTab] = useState('market');
   const { allMarkets } = useMarketData();
   const { prices } = usePrices();
-  const { balances } = useBalances("arbitrum");
-  const [referrerCode, setReferrerCode] = useState("");
+  const { balances } = useBalances('arbitrum');
+  const [referrerCode, setReferrerCode] = useState('');
   const { getReferralAddress } = useReferralContract();
   const [resolvedReferrer, setResolvedReferrer] = useState(DEFAULT_REFERRER);
   const [isEditingReferrer, setIsEditingReferrer] = useState(false);
   const referrerInputRef = useRef<HTMLInputElement>(null);
-  const [tempReferrerCode, setTempReferrerCode] = useState("");
+  const [tempReferrerCode, setTempReferrerCode] = useState('');
   const [placingOrders, setPlacingOrders] = useState(false);
 
   const {
@@ -58,22 +52,15 @@ export function OrderCard({
     isValid,
   } = useOrderForm({ leverage });
 
-  const { bestRoute, routes, executeOrder } = useRouting(
-    assetId,
-    formState.amount,
-    leverage
-  );
+  const { bestRoute, routes, executeOrder } = useRouting(assetId, formState.amount, leverage);
 
   const isValidRoutes = (
     routes: any
-  ): routes is Record<
-    RouteId,
-    { tradingFee: number; available: boolean; reason?: string }
-  > => {
+  ): routes is Record<RouteId, { tradingFee: number; available: boolean; reason?: string }> => {
     return routes !== undefined && routes !== null;
   };
   const routingInfo: RoutingInfo = {
-    selectedRoute: bestRoute || "unidexv4",
+    selectedRoute: bestRoute || 'unidexv4',
     routes: isValidRoutes(routes)
       ? routes
       : {
@@ -86,12 +73,12 @@ export function OrderCard({
             tradingFee: 0,
             available: false,
             minMargin: 6,
-            reason: "Route not available",
+            reason: 'Route not available',
           },
         },
     routeNames: {
-      unidexv4: "UniDex",
-      gtrade: "gTrade",
+      unidexv4: 'UniDex',
+      gtrade: 'gTrade',
     },
   };
 
@@ -126,23 +113,18 @@ export function OrderCard({
     initializeReferralCode();
   }, [initialReferralCode]);
 
-  const calculatedMargin = formState.amount
-    ? parseFloat(formState.amount) / parseFloat(leverage)
-    : 0;
+  const calculatedMargin = formState.amount ? parseFloat(formState.amount) / parseFloat(leverage) : 0;
 
   // Update the trading fee calculation
   const calculatedSize = formState.amount ? parseFloat(formState.amount) : 0;
-  const tradingFee =
-    calculatedSize *
-    (isValidRoutes(routes) && bestRoute ? routes[bestRoute].tradingFee : 0);
+  const tradingFee = calculatedSize * (isValidRoutes(routes) && bestRoute ? routes[bestRoute].tradingFee : 0);
   const totalRequired = calculatedMargin + tradingFee;
 
-  const marginWalletBalance = parseFloat(balances?.formattedMusdBalance || "0");
-  const onectWalletBalance = parseFloat(balances?.formattedUsdcBalance || "0");
+  const marginWalletBalance = parseFloat(balances?.formattedMusdBalance || '0');
+  const onectWalletBalance = parseFloat(balances?.formattedUsdcBalance || '0');
   const combinedBalance = marginWalletBalance + onectWalletBalance;
   const hasInsufficientBalance = totalRequired > combinedBalance;
-  const needsDeposit =
-    totalRequired > marginWalletBalance && totalRequired <= combinedBalance;
+  const needsDeposit = totalRequired > marginWalletBalance && totalRequired <= combinedBalance;
 
   const tradeDetails = useTradeCalculations({
     amount: formState.amount,
@@ -157,28 +139,21 @@ export function OrderCard({
 
   useEffect(() => {
     const pair = market?.pair;
-    const basePair = pair?.split("/")[0].toLowerCase();
+    const basePair = pair?.split('/')[0].toLowerCase();
     const currentPrice = basePair ? prices[basePair]?.price : undefined;
 
     if (currentPrice) {
       setFormState((prev: any) => ({
         ...prev,
         entryPrice:
-          activeTab === "market"
+          activeTab === 'market'
             ? currentPrice
-            : activeTab === "limit" && formState.limitPrice
-            ? Number(formState.limitPrice)
-            : currentPrice,
+            : activeTab === 'limit' && formState.limitPrice
+              ? Number(formState.limitPrice)
+              : currentPrice,
       }));
     }
-  }, [
-    prices,
-    assetId,
-    allMarkets,
-    activeTab,
-    formState.limitPrice,
-    setFormState,
-  ]);
+  }, [prices, assetId, allMarkets, activeTab, formState.limitPrice, setFormState]);
 
   const handleReferrerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTempReferrerCode(e.target.value); // Only update the temporary value while typing
@@ -200,8 +175,8 @@ export function OrderCard({
         if (referrerCode) {
           setTempReferrerCode(referrerCode);
         } else {
-          setTempReferrerCode("");
-          setReferrerCode("");
+          setTempReferrerCode('');
+          setReferrerCode('');
           localStorage.removeItem(STORAGE_KEY_CODE);
           localStorage.removeItem(STORAGE_KEY_ADDRESS);
         }
@@ -212,7 +187,7 @@ export function OrderCard({
         localStorage.setItem(STORAGE_KEY_ADDRESS, address);
       }
     } else {
-      setReferrerCode("");
+      setReferrerCode('');
       setResolvedReferrer(DEFAULT_REFERRER);
       localStorage.removeItem(STORAGE_KEY_CODE);
       localStorage.removeItem(STORAGE_KEY_ADDRESS);
@@ -220,7 +195,7 @@ export function OrderCard({
   };
 
   const handleReferrerKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       e.currentTarget.blur(); // Trigger blur event to validate
     }
   };
@@ -233,7 +208,7 @@ export function OrderCard({
           localStorage.setItem(STORAGE_KEY_ADDRESS, address);
         } else {
           // Clear invalid cached code
-          setReferrerCode("");
+          setReferrerCode('');
           localStorage.removeItem(STORAGE_KEY_CODE);
           localStorage.removeItem(STORAGE_KEY_ADDRESS);
         }
@@ -243,7 +218,7 @@ export function OrderCard({
 
   const shortenAddress = (address: string) => {
     if (address === DEFAULT_REFERRER) {
-      return "Set Code";
+      return 'Set Code';
     }
     // Always show the referral code if it exists
     return referrerCode || `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -262,7 +237,7 @@ export function OrderCard({
         slippagePercent: 100,
         margin: calculatedMargin,
         size: calculatedSize,
-        orderType: activeTab as "market" | "limit",
+        orderType: activeTab as 'market' | 'limit',
         takeProfit: formState.tpslEnabled ? formState.takeProfit : undefined,
         stopLoss: formState.tpslEnabled ? formState.stopLoss : undefined,
         referrer: resolvedReferrer,
@@ -271,12 +246,11 @@ export function OrderCard({
       // The routing logic will now handle the order appropriately based on the selected route
       await executeOrder(orderParams);
     } catch (error) {
-      console.error("Error placing order:", error);
+      console.error('Error placing order:', error);
       toast({
-        title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to place order",
-        variant: "destructive",
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to place order',
+        variant: 'destructive',
       });
     } finally {
       setPlacingOrders(false);
@@ -284,14 +258,12 @@ export function OrderCard({
   };
 
   const getButtonText = () => {
-    if (isNetworkSwitching) return "Switching to Arbitrum...";
-    if (!smartAccount?.address) return "Establish Connection";
-    if (activeTab === "market" && !tradeDetails.entryPrice)
-      return "Waiting for price...";
-    if (activeTab === "limit" && !formState.limitPrice)
-      return "Enter Limit Price";
-    if (placingOrders) return "Placing Order...";
-    if (hasInsufficientBalance) return "Insufficient Balance";
+    if (isNetworkSwitching) return 'Switching to Arbitrum...';
+    if (!smartAccount?.address) return 'Establish Connection';
+    if (activeTab === 'market' && !tradeDetails.entryPrice) return 'Waiting for price...';
+    if (activeTab === 'limit' && !formState.limitPrice) return 'Enter Limit Price';
+    if (placingOrders) return 'Placing Order...';
+    if (hasInsufficientBalance) return 'Insufficient Balance';
 
     // Add minimum margin check based on selected route
     const selectedRoute = routingInfo.routes[routingInfo.selectedRoute];
@@ -299,24 +271,17 @@ export function OrderCard({
       return `Minimum Margin: ${selectedRoute.minMargin} USD`;
     }
 
-    const availableLiquidity = formState.isLong
-      ? market?.availableLiquidity?.long
-      : market?.availableLiquidity?.short;
+    const availableLiquidity = formState.isLong ? market?.availableLiquidity?.long : market?.availableLiquidity?.short;
 
-    if (
-      availableLiquidity !== undefined &&
-      calculatedSize > availableLiquidity
-    ) {
-      return "Not Enough Liquidity";
+    if (availableLiquidity !== undefined && calculatedSize > availableLiquidity) {
+      return 'Not Enough Liquidity';
     }
 
     if (needsDeposit) {
-      return `Batch & Place ${formState.isLong ? "Long" : "Short"}`;
+      return `Batch & Place ${formState.isLong ? 'Long' : 'Short'}`;
     }
 
-    return `Place ${activeTab === "market" ? "Market" : "Limit"} ${
-      formState.isLong ? "Long" : "Short"
-    }`;
+    return `Place ${activeTab === 'market' ? 'Market' : 'Limit'} ${formState.isLong ? 'Long' : 'Short'}`;
   };
 
   const handleButtonClick = () => {
@@ -328,24 +293,21 @@ export function OrderCard({
   };
 
   const referrerSection = (
-    <div className="flex items-center justify-between">
+    <div className='flex items-center justify-between'>
       <span>Referrer</span>
       {isEditingReferrer ? (
         <input
           ref={referrerInputRef}
-          type="text"
+          type='text'
           value={tempReferrerCode} // Use temporary value for input
           onChange={handleReferrerChange}
           onBlur={handleReferrerBlur}
           onKeyDown={handleReferrerKeyDown} // Add keyboard handler
-          placeholder="Enter code"
-          className="text-right bg-transparent border-b border-dashed outline-none border-muted-foreground"
+          placeholder='Enter code'
+          className='text-right bg-transparent border-b border-dashed outline-none border-muted-foreground'
         />
       ) : (
-        <span
-          onClick={handleReferrerClick}
-          className="cursor-pointer hover:text-primary"
-        >
+        <span onClick={handleReferrerClick} className='cursor-pointer hover:text-primary'>
           {shortenAddress(resolvedReferrer)}
         </span>
       )}
@@ -353,62 +315,52 @@ export function OrderCard({
   );
 
   return (
-    <Card className="w-full md:w-[350px]">
-      <CardContent className="p-4">
-        {error && (
-          <div className="mb-4 text-red-500">Error: {error.message}</div>
-        )}
+    <Card className='w-full md:w-[350px]'>
+      <CardContent className='p-4'>
+        {error && <div className='mb-4 text-red-500'>Error: {error.message}</div>}
 
-        <Tabs defaultValue="market" onValueChange={setActiveTab}>
-          <div className="grid grid-cols-2 gap-2 mb-4">
+        <Tabs defaultValue='market' onValueChange={setActiveTab}>
+          <div className='grid grid-cols-2 gap-2 mb-4'>
             <Button
-              variant={formState.isLong ? "default" : "outline"}
-              className={`w-full ${
-                formState.isLong
-                  ? "bg-green-600 hover:bg-green-700 text-white"
-                  : ""
-              }`}
+              variant={formState.isLong ? 'default' : 'outline'}
+              className={`w-full ${formState.isLong ? 'bg-green-600 hover:bg-green-700 text-white' : ''}`}
               onClick={() => formState.isLong || toggleDirection()}
             >
               Long
             </Button>
             <Button
-              variant={!formState.isLong ? "default" : "outline"}
-              className={`w-full ${
-                !formState.isLong
-                  ? "bg-red-600 hover:bg-red-700 text-white"
-                  : ""
-              }`}
+              variant={!formState.isLong ? 'default' : 'outline'}
+              className={`w-full ${!formState.isLong ? 'bg-red-600 hover:bg-red-700 text-white' : ''}`}
               onClick={() => !formState.isLong || toggleDirection()}
             >
               Short
             </Button>
           </div>
 
-          <div className="flex justify-between text-sm text-muted-foreground">
-            <TabsList className="flex gap-4 p-0 bg-transparent border-0">
+          <div className='flex justify-between text-sm text-muted-foreground'>
+            <TabsList className='flex gap-4 p-0 bg-transparent border-0'>
               <TabsTrigger
-                value="market"
-                className="bg-transparent border-0 p-0 text-[13px] data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary"
+                value='market'
+                className='bg-transparent border-0 p-0 text-[13px] data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary'
               >
                 Market
               </TabsTrigger>
               <TabsTrigger
-                value="limit"
-                className="bg-transparent border-0 p-0 text-[13px] data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary"
+                value='limit'
+                className='bg-transparent border-0 p-0 text-[13px] data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary'
               >
                 Limit
               </TabsTrigger>
               <TabsTrigger
-                value="stop"
-                className="bg-transparent border-0 p-0 text-[13px] data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary"
+                value='stop'
+                className='bg-transparent border-0 p-0 text-[13px] data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary'
               >
                 Stop
               </TabsTrigger>
             </TabsList>
           </div>
 
-          <TabsContent value="market">
+          <TabsContent value='market'>
             <MarketOrderForm
               formState={formState}
               calculatedMargin={calculatedMargin}
@@ -423,7 +375,7 @@ export function OrderCard({
             />
           </TabsContent>
 
-          <TabsContent value="limit">
+          <TabsContent value='limit'>
             <LimitOrderForm
               formState={formState}
               calculatedMargin={calculatedMargin}
@@ -449,14 +401,10 @@ export function OrderCard({
           />
 
           {!isConnected ? (
-            <div className="w-full mt-4">
+            <div className='w-full mt-4'>
               <ConnectButton.Custom>
                 {({ openConnectModal }) => (
-                  <Button
-                    variant="market"
-                    className="w-full"
-                    onClick={openConnectModal}
-                  >
+                  <Button variant='market' className='w-full' onClick={openConnectModal}>
                     Connect Wallet
                   </Button>
                 )}
@@ -464,25 +412,22 @@ export function OrderCard({
             </div>
           ) : (
             <Button
-              variant="market"
-              className="w-full mt-4"
+              variant='market'
+              className='w-full mt-4'
               disabled={
                 // Only check these conditions if we have a smart account
                 smartAccount?.address
                   ? placingOrders ||
                     isNetworkSwitching ||
-                    (activeTab === "market" && !tradeDetails.entryPrice) ||
-                    (activeTab === "limit" && !formState.limitPrice) ||
+                    (activeTab === 'market' && !tradeDetails.entryPrice) ||
+                    (activeTab === 'limit' && !formState.limitPrice) ||
                     hasInsufficientBalance ||
                     !isValid(formState.amount) ||
                     (() => {
                       const availableLiquidity = formState.isLong
                         ? market?.availableLiquidity?.long
                         : market?.availableLiquidity?.short;
-                      return (
-                        availableLiquidity !== undefined &&
-                        calculatedSize > availableLiquidity
-                      );
+                      return availableLiquidity !== undefined && calculatedSize > availableLiquidity;
                     })()
                   : false // Not disabled when showing "Establish Connection"
               }
@@ -492,8 +437,8 @@ export function OrderCard({
             </Button>
           )}
 
-          <div className="h-px my-4 bg-border" />
-          <div className="mt-4">
+          <div className='h-px my-4 bg-border' />
+          <div className='mt-4'>
             <WalletBox />
           </div>
         </Tabs>
