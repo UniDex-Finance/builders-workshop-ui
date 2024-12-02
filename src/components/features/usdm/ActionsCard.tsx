@@ -6,7 +6,7 @@ import { useWalletClient } from 'wagmi'
 import { parseUnits } from 'viem'
 import { useUsdm } from "@/hooks/use-usdm"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Collapsible,
   CollapsibleContent,
@@ -210,29 +210,29 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
 
   return (
     <Card className="bg-[#16161D] border-[#1b1b22]">
-      <CardContent className="p-0">
-        <div className="flex items-center justify-between p-6 pb-4">
-          <h2 className="text-2xl font-semibold">{action === 'mint' ? 'Mint' : 'Burn'} USD.m</h2>
+      <CardHeader className="pt-4 pb-0">
+        <div className="flex items-center justify-between">
+          <CardTitle>{action === 'mint' ? 'Mint' : 'Burn'} USD.m</CardTitle>
           <div className="flex gap-2">
             <Button 
               variant="ghost" 
-              className={`text-gray-400 hover:text-white ${action === 'mint' ? 'bg-[#272734]' : ''}`}
+              className={`text-[#A0AEC0] hover:text-white ${action === 'mint' ? 'bg-[#272734]' : ''}`}
               onClick={() => setAction('mint')}
             >
               Mint
             </Button>
             <Button 
               variant="ghost" 
-              className={`text-gray-400 hover:text-white ${action === 'burn' ? 'bg-[#272734]' : ''}`}
+              className={`text-[#A0AEC0] hover:text-white ${action === 'burn' ? 'bg-[#272734]' : ''}`}
               onClick={() => setAction('burn')}
             >
               Burn
             </Button>
           </div>
         </div>
-
-        <div className="px-6 pb-4">
-          <h3 className="mb-2 text-xl">{action === 'mint' ? 'Stables to USD.m' : 'USD.m to Stables'}</h3>
+      </CardHeader>
+      <CardContent className="pt-4 space-y-6">
+        <div className="space-y-4">
           <div className="relative mb-2">
             <div className="flex gap-2">
               <Select defaultValue="usdc" disabled>
@@ -258,18 +258,18 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
                   className="w-full h-[42px] bg-[#272734] border-0 text-lg pr-20"
                   placeholder="0.00"
                 />
-                <div className="absolute text-gray-400 -translate-y-1/2 right-3 top-1/2">
+                <div className="absolute text-[#A0AEC0] -translate-y-1/2 right-3 top-1/2">
                   ~${calculateUsdValue(amount)}
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="mb-4 text-gray-400">
+          <div className="text-sm text-[#A0AEC0]">
             {getAvailableBalance()}
           </div>
 
-          <div className="grid grid-cols-4 gap-2 mb-6">
+          <div className="grid grid-cols-4 gap-2">
             {["25", "50", "75", "100"].map((percent) => (
               <Button
                 key={percent}
@@ -284,25 +284,25 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
 
           <Collapsible open={isOpen} onOpenChange={setIsOpen}>
             <CollapsibleTrigger className="flex items-center justify-between w-full p-4 bg-[#272734] rounded-lg">
-              <span className="text-lg text-gray-300">Summary</span>
+              <span className="text-[#A0AEC0]">Summary</span>
               <ChevronDown className={`h-5 w-5 transition-transform ${isOpen ? "rotate-180" : ""}`} />
             </CollapsibleTrigger>
             <CollapsibleContent className="bg-[#272734] rounded-lg mt-px p-4">
               <div className="flex flex-col gap-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Balance</span>
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#A0AEC0]">Balance</span>
                   <div className="flex items-center gap-2">
                     <span>0.00</span>
-                    <span className="text-gray-400">→</span>
+                    <span className="text-[#A0AEC0]">→</span>
                     <span>{amount ? calculateOutputAmount(amount) : '0.00'}</span>
-                    <span className="text-gray-400">{action === 'mint' ? 'USD.m' : 'USDC'}</span>
+                    <span className="text-[#A0AEC0]">{action === 'mint' ? 'USD.m' : 'USDC'}</span>
                   </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Fees (0.25%)</span>
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#A0AEC0]">Fees (0.25%)</span>
                   <div className="flex items-center gap-2">
                     <span>{amount ? calculateFees(amount) : '0.00'}</span>
-                    <span className="text-gray-400">{action === 'mint' ? 'USDC' : 'USD.m'}</span>
+                    <span className="text-[#A0AEC0]">{action === 'mint' ? 'USDC' : 'USD.m'}</span>
                   </div>
                 </div>
               </div>
@@ -310,7 +310,7 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
           </Collapsible>
 
           <Button 
-            className="w-full h-14 mt-6 bg-[#7C5CFF] hover:bg-[#6B4FE0] text-lg"
+            className="w-full h-14 bg-[#7C5CFF] hover:bg-[#6B4FE0] text-base text-white"
             onClick={handleTransaction}
             disabled={!canSubmit()}
           >

@@ -4,7 +4,6 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from "../../../ui/button";
 import { Card, CardContent } from "../../../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../ui/tabs";
-import { useMarketOrderActions } from "../../../../hooks/use-market-order-actions";
 import { useSmartAccount } from "../../../../hooks/use-smart-account";
 import { useMarketData } from "../../../../hooks/use-market-data";
 import { usePrices } from "../../../../lib/websocket-price-context";
@@ -312,7 +311,7 @@ export function OrderCard({
     }
 
     if (needsDeposit) {
-      return `Deposit & Place ${formState.isLong ? "Long" : "Short"}`;
+      return `Batch & Place ${formState.isLong ? "Long" : "Short"}`;
     }
 
     return `Place ${activeTab === "market" ? "Market" : "Limit"} ${
@@ -390,19 +389,19 @@ export function OrderCard({
             <TabsList className="flex gap-4 p-0 bg-transparent border-0">
               <TabsTrigger
                 value="market"
-                className="bg-transparent border-0 p-0 data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary"
+                className="bg-transparent border-0 p-0 text-[13px] data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary"
               >
                 Market
               </TabsTrigger>
               <TabsTrigger
                 value="limit"
-                className="bg-transparent border-0 p-0 data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary"
+                className="bg-transparent border-0 p-0 text-[13px] data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary"
               >
                 Limit
               </TabsTrigger>
               <TabsTrigger
                 value="stop"
-                className="bg-transparent border-0 p-0 data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary"
+                className="bg-transparent border-0 p-0 text-[13px] data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary"
               >
                 Stop
               </TabsTrigger>

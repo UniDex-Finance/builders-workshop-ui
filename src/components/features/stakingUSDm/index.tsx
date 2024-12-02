@@ -4,10 +4,11 @@ import { useState } from "react"
 import { Header } from "../../shared/Header"
 import { PositionCard } from "./PositionCard"
 import { ActionsCard } from "./ActionsCard"
+import { StatsBar } from "./StatsBar"
 import { StatsActions } from "./StatsActions"
 import { StatsDisplay } from "./StatsDisplay"
 
-export function Usdm() {
+export function StakingUSDm() {
   const [isStaking, setIsStaking] = useState(false)
   
   return (
@@ -17,7 +18,7 @@ export function Usdm() {
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="space-y-4">
             <div className="flex items-center gap-2" />
-            <h1 className="text-2xl font-semibold text-white">USD.m Dashboard</h1>
+            <h1 className="text-2xl font-semibold text-white">USD.m Staking</h1>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">

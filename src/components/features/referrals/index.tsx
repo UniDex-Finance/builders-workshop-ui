@@ -35,7 +35,8 @@ export function ReferralDashboard() {
       <Header />
       <div className="min-h-screen bg-[#0b0b0e] text-white p-6">
         <div className="max-w-6xl mx-auto space-y-6">
-          <div className="space-y-2">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2" />
             <h1 className="text-2xl font-bold tracking-tight text-white">Referral Rebates</h1>
             <p className="text-gray-400">
               By referring traders with your referral code, you can earn a percentage of their trading fees.{" "}

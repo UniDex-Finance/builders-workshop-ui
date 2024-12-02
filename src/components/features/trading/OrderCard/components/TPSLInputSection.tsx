@@ -89,7 +89,7 @@ const TPSLInputSection = ({
                 placeholder="0.00"
                 value={takeProfit}
                 onChange={handleTPPriceChange}
-                className="text-right pr-10"
+                className="pr-10 text-right no-spinners"
                 label="TP"
               />
               <div className="absolute text-sm -translate-y-1/2 right-3 top-1/2 text-muted-foreground">
@@ -103,7 +103,7 @@ const TPSLInputSection = ({
                   Math.abs(calculatePercentage(Number(takeProfit)))
                 )}
                 onChange={handleTPPercentChange}
-                className="pr-6 text-right"
+                className="pr-6 text-right no-spinners"
                 placeholder="0"
                 label=""
               />
@@ -121,7 +121,7 @@ const TPSLInputSection = ({
                 placeholder="0.00"
                 value={stopLoss}
                 onChange={handleSLPriceChange}
-                className="text-right pr-7"
+                className="pr-10 text-right no-spinners"
                 label="SL"
               />
               <div className="absolute text-sm -translate-y-1/2 right-3 top-1/2 text-muted-foreground">
@@ -135,7 +135,7 @@ const TPSLInputSection = ({
                   Math.abs(calculatePercentage(Number(stopLoss)))
                 )}
                 onChange={handleSLPercentChange}
-                className="pr-6 text-right"
+                className="pr-6 text-right no-spinners"
                 placeholder="0"
                 label=""
               />

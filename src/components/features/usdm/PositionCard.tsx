@@ -10,9 +10,9 @@ export function PositionCard() {
   const { stats } = useMoltenStats()
   const { usdmData } = useUsdm()
   
-  const formatUsdValue = (moltenAmount: string) => {
-    if (!stats?.price) return '($0.00)'
-    const value = parseFloat(moltenAmount) * stats.price
+  const formatUsdmValue = (usdmAmount: string) => {
+    if (!usdmData?.formattedUsdmPrice) return '($0.00)'
+    const value = parseFloat(usdmAmount) * parseFloat(usdmData.formattedUsdmPrice)
     return `($${value.toFixed(2)})`
   }
 
@@ -34,7 +34,9 @@ export function PositionCard() {
           <div className="text-[#A0AEC0] text-sm">Wallet Balance</div>
           <div className="text-2xl text-white">
             {usdmData?.displayUsdmBalance || '0.00'} <span className="text-[#A0AEC0] text-sm">USD.m</span>{' '}
-            <span className="text-[#A0AEC0] text-sm">{formatUsdValue(usdmData?.formattedUsdmBalance || '0')}</span>
+            <span className="text-[#A0AEC0] text-sm">
+              {formatUsdmValue(usdmData?.formattedUsdmBalance || '0')}
+            </span>
           </div>
         </div>
         <div className="border-t border-[#272734]" />
@@ -52,7 +54,7 @@ export function PositionCard() {
             <span className="text-[#A0AEC0]">Vesting Rewards</span>
             <span className="text-[#00FF00]">
               {moltenStakingData?.displayEarnedBalance || '0.00'} esMOLTEN {' '}
-              <span className="text-[#A0AEC0]">{formatUsdValue(moltenStakingData?.formattedEarnedBalance || '0')}</span>
+              <span className="text-[#A0AEC0]">{formatUsdmValue(moltenStakingData?.formattedEarnedBalance || '0')}</span>
             </span>
           </div>
           <div className="flex justify-between text-sm">

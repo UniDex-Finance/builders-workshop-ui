@@ -9,6 +9,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../../ui/tooltip";
 import { Search } from "lucide-react";
 import { cn } from "../../../lib/utils";
 import {
@@ -17,6 +23,8 @@ import {
   PrefetchTokenImages,
 } from "../../../hooks/use-token-icon";
 import { useGTradeMarketData } from "../../../hooks/use-gtrade-market-data";
+import { usePairPrecision } from "../../../hooks/use-pair-precision";
+import { use24hChange } from "../../../hooks/use-24h-change";
 
 interface PairHeaderProps {
   selectedPair: string;
@@ -25,12 +33,32 @@ interface PairHeaderProps {
 
 type TimeframeRate = "1h" | "1d" | "1y";
 
+const formatCompactNumber = (num: number) => {
+  // For numbers less than 100,000, use regular formatting with commas
+  if (num < 100000) {
+    return num.toLocaleString(undefined, {
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 2,
+    });
+  }
+
+  // For larger numbers, use compact notation
+  const formatter = new Intl.NumberFormat("en-US", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+    minimumFractionDigits: 1,
+  });
+
+  return formatter.format(num);
+};
+
 export const PairHeader: React.FC<PairHeaderProps> = ({
   selectedPair,
   onPairChange,
 }) => {
   const [rateTimeframe, setRateTimeframe] = useState<TimeframeRate>("1h");
   const [searchQuery, setSearchQuery] = React.useState("");
+  const { formatPairPrice } = usePairPrecision();
 
   const {
     marketData: unidexMarketData,
@@ -51,19 +79,59 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
   const combinedData = useMemo(() => {
     if (!unidexMarketData || !gtradeMarket) return null;
 
+    const formatBorrowRate = (rate: number) => {
+      return rate < 0.0001 ? 0 : Number(rate.toFixed(4));
+    };
+
+    const calculateWeightedBorrowRate = (
+      rate1: number, // unidex rate
+      rate2: number, // gtrade rate
+      weight1: number, // unidex liquidity
+      weight2: number // gtrade liquidity
+    ) => {
+      const formattedRate1 = formatBorrowRate(rate1);
+      const formattedRate2 = formatBorrowRate(rate2);
+
+      // If both rates are 0, return 0
+      if (formattedRate1 === 0 && formattedRate2 === 0) return 0;
+      // If one rate is 0, use only the non-zero rate
+      if (formattedRate1 === 0) return formattedRate2;
+      if (formattedRate2 === 0) return formattedRate1;
+
+      // Calculate total weight
+      const totalWeight = weight1 + weight2;
+      if (totalWeight === 0) return 0;
+
+      // Calculate weighted average
+      return (
+        (formattedRate1 * weight1 + formattedRate2 * weight2) / totalWeight
+      );
+    };
+
+    const avgBorrowRateLong = calculateWeightedBorrowRate(
+      unidexMarketData.borrowRateForLong,
+      gtradeMarket.borrowingFees.borrowRateForLong,
+      unidexMarketData.maxLongOpenInterest - unidexMarketData.longOpenInterest,
+      gtradeMarket.openInterest.max - gtradeMarket.openInterest.long
+    );
+
+    const avgBorrowRateShort = calculateWeightedBorrowRate(
+      unidexMarketData.borrowRateForShort,
+      gtradeMarket.borrowingFees.borrowRateForShort,
+      unidexMarketData.maxShortOpenInterest -
+        unidexMarketData.shortOpenInterest,
+      gtradeMarket.openInterest.max - gtradeMarket.openInterest.short
+    );
+
     return {
       longOpenInterest:
-        unidexMarketData.longOpenInterest +
-        (gtradeMarket.openInterest.long || 0),
+        unidexMarketData.longOpenInterest + gtradeMarket.openInterest.long,
       shortOpenInterest:
-        unidexMarketData.shortOpenInterest +
-        (gtradeMarket.openInterest.short || 0),
+        unidexMarketData.shortOpenInterest + gtradeMarket.openInterest.short,
       maxLongOpenInterest:
-        unidexMarketData.maxLongOpenInterest +
-        (gtradeMarket.openInterest.max || 0),
+        unidexMarketData.maxLongOpenInterest + gtradeMarket.openInterest.max,
       maxShortOpenInterest:
-        unidexMarketData.maxShortOpenInterest +
-        (gtradeMarket.openInterest.max || 0),
+        unidexMarketData.maxShortOpenInterest + gtradeMarket.openInterest.max,
       longShortRatio: {
         longPercentage:
           ((unidexMarketData.longOpenInterest +
@@ -82,8 +150,8 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
               gtradeMarket.openInterest.short)) *
           100,
       },
-      borrowRateForLong: unidexMarketData.borrowRateForLong,
-      borrowRateForShort: unidexMarketData.borrowRateForShort,
+      borrowRateForLong: avgBorrowRateLong,
+      borrowRateForShort: avgBorrowRateShort,
       fundingRate: unidexMarketData.fundingRate,
     };
   }, [unidexMarketData, gtradeMarket]);
@@ -106,16 +174,19 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
   const formatPrice = (pair: string) => {
     const basePair = pair.split("/")[0].toLowerCase();
     const price = prices[basePair]?.price;
-    if (!price) return "...";
-    return new Intl.NumberFormat("en-US", {
-      maximumFractionDigits: 4,
-      minimumFractionDigits: 4,
-    }).format(price);
+    return formatPairPrice(pair, price);
   };
 
   const formatFundingRate = (rate: number) => {
     return `${rate.toFixed(4)}%`;
   };
+
+  const {
+    absoluteChange,
+    percentageChange,
+    loading: changeLoading,
+    error: changeError,
+  } = use24hChange(selectedPair);
 
   if (unidexError || gtradeError) {
     return (
@@ -166,24 +237,24 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
 
   return (
     <div className="w-full">
-      <div className="p-2 my-2 border rounded-lg shadow-sm bg-[hsl(var(--component-background))]">
-        <div className="overflow-hidden">
-          <div className="flex flex-wrap items-center text-sm gap-x-6 gap-y-6 lg:gap-x-2 lg:gap-y-2">
+      <div className="p-2 my-2 border rounded-lg shadow-sm bg-[hsl(var(--component-background))] overflow-hidden">
+        <div className="overflow-x-auto">
+          <div
+            className="flex items-center text-xs flex-nowrap"
+            style={{ width: "fit-content", minWidth: "1200px" }}
+          >
             {/* Price Group with Pair Selector */}
-            <div className="flex w-full md:w-auto md:min-w-[130px] pr-2 md:border-r">
+            <div className="flex min-w-[130px] pr-2 border-r">
               <Select value={selectedPair} onValueChange={onPairChange}>
                 <SelectTrigger className="w-full h-full p-0 bg-transparent border-0 shadow-none cursor-pointer focus:ring-0 hover:bg-muted/60">
                   <div className="flex items-center px-4">
-                    <TokenIcon pair={selectedPair} size={32} className="mr-2" />
+                    <TokenIcon pair={selectedPair} size={28} className="mr-2" />
                     <div className="flex flex-col">
-                      <div className="flex items-center gap-2 px-2 mb-1 text-muted-foreground">
+                      <div className="flex items-center gap-2 px-2 mb-1 text-xs text-muted-foreground">
                         <span>{selectedPair}</span>
                       </div>
-                      <div className="px-2 font-mono font-bold text-left text-md ">
-                        $
-                        {currentPrice
-                          ? currentPrice.toLocaleString()
-                          : "Loading..."}
+                      <div className="px-2 font-mono font-bold text-left text-sm min-w-[90px]">
+                        {formatPairPrice(selectedPair, currentPrice)}
                       </div>
                     </div>
                   </div>
@@ -196,17 +267,17 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                     <div className="sticky top-0 z-20 bg-[hsl(var(--component-background))] shadow-sm">
                       <div className="px-4 py-2 border-b">
                         <div className="relative">
-                          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                          <Search className="absolute left-2 top-2.5 h-3 w-3 text-muted-foreground" />
                           <input
                             type="text"
                             placeholder="Search pairs..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full py-2 pl-8 pr-4 text-sm bg-transparent border rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-ring"
+                            className="w-full py-2 pl-8 pr-4 text-xs bg-transparent border rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-ring"
                           />
                         </div>
                       </div>
-                      <div className="grid grid-cols-5 px-4 py-2 text-sm font-medium border-b text-muted-foreground bg-muted/30">
+                      <div className="grid grid-cols-5 px-4 py-2 text-xs font-medium border-b text-muted-foreground bg-muted/30">
                         <div className="w-[180px]">Pair</div>
                         <div className="w-[140px]">Market Price</div>
                         <div className="w-[140px]">Long Liquidity</div>
@@ -221,7 +292,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                           value={market.pair}
                           className="px-4 py-2 cursor-pointer hover:bg-muted/60"
                         >
-                          <div className="grid items-center grid-cols-5 text-sm">
+                          <div className="grid items-center grid-cols-5 text-xs">
                             <div className="w-[180px]">
                               <TokenPairDisplay pair={market.pair} />
                             </div>
@@ -256,54 +327,155 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
               </Select>
             </div>
 
-            {/* Open Interest Group */}
-            <div className="flex items-center space-x-8 px-4 w-full md:w-auto md:border-r md:min-w-[400px]">
+            {/* 24h Change Group */}
+            <div className="flex items-center px-4 border-r min-w-[160px]">
               <div>
-                <div className="text-muted-foreground">Long OI</div>
-                <div>
-                  ${combinedData.longOpenInterest.toLocaleString()} / $
-                  {combinedData.maxLongOpenInterest.toLocaleString()}
-                </div>
-              </div>
-              <div>
-                <div className="text-muted-foreground">Short OI</div>
-                <div>
-                  ${combinedData.shortOpenInterest.toLocaleString()} / $
-                  {combinedData.maxShortOpenInterest.toLocaleString()}
+                <div className="text-xs text-muted-foreground">24h Change</div>
+                <div
+                  className={cn(
+                    "text-sm font-medium",
+                    !changeLoading && !changeError && percentageChange >= 0
+                      ? "text-[#22c55e]"
+                      : "text-[#ef4444]"
+                  )}
+                >
+                  {!changeLoading && !changeError ? (
+                    <>
+                      {absoluteChange >= 0 ? "+" : ""}
+                      {formatPairPrice(
+                        selectedPair,
+                        Math.abs(absoluteChange)
+                      )}{" "}
+                      / {percentageChange >= 0 ? "+" : ""}
+                      {percentageChange.toFixed(2)}%
+                    </>
+                  ) : (
+                    "- / -"
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Long/Short Ratio Group */}
-            <div className="flex items-center px-4 w-full md:w-auto md:border-r md:min-w-[200px]">
-              <div className="w-full">
-                <div className="flex justify-between text-xs mb-1.5">
-                  <span className="text-green-500">
-                    <span className="text-muted-foreground">(L)</span>{" "}
-                    {combinedData.longShortRatio.longPercentage.toFixed(1)}%
-                  </span>
-                  <span className="text-red-500">
-                    {combinedData.longShortRatio.shortPercentage.toFixed(1)}%{" "}
-                    <span className="text-muted-foreground">(S)</span>
-                  </span>
-                </div>
-                <div className="w-full h-2 overflow-hidden rounded-full bg-red-500/20">
-                  <div
-                    className="h-full transition-all duration-300 ease-in-out rounded-l-full bg-green-500/50"
-                    style={{
-                      width: `${combinedData.longShortRatio.longPercentage}%`,
-                    }}
-                  />
-                </div>
-              </div>
+            {/* Open Interest Group */}
+            <div className="flex items-center space-x-8 px-4 border-r min-w-[300px]">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="cursor-help">
+                      <div className="text-xs text-muted-foreground">
+                        Long OI
+                      </div>
+                      <div className="text-sm">
+                        ${formatCompactNumber(combinedData.longOpenInterest)} /
+                        ${formatCompactNumber(combinedData.maxLongOpenInterest)}
+                      </div>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-[#2b2b36] border-none">
+                    <p className="text-sm text-white">
+                      There are currently $
+                      {formatCompactNumber(combinedData.longOpenInterest)} worth
+                      of {selectedPair} positions open with only $
+                      {formatCompactNumber(
+                        combinedData.maxLongOpenInterest -
+                          combinedData.longOpenInterest
+                      )}{" "}
+                      left before the open interest cap is reached
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="cursor-help">
+                      <div className="text-xs text-muted-foreground">
+                        Short OI
+                      </div>
+                      <div className="text-sm">
+                        ${formatCompactNumber(combinedData.shortOpenInterest)} /
+                        $
+                        {formatCompactNumber(combinedData.maxShortOpenInterest)}
+                      </div>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-[#2b2b36] border-none">
+                    <p className="text-sm text-white">
+                      There are currently $
+                      {formatCompactNumber(combinedData.shortOpenInterest)}{" "}
+                      worth of {selectedPair} positions open with only $
+                      {formatCompactNumber(
+                        combinedData.maxShortOpenInterest -
+                          combinedData.shortOpenInterest
+                      )}{" "}
+                      left before the open interest cap is reached
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+
+            {/* Funding Rate Group */}
+            <div className="flex items-center px-4 border-r min-w-[160px]">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="cursor-help">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          Funding Rate
+                        </span>
+                        <button
+                          onClick={() => setRateTimeframe(nextTimeframe())}
+                          className="px-2 py-0.5 text-[10px] rounded bg-secondary hover:bg-secondary/80"
+                        >
+                          {rateTimeframe}
+                        </button>
+                      </div>
+                      <div
+                        className={cn(
+                          "text-sm",
+                          getAnnualizedRate(combinedData.fundingRate) >= 0
+                            ? "text-green-500"
+                            : "text-red-500"
+                        )}
+                      >
+                        {getAnnualizedRate(combinedData.fundingRate).toFixed(4)}
+                        %
+                      </div>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-[#2b2b36] border-none">
+                    <p className="text-sm text-white whitespace-pre-line">
+                      {getAnnualizedRate(combinedData.fundingRate) >= 0
+                        ? `Long positions are paying a rate of ${getAnnualizedRate(
+                            combinedData.fundingRate
+                          ).toFixed(
+                            4
+                          )}% to short positions every ${rateTimeframe}.\n\nTherefore, short positions are being paid a rate of ${getAnnualizedRate(
+                            combinedData.fundingRate
+                          ).toFixed(4)}% every ${rateTimeframe}.`
+                        : `Short positions are paying a rate of ${Math.abs(
+                            getAnnualizedRate(combinedData.fundingRate)
+                          ).toFixed(
+                            4
+                          )}% to long positions every ${rateTimeframe}.\n\nTherefore, long positions are being paid a rate of ${Math.abs(
+                            getAnnualizedRate(combinedData.fundingRate)
+                          ).toFixed(4)}% every ${rateTimeframe}.`}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
 
             {/* Borrow Rates Group */}
-            <div className="flex items-center px-4 w-full md:w-auto md:min-w-[220px]">
-              <div className="flex flex-row space-x-8 lg:space-x-4">
+            <div className="flex items-center px-4 min-w-[220px]">
+              <div className="flex gap-4">
                 <div>
-                  <div className="text-muted-foreground">Borrowing (L)</div>
-                  <div className="text-red-500">
+                  <div className="text-xs text-muted-foreground">
+                    Borrowing (L)
+                  </div>
+                  <div className="text-sm text-red-500">
                     {getAnnualizedRate(combinedData.borrowRateForLong).toFixed(
                       4
                     )}
@@ -311,37 +483,15 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                   </div>
                 </div>
                 <div>
-                  <div className="text-muted-foreground">Borrowing (S)</div>
-                  <div className="text-red-500">
+                  <div className="text-xs text-muted-foreground">
+                    Borrowing (S)
+                  </div>
+                  <div className="text-sm text-red-500">
                     {getAnnualizedRate(combinedData.borrowRateForShort).toFixed(
                       4
                     )}
                     %
                   </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Funding Rate Group */}
-            <div className="flex items-center px-4 w-full md:w-auto md:border-l md:min-w-[160px]">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Funding Rate</span>
-                  <button
-                    onClick={() => setRateTimeframe(nextTimeframe())}
-                    className="px-2 py-0.5 text-xs rounded bg-secondary hover:bg-secondary/80"
-                  >
-                    {rateTimeframe}
-                  </button>
-                </div>
-                <div
-                  className={
-                    getAnnualizedRate(combinedData.fundingRate) >= 0
-                      ? "text-green-500"
-                      : "text-red-500"
-                  }
-                >
-                  {getAnnualizedRate(combinedData.fundingRate).toFixed(4)}%
                 </div>
               </div>
             </div>

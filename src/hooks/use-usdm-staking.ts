@@ -75,6 +75,13 @@ const STAKING_ABI = [
         stateMutability: 'nonpayable',
         inputs: [{ name: 'amount', type: 'uint256' }],
         outputs: []
+    },
+    {
+        name: 'totalSupply',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [],
+        outputs: [{ type: 'uint256' }]
     }
 ] as const
 
@@ -92,6 +99,11 @@ export interface UsdmStakingData {
     displayStakedBalance: string
     displayEarnedBalance: string
     allowance: bigint
+    totalStaked: bigint
+    formattedTotalStaked: string
+    usdmBalance: bigint
+    formattedUsdmBalance: string
+    displayUsdmBalance: string
 }
 
 export function useUsdmStaking() {
@@ -105,7 +117,7 @@ export function useUsdmStaking() {
         if (!address || !publicClient) return
         setIsLoading(true)
         try {
-            const [stakedBalance, earnedBalance, allowance] = await publicClient.multicall({
+            const [stakedBalance, earnedBalance, allowance, totalStaked, usdmBalance] = await publicClient.multicall({
                 contracts: [
                     {
                         address: USDM_STAKING,
@@ -124,12 +136,25 @@ export function useUsdmStaking() {
                         abi: TOKEN_ABI,
                         functionName: 'allowance',
                         args: [address, USDM_STAKING]
+                    },
+                    {
+                        address: USDM_STAKING,
+                        abi: STAKING_ABI,
+                        functionName: 'totalSupply'
+                    },
+                    {
+                        address: USDM_TOKEN,
+                        abi: TOKEN_ABI,
+                        functionName: 'balanceOf',
+                        args: [address]
                     }
                 ]
             })
 
             const formattedStakedBalance = formatUnits(stakedBalance.result || BigInt(0), 18)
             const formattedEarnedBalance = formatUnits(earnedBalance.result || BigInt(0), 18)
+            const formattedTotalStaked = formatUnits(totalStaked.result || BigInt(0), 18)
+            const formattedUsdmBalance = formatUnits(usdmBalance.result || BigInt(0), 18)
 
             setStakingData({
                 stakedBalance: stakedBalance.result || BigInt(0),
@@ -138,7 +163,12 @@ export function useUsdmStaking() {
                 formattedEarnedBalance,
                 displayStakedBalance: formatDisplayValue(formattedStakedBalance),
                 displayEarnedBalance: formatDisplayValue(formattedEarnedBalance),
-                allowance: allowance.result || BigInt(0)
+                allowance: allowance.result || BigInt(0),
+                totalStaked: totalStaked.result || BigInt(0),
+                formattedTotalStaked,
+                usdmBalance: usdmBalance.result || BigInt(0),
+                formattedUsdmBalance,
+                displayUsdmBalance: formatDisplayValue(formattedUsdmBalance)
             })
             setIsError(false)
         } catch (error) {

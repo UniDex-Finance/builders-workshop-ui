@@ -9,6 +9,7 @@ import { PositionsContent } from "./PositionTable/PositionsContent";
 import { OrdersContent } from "./PositionTable/OrdersContent";
 import { TradesContent } from "./PositionTable/TradesContent";
 import { PnLTooltip } from "./PositionTable/PnLTooltip";
+import { Chart } from "./Chart";
 
 interface PositionsTableProps {
   address: string | undefined;
@@ -74,29 +75,38 @@ export function PositionsTable({ address }: PositionsTableProps) {
     <div className="w-full mb-4 border rounded-lg bg-[hsl(var(--component-background))]">
       <div className="flex items-center p-2 border-b space-x-4">
         <Button
-          variant={activeTab === "positions" ? "outline2" : "ghost2"}
+          variant="ghost"
           size="sm"
           onClick={() => setActiveTab("positions")}
+          className={
+            activeTab === "positions" ? "text-white" : "text-muted-foreground"
+          }
         >
           Positions
         </Button>
         <Button
-          variant={activeTab === "orders" ? "outline2" : "ghost2"}
+          variant="ghost"
           size="sm"
           onClick={() => setActiveTab("orders")}
+          className={
+            activeTab === "orders" ? "text-white" : "text-muted-foreground"
+          }
         >
           Orders
         </Button>
         <Button
-          variant={activeTab === "trades" ? "outline2" : "ghost2"}
+          variant="ghost"
           size="sm"
           onClick={() => setActiveTab("trades")}
+          className={
+            activeTab === "trades" ? "text-white" : "text-muted-foreground"
+          }
         >
           History
         </Button>
       </div>
-      <div className="w-full overflow-x-auto">
-        <div style={{ minWidth: "300px" }}>
+      <div className="w-full overflow-x-auto md:overflow-visible">
+        <div className="min-w-full md:min-w-[800px]">
           <Table>
             {activeTab === "positions" && (
               <PositionsContent

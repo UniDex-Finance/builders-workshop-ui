@@ -39,7 +39,7 @@ export function MarketOrderForm({
             placeholder="0.00"
             value={formState.amount || ""}
             onChange={handleAmountChange}
-            className="text-right pr-10"
+            className="pr-10 text-right no-spinners"
             label="Size"
             suppressHydrationWarning
           />
@@ -53,7 +53,7 @@ export function MarketOrderForm({
             placeholder="0.00"
             value={calculatedMargin ? calculatedMargin.toFixed(2) : ""}
             onChange={handleMarginChange}
-            className="text-right pr-10"
+            className="pr-10 text-right no-spinners"
             label="Margin"
             suppressHydrationWarning
           />
@@ -98,11 +98,11 @@ export function MarketOrderForm({
           </Button>
         </div>
 
-        <div className="pt-2 space-y-4">
+        <div className="pt-2 space-y-3">
           {" "}
           {/* Changed from space-y-2 */}
           <div className="flex items-center justify-between">
-            <span className="text-sm">Leverage:</span>
+            <span className="text-[13px]">Leverage:</span>
             <div className="relative w-16">
               <Input
                 type="number"
@@ -114,7 +114,7 @@ export function MarketOrderForm({
                   );
                   onLeverageChange(value.toString());
                 }}
-                className="text-sm text-center h-9 no-spinners" // Changed text-right to text-center
+                className="h-8 text-sm text-center no-spinners" // Changed text-right to text-center
                 suppressHydrationWarning
               />
             </div>

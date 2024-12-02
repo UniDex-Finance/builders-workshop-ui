@@ -19,7 +19,7 @@ interface PriceContextType {
 
 const PriceContext = createContext<PriceContextType | undefined>(undefined);
 
-const THROTTLE_INTERVAL = 500;
+const THROTTLE_INTERVAL = 600;
 
 export const usePrices = () => {
   const context = useContext(PriceContext);

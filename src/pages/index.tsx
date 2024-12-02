@@ -9,6 +9,7 @@ import { PairHeader } from "../components/features/trading/PairHeader";
 import { useMarketData } from "../hooks/use-market-data";
 import { usePrices } from "../lib/websocket-price-context";
 import { usePairFromUrl } from "../hooks/use-pair-from-url";
+import { usePositions } from "../hooks/use-positions";
 
 export default function TradingInterface() {
   const { selectedPair, setPair } = usePairFromUrl();
@@ -18,11 +19,14 @@ export default function TradingInterface() {
   const { address } = useAccount();
   const { allMarkets } = useMarketData();
   const { prices } = usePrices();
+  const { positions, loading: positionsLoading } = usePositions();
 
   const selectedMarket = allMarkets.find(
     (market) => market.pair === selectedPair
   );
   const assetId = selectedMarket ? selectedMarket.assetId : "";
+
+  const [chartHeight, setChartHeight] = useState<number>(500);
 
   useEffect(() => {
     const basePair = selectedPair.split("/")[0].toLowerCase();
@@ -41,10 +45,15 @@ export default function TradingInterface() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header />
 
-      <main className="flex flex-col flex-1 overflow-y-auto md:flex-row">
-        {/* Trading Panel */}
-        <div className="w-full px-2 md:w-auto">
-          <div className="pt-2">
+      <main className="flex flex-col flex-1 md:flex-row md:gap-12">
+        {/* PairHeader for mobile - shown above OrderCard */}
+        <div className="w-full px-2 md:hidden">
+          <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
+        </div>
+
+        {/* Left Side - Trading Panel */}
+        <aside className="w-full md:w-[320px] md:min-w-[320px] md:max-w-[320px] px-2 md:mt-[8px]">
+          <div className="mb-2">
             <OrderCard
               leverage={leverage}
               onLeverageChange={setLeverage}
@@ -52,16 +61,24 @@ export default function TradingInterface() {
               initialReferralCode={typeof ref === "string" ? ref : undefined}
             />
           </div>
-        </div>
+        </aside>
 
-        {/* Chart and Positions */}
-        <div className="flex flex-col w-full px-2">
-          <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
-          <div className="relative h-[350px] md:h-[500px]">
-            <Chart selectedPair={selectedPair} />
+        {/* Right Side - Chart and Positions Container */}
+        <div className="flex flex-col flex-1 min-w-0 px-2 overflow-x-auto md:pl-0">
+          <div className="hidden md:block">
+            <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
           </div>
-          <div className="mt-2 md:mt-2">
-            <PositionsTable address={address} />
+          
+          <div className="flex flex-col flex-1">
+            <Chart 
+              selectedPair={selectedPair} 
+              height={chartHeight}
+              onHeightChange={setChartHeight}
+              positions={positionsLoading ? [] : positions}
+            />
+            <div className="flex-1 mt-3 overflow-x-auto">
+              <PositionsTable address={address} />
+            </div>
           </div>
         </div>
       </main>
