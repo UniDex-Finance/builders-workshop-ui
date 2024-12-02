@@ -64,7 +64,7 @@ const Button = React.memo(
       prevProps.variant === nextProps.variant &&
       prevProps.size === nextProps.size &&
       prevProps.disabled === nextProps.disabled &&
-      prevProps.onClick === nextProps.onClick
+      prevProps.children === nextProps.children
     );
   }
 )

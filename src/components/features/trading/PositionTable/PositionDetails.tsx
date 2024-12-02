@@ -201,38 +201,52 @@ export function PositionDetails({
         >
           {isClosing ? "Closing..." : "Close Trade"}
         </Button>
-        <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+        <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="px-2 bg-zinc-800 border-zinc-700 hover:bg-zinc-700">
+            <Button 
+              variant="outline" 
+              size="icon"
+              className="px-2 bg-zinc-800 border-zinc-700 hover:bg-zinc-700/90 focus:ring-offset-background"
+            >
               <ChevronDown className="w-4 h-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-48 text-white bg-zinc-800 border-zinc-700">
+          <DropdownMenuContent 
+            align="end"
+            className="min-w-[160px] text-white bg-zinc-800 border-zinc-700"
+          >
+            {onOpenSLTP && (
+              <DropdownMenuItem 
+                className="flex items-center px-3 py-2 text-sm cursor-pointer hover:bg-zinc-700/50 focus:bg-zinc-700 focus:text-white"
+                onClick={handleSLTPClick}
+              >
+                Set SL/TP
+              </DropdownMenuItem>
+            )}
+            {onShare && (
+              <DropdownMenuItem 
+                className="flex items-center px-3 py-2 text-sm cursor-pointer hover:bg-zinc-700/50 focus:bg-zinc-700 focus:text-white"
+                onClick={() => {
+                  if (onShare) onShare();
+                }}
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                Share Trade
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem 
-              className="focus:bg-zinc-700 focus:text-white"
-              onClick={handleSLTPClick}
+              className="flex items-center px-3 py-2 text-sm cursor-pointer hover:bg-zinc-700/50 focus:bg-zinc-700 focus:text-white"
             >
-              Set SL/TP
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              className="focus:bg-zinc-700 focus:text-white"
-              onClick={() => {
-                setIsDropdownOpen(false);
-                if (onShare) onShare();
-              }}
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              Share Trade
-            </DropdownMenuItem>
-            <DropdownMenuItem className="focus:bg-zinc-700 focus:text-white">
               Edit Position Size
             </DropdownMenuItem>
-            <DropdownMenuItem 
-              className="focus:bg-zinc-700 focus:text-white"
-              onClick={handleCollateralClick}
-            >
-              Edit Collateral
-            </DropdownMenuItem>
+            {onOpenCollateral && (
+              <DropdownMenuItem 
+                className="flex items-center px-3 py-2 text-sm cursor-pointer hover:bg-zinc-700/50 focus:bg-zinc-700 focus:text-white"
+                onClick={handleCollateralClick}
+              >
+                Edit Collateral
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

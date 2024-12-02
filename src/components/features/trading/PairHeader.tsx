@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, memo } from "react";
+import React, { useState, useMemo, useCallback, memo, useEffect } from "react";
 import { useMarketData } from "../../../hooks/use-market-data";
 import { usePrices } from "../../../lib/websocket-price-context";
 import { ChevronDown } from "lucide-react";
@@ -166,6 +166,41 @@ export const PairHeader: React.FC<PairHeaderProps> = memo(({
   const handleTimeframeChange = useCallback(() => {
     setRateTimeframe(nextTimeframe());
   }, []);
+
+  // Add loading state
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Use try-catch in data fetching effects
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        // Your existing data loading logic
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error loading pair data:', error);
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [selectedPair]);
+
+  // Add loading state UI
+  if (isLoading) {
+    return (
+      <div className="w-full p-2 my-2 border rounded-lg shadow-sm bg-[hsl(var(--component-background))]">
+        <div className="animate-pulse flex space-x-4">
+          <div className="flex-1 space-y-4 py-1">
+            <div className="h-4 bg-muted rounded w-3/4"></div>
+            <div className="space-y-2">
+              <div className="h-4 bg-muted rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (unidexError || gtradeError) {
     return (

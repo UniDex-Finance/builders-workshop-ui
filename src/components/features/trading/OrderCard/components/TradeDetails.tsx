@@ -2,6 +2,8 @@ import React from "react";
 import Image from "next/image";
 import { TradeDetails as TradeDetailsType, RouteId, TradeDetailsProps } from "../types";
 
+const MemoizedImage = React.memo(Image);
+
 export const TradeDetails = React.memo(function TradeDetails({ 
   details, 
   pair, 
@@ -41,7 +43,7 @@ export const TradeDetails = React.memo(function TradeDetails({
       <div className="flex items-center justify-between">
         <span>Route</span>
         <div className="flex items-center gap-1.5">
-          <Image 
+          <MemoizedImage 
             src={getRouteLogo(routingInfo.selectedRoute)}
             alt={routingInfo.routeNames[routingInfo.selectedRoute]}
             width={16}

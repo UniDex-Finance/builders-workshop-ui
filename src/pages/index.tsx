@@ -54,10 +54,20 @@ export default function TradingInterface() {
   }, []);
 
   const filteredPositions = useMemo(() => {
-    return positionsLoading ? [] : positions;
-  }, [positionsLoading, positions]);
+    if (positionsLoading) return [];
+    return positions.filter(position => position.market === selectedPair);
+  }, [positionsLoading, positions, selectedPair]);
 
   const memoizedAddress = useMemo(() => address, [address]);
+
+  const [chartError, setChartError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    if (chartError) {
+      console.error('Chart error:', chartError);
+      // Optionally implement retry logic or show error UI
+    }
+  }, [chartError]);
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
@@ -94,12 +104,19 @@ export default function TradingInterface() {
           </div>
           
           <div className="flex flex-col flex-1">
-            <Chart 
-              selectedPair={selectedPair} 
-              height={chartHeight}
-              onHeightChange={handleChartHeightChange}
-              positions={filteredPositions}
-            />
+            {chartError ? (
+              <div className="flex items-center justify-center h-[500px] bg-background border rounded-xl">
+                <p className="text-red-500">Error loading chart. Please refresh the page.</p>
+              </div>
+            ) : (
+              <Chart 
+                selectedPair={selectedPair} 
+                height={chartHeight}
+                onHeightChange={handleChartHeightChange}
+                positions={filteredPositions}
+                key={selectedPair}
+              />
+            )}
             <div className="flex-1 mt-3 overflow-x-auto">
               <PositionsTable address={memoizedAddress} />
             </div>
