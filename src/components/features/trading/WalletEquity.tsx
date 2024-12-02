@@ -1,26 +1,26 @@
+import React from "react";
 import { usePositions } from "../../../hooks/use-positions";
 import { useBalances } from "../../../hooks/use-balances";
 import { useAccount } from "wagmi";
 
-export function WalletBox() {
+export const WalletBox = React.memo(function WalletBox() {
   const { positions, loading: positionsLoading } = usePositions();
   const { balances, isLoading: balancesLoading } = useBalances("arbitrum");
   const { address: eoaAddress } = useAccount();
 
-  // Calculate total unrealized PnL including fees
-  const totalUnrealizedPnl = positions?.reduce((total, position) => {
-    if (!position?.pnl) {
-      return total;
-    }
-
-    const pnlWithoutFees = parseFloat(position.pnl.replace(/[^0-9.-]/g, ""));
-    const totalFees =
-      parseFloat(position.fees.positionFee || "0") +
-      parseFloat(position.fees.borrowFee || "0") +
-      parseFloat(position.fees.fundingFee || "0");
-
-    return total + (pnlWithoutFees - totalFees);
-  }, 0);
+  // Memoize calculations
+  const totalUnrealizedPnl = React.useMemo(() => 
+    positions?.reduce((total, position) => {
+      if (!position?.pnl) return total;
+      const pnlWithoutFees = parseFloat(position.pnl.replace(/[^0-9.-]/g, ""));
+      const totalFees =
+        parseFloat(position.fees.positionFee || "0") +
+        parseFloat(position.fees.borrowFee || "0") +
+        parseFloat(position.fees.fundingFee || "0");
+      return total + (pnlWithoutFees - totalFees);
+    }, 0),
+    [positions]
+  );
 
   const formatPnL = (value: number | undefined) => {
     if (value === undefined) return "$0.00";
@@ -99,6 +99,6 @@ export function WalletBox() {
       </div>
     </div>
   );
-}
+});
 
 export default WalletBox;

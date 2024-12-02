@@ -18,7 +18,7 @@ interface MarketOrderFormProps {
   onLeverageChange: (value: string) => void;
 }
 
-export function MarketOrderForm({
+export const MarketOrderForm = React.memo(function MarketOrderForm({
   formState,
   calculatedMargin,
   handleAmountChange,
@@ -30,6 +30,17 @@ export function MarketOrderForm({
   leverage,
   onLeverageChange,
 }: MarketOrderFormProps) {
+  // Create memoized handlers
+  const memoizedSliderChange = React.useCallback(
+    (value: number[]) => handleSliderChange(value),
+    [handleSliderChange]
+  );
+
+  const memoizedLeverageChange = React.useCallback(
+    (value: string) => onLeverageChange(value),
+    [onLeverageChange]
+  );
+
   return (
     <div className="space-y-4">
       <div className="space-y-1">
@@ -146,4 +157,4 @@ export function MarketOrderForm({
       </div>
     </div>
   );
-}
+});

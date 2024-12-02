@@ -24,7 +24,7 @@ const DEFAULT_REFERRER = "0x0000000000000000000000000000000000000000";
 const STORAGE_KEY_CODE = 'unidex-referral-code';
 const STORAGE_KEY_ADDRESS = 'unidex-referral-address';
 
-export function OrderCard({
+export const OrderCard = React.memo(function OrderCard({
   leverage,
   onLeverageChange,
   assetId,
@@ -175,11 +175,11 @@ const totalRequired = calculatedMargin + tradingFee;
     setTempReferrerCode(e.target.value); // Only update the temporary value while typing
   };
 
-  const handleReferrerClick = () => {
+  const handleReferrerClick = React.useCallback(() => {
     setIsEditingReferrer(true);
     setTempReferrerCode(referrerCode); // Initialize temp code with current value
     setTimeout(() => referrerInputRef.current?.focus(), 0);
-  };
+  }, [referrerCode]);
 
   const handleReferrerBlur = async () => {
     setIsEditingReferrer(false);
@@ -274,7 +274,7 @@ const totalRequired = calculatedMargin + tradingFee;
     }
   };
 
-  const getButtonText = () => {
+  const getButtonText = React.useMemo(() => {
     if (isNetworkSwitching) return "Switching to Arbitrum...";
     if (!smartAccount?.address) return "Establish Connection";
     if (activeTab === "market" && !tradeDetails.entryPrice)
@@ -305,15 +305,27 @@ const totalRequired = calculatedMargin + tradingFee;
     return `Place ${activeTab === "market" ? "Market" : "Limit"} ${
       formState.isLong ? "Long" : "Short"
     }`;
-  };
+  }, [
+    isNetworkSwitching,
+    smartAccount?.address,
+    activeTab,
+    tradeDetails.entryPrice,
+    formState.limitPrice,
+    placingOrders,
+    hasInsufficientBalance,
+    calculatedMargin,
+    calculatedSize,
+    formState.isLong,
+    needsDeposit
+  ]);
 
-  const handleButtonClick = () => {
+  const handleButtonClick = React.useCallback(() => {
     if (!smartAccount?.address && isConnected) {
       setupSessionKey();
     } else {
       handlePlaceOrder();
     }
-  };
+  }, [smartAccount?.address, isConnected, setupSessionKey, handlePlaceOrder]);
 
   const referrerSection = (
     <div className="flex items-center justify-between">
@@ -472,7 +484,7 @@ const totalRequired = calculatedMargin + tradingFee;
               }
               onClick={handleButtonClick}
             >
-              {getButtonText()}
+              {getButtonText}
             </Button>
           )}
 
@@ -484,6 +496,6 @@ const totalRequired = calculatedMargin + tradingFee;
       </CardContent>
     </Card>
   );
-}
+});
 
 export default OrderCard;

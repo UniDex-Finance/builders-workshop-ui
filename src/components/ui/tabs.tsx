@@ -50,4 +50,7 @@ const TabsContent = React.forwardRef<
 ))
 TabsContent.displayName = TabsPrimitive.Content.displayName
 
-export { Tabs, TabsList, TabsTrigger, TabsContent }
+// Memoize the component
+const MemoizedTabsTrigger = React.memo(TabsTrigger);
+
+export { Tabs, TabsList, MemoizedTabsTrigger as TabsTrigger, TabsContent }
