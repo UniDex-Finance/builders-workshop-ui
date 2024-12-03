@@ -34,7 +34,7 @@ const MIN_MARGIN = {
   gtrade: 5
 } as const;
 
-export function useRouting(assetId: string, amount: string, leverage: string) {
+export function useRouting(assetId: string, amount: string, leverage: string, isLong: boolean) {
   const { placeMarketOrder: placeUnidexOrder } = useMarketOrderActions();
   const { placeGTradeOrder } = useGTradeOrderActions();
   const { allMarkets } = useMarketData();
@@ -65,49 +65,61 @@ export function useRouting(assetId: string, amount: string, leverage: string) {
     const isGTradeSupported = GTRADE_PAIR_MAPPING[market.pair] !== undefined;
     const orderSize = parseFloat(amount || '0');
 
-    // Calculate available liquidity for UniDex
-    const unidexLongLiquidity = market.availableLiquidity?.long || 0;
-    const unidexShortLiquidity = market.availableLiquidity?.short || 0;
+    // Get relevant liquidity based on position direction
+    const relevantLiquidity = isLong 
+      ? market.availableLiquidity?.long || 0
+      : market.availableLiquidity?.short || 0;
 
-    // Check if UniDex has enough liquidity for the full order
-    const hasUnidexLiquidity = orderSize <= unidexLongLiquidity && orderSize <= unidexShortLiquidity;
+    // Check if UniDex has enough liquidity for the specific direction
+    const hasUnidexLiquidity = orderSize <= relevantLiquidity;
+
+    // Check margin requirements
+    const meetsUnidexMargin = currentMargin >= MIN_MARGIN.unidexv4;
+    const meetsGTradeMargin = currentMargin >= MIN_MARGIN.gtrade;
+
+    // UniDex should be available if it has liquidity AND meets minimum margin
+    const unidexAvailable = hasUnidexLiquidity && meetsUnidexMargin;
+    
+    // gTrade should only be available if UniDex doesn't have liquidity
+    const gTradeAvailable = isGTradeSupported && meetsGTradeMargin && !hasUnidexLiquidity;
 
     const routes: Record<RouteId, RouteInfo> = {
       unidexv4: {
         id: 'unidexv4',
         name: 'UniDex',
-        tradingFee: market.longTradingFee / 10,
-        available: hasUnidexLiquidity,
+        tradingFee: market.longTradingFee / 100,
+        available: unidexAvailable,
         minMargin: MIN_MARGIN.unidexv4,
-        reason: hasUnidexLiquidity ? undefined : 'Insufficient liquidity on UniDex'
+        reason: !hasUnidexLiquidity 
+          ? 'Insufficient liquidity on UniDex'
+          : !meetsUnidexMargin 
+          ? 'Minimum margin requirement not met'
+          : undefined
       },
       gtrade: {
         id: 'gtrade',
         name: 'gTrade',
         tradingFee: 0.0006,
-        available: isGTradeSupported && !hasUnidexLiquidity, // Only available if UniDex lacks liquidity
+        available: gTradeAvailable,
         minMargin: MIN_MARGIN.gtrade,
         reason: !isGTradeSupported 
           ? 'Pair not supported on gTrade'
-          : hasUnidexLiquidity 
-          ? 'Using UniDex liquidity first'
+          : hasUnidexLiquidity
+          ? 'Using UniDex liquidity'
+          : !meetsGTradeMargin
+          ? 'Minimum margin requirement not met'
           : undefined
       }
     };
 
-    // Determine best route
+    // Simplified routing logic:
+    // If UniDex has liquidity and meets margin requirements, use it
+    // Otherwise, fall back to gTrade if available
     let bestRoute: RouteId = 'unidexv4';
-
-    // If current margin is less than gTrade minimum, force unidexv4
-    if (currentMargin < MIN_MARGIN.gtrade) {
+    
+    if (unidexAvailable) {
       bestRoute = 'unidexv4';
-    } 
-    // If UniDex has liquidity, always use it first
-    else if (hasUnidexLiquidity) {
-      bestRoute = 'unidexv4';
-    }
-    // If UniDex doesn't have enough liquidity and gTrade is available, use gTrade
-    else if (isGTradeSupported) {
+    } else if (gTradeAvailable) {
       bestRoute = 'gtrade';
     }
 
@@ -115,7 +127,7 @@ export function useRouting(assetId: string, amount: string, leverage: string) {
       bestRoute,
       routes
     };
-  }, [assetId, allMarkets, currentMargin, amount]);
+  }, [assetId, allMarkets, currentMargin, amount, isLong]);
 
   const executeOrder = async (params: OrderParams) => {
     if (routingInfo.bestRoute === 'gtrade') {

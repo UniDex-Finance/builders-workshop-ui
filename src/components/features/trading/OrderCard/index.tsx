@@ -61,7 +61,8 @@ export function OrderCard({
   const { bestRoute, routes, executeOrder } = useRouting(
     assetId,
     formState.amount,
-    leverage
+    leverage,
+    formState.isLong
   );
 
   const isValidRoutes = (routes: any): routes is Record<RouteId, { tradingFee: number; available: boolean; reason?: string; }> => {
