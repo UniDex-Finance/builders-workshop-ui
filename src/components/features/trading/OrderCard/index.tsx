@@ -290,12 +290,21 @@ const totalRequired = calculatedMargin + tradingFee;
       return `Minimum Margin: ${selectedRoute.minMargin} USD`;
     }
 
-    const availableLiquidity = formState.isLong
-      ? market?.availableLiquidity?.long
-      : market?.availableLiquidity?.short;
+    // Check liquidity based on the selected route
+    if (routingInfo.selectedRoute === 'unidexv4') {
+      const availableLiquidity = formState.isLong
+        ? market?.availableLiquidity?.long
+        : market?.availableLiquidity?.short;
 
-    if (availableLiquidity !== undefined && calculatedSize > availableLiquidity) {
-      return "Not Enough Liquidity";
+      if (availableLiquidity !== undefined && calculatedSize > availableLiquidity) {
+        // If UniDex doesn't have liquidity but gTrade is available, show gTrade message
+        if (routingInfo.routes.gtrade.available) {
+          return `Place ${activeTab === "market" ? "Market" : "Limit"} ${
+            formState.isLong ? "Long" : "Short"
+          } on gTrade`;
+        }
+        return "Not Enough Liquidity";
+      }
     }
 
     if (needsDeposit) {
@@ -460,13 +469,18 @@ const totalRequired = calculatedMargin + tradingFee;
                      hasInsufficientBalance ||
                      !isValid(formState.amount) ||
                      (() => {
-                       const availableLiquidity = formState.isLong
-                         ? market?.availableLiquidity?.long
-                         : market?.availableLiquidity?.short;
-                       return (
-                         availableLiquidity !== undefined &&
-                         calculatedSize > availableLiquidity
-                       );
+                       // Check liquidity based on selected route
+                       if (routingInfo.selectedRoute === 'unidexv4') {
+                         const availableLiquidity = formState.isLong
+                           ? market?.availableLiquidity?.long
+                           : market?.availableLiquidity?.short;
+                         return (
+                           availableLiquidity !== undefined &&
+                           calculatedSize > availableLiquidity &&
+                           !routingInfo.routes.gtrade.available
+                         );
+                       }
+                       return false;
                      })())
                   : false // Not disabled when showing "Establish Connection"
               }
