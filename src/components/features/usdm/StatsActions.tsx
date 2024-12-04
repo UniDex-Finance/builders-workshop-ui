@@ -1,20 +1,12 @@
 import { useEffect, useState } from "react"
 import { useUsdm } from "@/hooks/use-usdm"
-import { Button } from "@/components/ui/button"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-
-interface DuneResponse {
-  result: {
-    rows: Array<{
-      vaultDailyReturn: number
-    }>
-  }
-}
+import { useDuneData } from "@/hooks/use-dune-data"
 
 interface MoltenPriceResponse {
   coins: {
@@ -31,34 +23,12 @@ interface MoltenPriceResponse {
 export function StatsActions() {
   const { usdmData } = useUsdm()
   const [totalApr, setTotalApr] = useState<number>(0)
-  const [vaultApr, setVaultApr] = useState<number>(0)
   const [esMoltenApr, setEsMoltenApr] = useState<number>(0)
-  const [isLoading, setIsLoading] = useState(true)
+  const { vaultApr, isLoading } = useDuneData(usdmData?.formattedVaultBalance || '0')
 
   useEffect(() => {
-    const fetchAprs = async () => {
+    const fetchMoltenPrice = async () => {
       try {
-        // Fetch vault APR from Dune
-        const duneResponse = await fetch('https://api.dune.com/api/v1/query/4086143/results?limit=7', {
-          headers: { 'X-Dune-API-Key': 'yX66WVGfAuB6z0GMJ6bTy5vWkUeLD00q' }
-        })
-
-        if (!duneResponse.ok) {
-          throw new Error('Failed to fetch vault APR data')
-        }
-
-        const duneData: DuneResponse = await duneResponse.json()
-        
-        // Calculate vault APR
-        const totalDailyReturns = duneData.result.rows.reduce((sum, row) => {
-          return sum + (row.vaultDailyReturn || 0)
-        }, 0)
-        const yearlyReturn = totalDailyReturns * 52
-        const tvl = parseFloat(usdmData?.formattedVaultBalance || '0')
-        const calculatedVaultApr = tvl > 0 ? (yearlyReturn / tvl) * 100 : 0
-        setVaultApr(calculatedVaultApr)
-
-        // Fetch MOLTEN price
         const moltenResponse = await fetch('https://coins.llama.fi/prices/current/arbitrum:0x66E535e8D2ebf13F49F3D49e5c50395a97C137b1')
         
         if (!moltenResponse.ok) {
@@ -71,23 +41,21 @@ export function StatsActions() {
         // Calculate esMOLTEN APR
         const monthlyEsMoltenUsd = moltenPrice * 20000
         const yearlyEsMoltenUsd = monthlyEsMoltenUsd * 12
+        const tvl = parseFloat(usdmData?.formattedVaultBalance || '0')
         const calculatedEsMoltenApr = tvl > 0 ? (yearlyEsMoltenUsd / tvl) * 100 : 0
         setEsMoltenApr(calculatedEsMoltenApr)
 
         // Calculate total APR
-        setTotalApr(calculatedVaultApr + calculatedEsMoltenApr)
+        setTotalApr(vaultApr + calculatedEsMoltenApr)
       } catch (error) {
-        console.error('Error fetching APR data:', error)
-        setTotalApr(0)
-        setVaultApr(0)
+        console.error('Error fetching MOLTEN price:', error)
         setEsMoltenApr(0)
-      } finally {
-        setIsLoading(false)
+        setTotalApr(vaultApr)
       }
     }
 
-    fetchAprs()
-  }, [usdmData?.formattedVaultBalance])
+    fetchMoltenPrice()
+  }, [vaultApr, usdmData?.formattedVaultBalance])
   
   return (
     <div className="flex items-center justify-between">
