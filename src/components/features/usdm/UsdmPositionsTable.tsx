@@ -4,6 +4,7 @@ import { ArrowUpDown } from "lucide-react"
 import { useState } from "react"
 import { usePairPrecision } from "@/hooks/use-pair-precision"
 import { calculateLiquidationPrice } from "@/lib/position-utils"
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 
 type SortField = 'size' | 'margin' | 'pnl' | 'funding'
 type SortDirection = 'asc' | 'desc'
@@ -13,6 +14,8 @@ export function UsdmPositionsTable() {
   const { formatPairPrice } = usePairPrecision()
   const [sortField, setSortField] = useState<SortField>('size')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
+
+  const cleanNumberString = (str: string) => parseFloat(str.replace(/[$,]/g, ''))
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -28,17 +31,13 @@ export function UsdmPositionsTable() {
 
     switch (sortField) {
       case 'size':
-        const aSize = parseFloat(a.positionValue.replace(/[^0-9.-]+/g, ''))
-        const bSize = parseFloat(b.positionValue.replace(/[^0-9.-]+/g, ''))
-        return (aSize - bSize) * multiplier
+        return (cleanNumberString(a.positionValue) - cleanNumberString(b.positionValue)) * multiplier
       case 'margin':
-        return (parseFloat(a.margin.replace('$', '')) - parseFloat(b.margin.replace('$', ''))) * multiplier
+        return (cleanNumberString(a.margin) - cleanNumberString(b.margin)) * multiplier
       case 'pnl':
-        const aPnl = parseFloat(a.pnl.value.replace(/[$,]/g, ''))
-        const bPnl = parseFloat(b.pnl.value.replace(/[$,]/g, ''))
-        return (aPnl - bPnl) * multiplier
+        return (cleanNumberString(a.pnl.value) - cleanNumberString(b.pnl.value)) * multiplier
       case 'funding':
-        return (parseFloat(a.funding.value.replace('$', '')) - parseFloat(b.funding.value.replace('$', ''))) * multiplier
+        return (cleanNumberString(a.funding.value) - cleanNumberString(b.funding.value)) * multiplier
       default:
         return 0
     }
@@ -66,78 +65,102 @@ export function UsdmPositionsTable() {
     </th>
   )
 
-  return (
-    <Card className="bg-[#16161D] border-[#1b1b22]">
-      <CardHeader className="py-3">
-        <CardTitle className="text-base">Active Positions</CardTitle>
-      </CardHeader>
-      <CardContent className="py-0">
-        <div className="overflow-x-auto">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="text-[#A0AEC0] border-b border-[#272734]">
-                <th className="px-3 py-2 font-medium text-left">Coin</th>
-                <SortableHeader field="size" align="left">Size</SortableHeader>
-                <SortableHeader field="margin" align="left">Margin</SortableHeader>
-                <th className="px-3 py-2 font-medium text-right">Entry Price</th>
-                <th className="px-3 py-2 font-medium text-right">Mark Price</th>
-                <SortableHeader field="pnl">PNL (ROE %)</SortableHeader>
-                <th className="px-3 py-2 font-medium text-right">Liq. Price</th>
-                <SortableHeader field="funding">Interest</SortableHeader>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={8} className="px-3 py-2 text-center text-[#A0AEC0]">
-                    Loading positions...
-                  </td>
-                </tr>
-              ) : sortedPositions?.map((position, index) => {
-                const liqPrice = calculateLiquidationPrice({
-                  isLong: position.isLong,
-                  entryPrice: parseFloat(position.entryPrice),
-                  leverage: parseFloat(position.positionValue.replace(/[^0-9.-]+/g, '')) / parseFloat(position.margin.replace('$', '')),
-                  marginValue: parseFloat(position.margin.replace('$', ''))
-                })
+  const getLiquidationColor = (pnlPercentage: number) => {
+    if (pnlPercentage >= 0) return 'text-white'
+    const loss = Math.abs(pnlPercentage)
+    if (loss <= 50) return 'text-white'
+    if (loss <= 66) return 'text-yellow-400'
+    if (loss <= 75) return 'text-orange-400'
+    return 'text-red-500'
+  }
 
-                return (
-                  <tr key={index} className="border-b border-[#272734] hover:bg-[#272734] transition-colors">
-                    <td className={`px-3 py-2 ${
-                      position.isLong ? 'text-green-500' : 'text-red-500'
-                    }`}>
-                      {position.coin}
-                    </td>
-                    <td className="px-3 py-2">
-                      ${position.positionValue}
-                    </td>
-                    <td className="px-3 py-2 text-left">{position.margin}</td>
-                    <td className="px-3 py-2 text-right">
-                      ${formatPairPrice(position.pair, parseFloat(position.entryPrice))}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      ${formatPairPrice(position.pair, parseFloat(position.markPrice))}
-                    </td>
-                    <td className={`px-3 py-2 text-right ${
-                      position.pnl.value.startsWith('-') ? 'text-red-500' : 'text-green-500'
-                    }`}>
-                      {position.pnl.value} ({position.pnl.percentage})
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      ${formatPairPrice(position.pair, liqPrice)}
-                    </td>
-                    <td className={`px-3 py-2 text-right ${
-                      position.funding.isNegative ? 'text-red-500' : 'text-green-500'
-                    }`}>
-                      {position.funding.value}
+  return (
+    <TooltipProvider>
+      <Card className="bg-[#16161D] border-[#1b1b22]">
+        <CardHeader className="py-3">
+          <CardTitle className="text-base">Active Positions</CardTitle>
+        </CardHeader>
+        <CardContent className="py-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-[13px]">
+              <thead>
+                <tr className="text-[#A0AEC0] border-b border-[#272734]">
+                  <th className="px-3 py-2 font-medium text-left">Coin</th>
+                  <SortableHeader field="size" align="left">Size</SortableHeader>
+                  <SortableHeader field="margin" align="left">Margin</SortableHeader>
+                  <th className="px-3 py-2 font-medium text-right">Entry Price</th>
+                  <th className="px-3 py-2 font-medium text-right">Mark Price</th>
+                  <SortableHeader field="pnl">PNL (ROE %)</SortableHeader>
+                  <th className="px-3 py-2 font-medium text-right">Liq. Price</th>
+                  <SortableHeader field="funding">Interest</SortableHeader>
+                </tr>
+              </thead>
+              <tbody>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={8} className="px-3 py-2 text-center text-[#A0AEC0]">
+                      Loading positions...
                     </td>
                   </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-      </CardContent>
-    </Card>
+                ) : sortedPositions?.map((position, index) => {
+                  const liqPrice = calculateLiquidationPrice({
+                    isLong: position.isLong,
+                    entryPrice: parseFloat(position.entryPrice),
+                    leverage: cleanNumberString(position.positionValue) / cleanNumberString(position.margin),
+                    marginValue: cleanNumberString(position.margin)
+                  })
+
+                  const currentPnlPct = parseFloat(position.pnl.percentage.replace('%', ''))
+                  
+                  const priceMovementNeeded = Math.abs(
+                    ((liqPrice - parseFloat(position.markPrice)) / parseFloat(position.markPrice)) * 100
+                  ).toFixed(2)
+
+                  return (
+                    <tr key={index} className="border-b border-[#272734] hover:bg-[#272734] transition-colors">
+                      <td className={`px-3 py-2 ${
+                        position.isLong ? 'text-green-500' : 'text-red-500'
+                      }`}>
+                        {position.coin}
+                      </td>
+                      <td className="px-3 py-2">
+                        ${position.positionValue}
+                      </td>
+                      <td className="px-3 py-2 text-left">{position.margin}</td>
+                      <td className="px-3 py-2 text-right">
+                        ${formatPairPrice(position.pair, parseFloat(position.entryPrice))}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        ${formatPairPrice(position.pair, parseFloat(position.markPrice))}
+                      </td>
+                      <td className={`px-3 py-2 text-right ${
+                        position.pnl.value.startsWith('-') ? 'text-red-500' : 'text-green-500'
+                      }`}>
+                        {position.pnl.value} ({position.pnl.percentage})
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <Tooltip>
+                          <TooltipTrigger className={`${getLiquidationColor(currentPnlPct)}`}>
+                            ${formatPairPrice(position.pair, liqPrice)}
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {priceMovementNeeded}% price movement needed for liquidation
+                          </TooltipContent>
+                        </Tooltip>
+                      </td>
+                      <td className={`px-3 py-2 text-right ${
+                        position.funding.isNegative ? 'text-red-500' : 'text-green-500'
+                      }`}>
+                        {position.funding.value}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   )
 } 
