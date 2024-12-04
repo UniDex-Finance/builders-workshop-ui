@@ -3,6 +3,7 @@ import { usePlatformPositions } from "@/hooks/use-platform-positions"
 import { ArrowUpDown } from "lucide-react"
 import { useState } from "react"
 import { usePairPrecision } from "@/hooks/use-pair-precision"
+import { calculateLiquidationPrice } from "@/lib/position-utils"
 
 type SortField = 'size' | 'margin' | 'pnl' | 'funding'
 type SortDirection = 'asc' | 'desc'
@@ -92,41 +93,47 @@ export function UsdmPositionsTable() {
                     Loading positions...
                   </td>
                 </tr>
-              ) : sortedPositions?.map((position, index) => (
-                <tr 
-                  key={index}
-                  className="border-b border-[#272734] hover:bg-[#272734] transition-colors"
-                >
-                  <td className={`px-3 py-2 ${
-                    position.isLong ? 'text-green-500' : 'text-red-500'
-                  }`}>
-                    {position.coin}
-                  </td>
-                  <td className="px-3 py-2">
-                    ${position.positionValue}
-                  </td>
-                  <td className="px-3 py-2 text-left">{position.margin}</td>
-                  <td className="px-3 py-2 text-right">
-                    ${formatPairPrice(position.pair, parseFloat(position.entryPrice))}
-                  </td>
-                  <td className="px-3 py-2 text-right">
-                    ${formatPairPrice(position.pair, parseFloat(position.markPrice))}
-                  </td>
-                  <td className={`px-3 py-2 text-right ${
-                    position.pnl.value.startsWith('-') ? 'text-red-500' : 'text-green-500'
-                  }`}>
-                    {position.pnl.value} ({position.pnl.percentage})
-                  </td>
-                  <td className="px-3 py-2 text-right">
-                    ${formatPairPrice(position.pair, parseFloat(position.liqPrice))}
-                  </td>
-                  <td className={`px-3 py-2 text-right ${
-                    position.funding.isNegative ? 'text-red-500' : 'text-green-500'
-                  }`}>
-                    {position.funding.value}
-                  </td>
-                </tr>
-              ))}
+              ) : sortedPositions?.map((position, index) => {
+                const liqPrice = calculateLiquidationPrice({
+                  isLong: position.isLong,
+                  entryPrice: parseFloat(position.entryPrice),
+                  leverage: parseFloat(position.positionValue.replace(/[^0-9.-]+/g, '')) / parseFloat(position.margin.replace('$', '')),
+                  marginValue: parseFloat(position.margin.replace('$', ''))
+                })
+
+                return (
+                  <tr key={index} className="border-b border-[#272734] hover:bg-[#272734] transition-colors">
+                    <td className={`px-3 py-2 ${
+                      position.isLong ? 'text-green-500' : 'text-red-500'
+                    }`}>
+                      {position.coin}
+                    </td>
+                    <td className="px-3 py-2">
+                      ${position.positionValue}
+                    </td>
+                    <td className="px-3 py-2 text-left">{position.margin}</td>
+                    <td className="px-3 py-2 text-right">
+                      ${formatPairPrice(position.pair, parseFloat(position.entryPrice))}
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      ${formatPairPrice(position.pair, parseFloat(position.markPrice))}
+                    </td>
+                    <td className={`px-3 py-2 text-right ${
+                      position.pnl.value.startsWith('-') ? 'text-red-500' : 'text-green-500'
+                    }`}>
+                      {position.pnl.value} ({position.pnl.percentage})
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      ${formatPairPrice(position.pair, liqPrice)}
+                    </td>
+                    <td className={`px-3 py-2 text-right ${
+                      position.funding.isNegative ? 'text-red-500' : 'text-green-500'
+                    }`}>
+                      {position.funding.value}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
