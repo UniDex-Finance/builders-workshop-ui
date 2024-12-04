@@ -109,8 +109,8 @@ export function StatsActions() {
                     <span className="font-medium text-white">{vaultApr.toFixed(2)}%</span>
                   </div>
                   <p className="text-sm text-[#A0AEC0]">
-                    Earn yield from trading fees and funding rates collected by the protocol. 
-                    APR is calculated based on the last 7 days of revenue.
+                    Earn yield from trading fees, funding rates, and traders Pnl collected by the protocol. 
+                    APR is calculated based on the last 7 days of activity.
                   </p>
                 </div>
 
@@ -120,12 +120,12 @@ export function StatsActions() {
                 {/* esMOLTEN APR Section */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[#A0AEC0] font-medium">esMOLTEN APR</span>
+                    <span className="text-[#A0AEC0] font-medium">Staking APR (esMOLTEN)</span>
                     <span className="font-medium text-white">{esMoltenApr.toFixed(2)}%</span>
                   </div>
                   <p className="text-sm text-[#A0AEC0]">
-                    Earn 20,000 esMOLTEN tokens monthly for providing liquidity. 
-                    esMOLTEN can be vested to MOLTEN tokens over 6 months.
+                    Earn 20,000 esMOLTEN tokens monthly when you stake USD.m on the staking page. 
+                    esMOLTEN can be vested to MOLTEN tokens over 12 months.
                   </p>
                 </div>
 
