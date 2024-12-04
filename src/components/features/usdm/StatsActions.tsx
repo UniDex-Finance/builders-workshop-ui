@@ -7,6 +7,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useDuneData } from "@/hooks/use-dune-data"
+import { type Balances } from "@/hooks/use-balances"
+
+interface Props {
+  balances: Balances | null
+  isLoading: boolean
+}
 
 interface MoltenPriceResponse {
   coins: {
@@ -20,11 +26,11 @@ interface MoltenPriceResponse {
   }
 }
 
-export function StatsActions() {
+export function StatsActions({ balances, isLoading }: Props) {
   const { usdmData } = useUsdm()
   const [totalApr, setTotalApr] = useState<number>(0)
   const [esMoltenApr, setEsMoltenApr] = useState<number>(0)
-  const { vaultApr, isLoading } = useDuneData(usdmData?.formattedVaultBalance || '0')
+  const { vaultApr } = useDuneData(usdmData?.formattedVaultBalance || '0')
 
   useEffect(() => {
     const fetchMoltenPrice = async () => {

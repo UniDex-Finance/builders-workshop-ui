@@ -3,8 +3,14 @@ import { useMoltenStaking } from "@/hooks/use-molten-staking"
 import { useUsdmStaking } from "@/hooks/use-usdm-staking"
 import { useMoltenStats } from "@/hooks/use-molten-stats"
 import { useUsdm } from "@/hooks/use-usdm"
+import { type Balances } from "@/hooks/use-balances"
 
-export function PositionCard() {
+interface Props {
+  balances: Balances | null
+  isLoading: boolean
+}
+
+export function PositionCard({ balances, isLoading }: Props) {
   const { stakingData: moltenStakingData } = useMoltenStaking()
   const { stakingData: usdmStakingData } = useUsdmStaking()
   const { stats } = useMoltenStats()

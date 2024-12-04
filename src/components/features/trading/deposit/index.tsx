@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Card } from "../../../ui/card";
 import { Button } from "../../../ui/button";
 import { Alert, AlertDescription } from "../../../ui/alert";
@@ -51,6 +51,54 @@ export default function DepositBox() {
     refetchBalances,
   });
 
+  const balanceRefreshInterval = useRef<NodeJS.Timeout>();
+  const lastManualRefetchTime = useRef<number>(0);
+  const MANUAL_REFETCH_THROTTLE = 3000; // 3 seconds
+
+  // Throttled manual refetch
+  const throttledRefetchBalances = useCallback(() => {
+    const now = Date.now();
+    if (now - lastManualRefetchTime.current >= MANUAL_REFETCH_THROTTLE) {
+      lastManualRefetchTime.current = now;
+      refetchBalances();
+    }
+  }, [refetchBalances]);
+
+  // Set up periodic balance refresh
+  useEffect(() => {
+    if (smartAccount?.address && isOpen) {
+      // Initial fetch
+      refetchBalances();
+      
+      // Set up interval
+      balanceRefreshInterval.current = setInterval(() => {
+        refetchBalances();
+      }, 5000);
+
+      return () => {
+        if (balanceRefreshInterval.current) {
+          clearInterval(balanceRefreshInterval.current);
+        }
+      };
+    }
+  }, [smartAccount?.address, isOpen, refetchBalances]);
+
+  // Clean up interval when component unmounts
+  useEffect(() => {
+    return () => {
+      if (balanceRefreshInterval.current) {
+        clearInterval(balanceRefreshInterval.current);
+      }
+    };
+  }, []);
+
+  // Update the useEffect that watches for smart account changes
+  useEffect(() => {
+    if (smartAccount?.address) {
+      throttledRefetchBalances();
+    }
+  }, [smartAccount?.address, throttledRefetchBalances]);
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -70,12 +118,6 @@ export default function DepositBox() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
-
-  useEffect(() => {
-    if (smartAccount?.address) {
-      refetchBalances();
-    }
-  }, [smartAccount?.address, refetchBalances]);
 
   const isOnCorrectChain = () => {
     if (selectedNetwork === "arbitrum") {

@@ -21,13 +21,23 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useUsdcPrice } from "@/hooks/use-usdc-price"
+import { type Balances } from "@/hooks/use-balances"
 
 interface ActionsCardProps {
   isStaking: boolean
   setIsStaking: (value: boolean) => void
+  balances: Balances | null
+  isLoading: boolean
+  refetchBalances: () => Promise<void>
 }
 
-export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
+export function ActionsCard({ 
+  isStaking, 
+  setIsStaking, 
+  balances,
+  isLoading,
+  refetchBalances 
+}: ActionsCardProps) {
   const [amount, setAmount] = React.useState("")
   const [isOpen, setIsOpen] = React.useState(true)
   const [action, setAction] = React.useState<'mint' | 'burn'>('mint')

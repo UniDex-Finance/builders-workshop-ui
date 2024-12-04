@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { parseUnits, encodeFunctionData } from "viem";
 import { TransactionHandlerProps } from "./types";
 
@@ -18,6 +18,8 @@ const ERC20_ABI = [
   },
 ] as const;
 
+const REFETCH_THROTTLE = 3000; // 5 seconds
+
 export function useTransactionHandler({
   smartAccount,
   kernelClient,
@@ -26,6 +28,15 @@ export function useTransactionHandler({
 }: TransactionHandlerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
+  const lastRefetchRef = useRef<number>(0);
+
+  const throttledRefetch = useCallback(() => {
+    const now = Date.now();
+    if (now - lastRefetchRef.current >= REFETCH_THROTTLE) {
+      lastRefetchRef.current = now;
+      refetchBalances();
+    }
+  }, [refetchBalances]);
 
   const handleApproveAndDeposit = async (amount: string) => {
     if (!smartAccount || !kernelClient) return;
@@ -74,7 +85,7 @@ export function useTransactionHandler({
         description: `Successfully deposited ${amount} USDC`,
       });
 
-      refetchBalances();
+      throttledRefetch();
     } catch (error: any) {
       if (error?.message?.includes("User rejected") || 
           error?.message?.toLowerCase().includes("rejected") ||
@@ -132,7 +143,7 @@ export function useTransactionHandler({
         description: `Successfully ${type}ed ${amount} USDC`,
       });
 
-      refetchBalances();
+      throttledRefetch();
     } catch (error: any) {
       if (error?.message?.includes("User rejected") || 
           error?.message?.toLowerCase().includes("rejected") ||

@@ -1,8 +1,14 @@
 import { useUsdm } from "@/hooks/use-usdm"
 import { formatLargeNumber } from "@/utils/format"
 import { useDuneData } from "@/hooks/use-dune-data"
+import { type Balances } from "@/hooks/use-balances"
 
-export function StatsDisplay() {
+interface Props {
+  balances: Balances | null
+  isLoading: boolean
+}
+
+export function StatsDisplay({ balances, isLoading }: Props) {
   const { usdmData } = useUsdm()
   const { cumulativeReturn } = useDuneData(usdmData?.formattedVaultBalance || '0')
 
