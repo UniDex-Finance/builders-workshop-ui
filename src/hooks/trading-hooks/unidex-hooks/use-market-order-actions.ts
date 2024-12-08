@@ -78,7 +78,8 @@ export function useMarketOrderActions() {
     orderType: "market" | "limit",
     takeProfit?: string,
     stopLoss?: string,
-    referrer: string = "0x0000000000000000000000000000000000000000"
+    referrer: string = "0x0000000000000000000000000000000000000000",
+    nonceKey?: bigint
   ) => {
     if (!kernelClient || !smartAccount?.address || !publicClient) {
       toast({
@@ -248,9 +249,10 @@ export function useMarketOrderActions() {
     size: number,
     takeProfit?: string,
     stopLoss?: string,
-    referrer?: string
+    referrer?: string,
+    nonceKey?: bigint
   ) => {
-    return placeOrder(pair, isLong, currentPrice, slippagePercent, margin, size, "market", takeProfit, stopLoss, referrer);
+    return placeOrder(pair, isLong, currentPrice, slippagePercent, margin, size, "market", takeProfit, stopLoss, referrer, nonceKey);
   };
 
   const placeLimitOrder = (
@@ -267,9 +269,117 @@ export function useMarketOrderActions() {
     return placeOrder(pair, isLong, limitPrice, slippagePercent, margin, size, "limit", takeProfit, stopLoss, referrer);
   };
 
+  const prepare = async (
+    pair: number,
+    isLong: boolean,
+    price: number,
+    slippagePercent: number,
+    margin: number,
+    size: number,
+    takeProfit?: string,
+    stopLoss?: string,
+    referrer?: string,
+  ) => {
+    if (!smartAccount?.address) {
+      throw new Error("Wallet not connected");
+    }
+
+    const maxAcceptablePrice = Number((price * (isLong ? 1.05 : 0.95)).toFixed(6));
+
+    const orderResponse = await fetch('https://unidexv4-api-production.up.railway.app/api/newposition', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        pair,
+        isLong,
+        orderType: "market",
+        maxAcceptablePrice,
+        slippagePercent,
+        margin,
+        size,
+        userAddress: smartAccount.address,
+        skipBalanceCheck: true,
+        referrer: referrer || "0x0000000000000000000000000000000000000000",
+        ...(takeProfit && {
+          takeProfit: parseFloat(takeProfit),
+          takeProfitClosePercent: 100
+        }),
+        ...(stopLoss && {
+          stopLoss: parseFloat(stopLoss),
+          stopLossClosePercent: 100
+        }),
+      }),
+    });
+
+    if (!orderResponse.ok) {
+      throw new Error('Failed to prepare order');
+    }
+
+    const orderData = await orderResponse.json();
+
+    // Check if we need deposit
+    const { needsDeposit, depositAmount } = checkBalancesAndGetDepositAmount(margin, size);
+
+    if (needsDeposit) {
+      const depositResponse = await fetch(
+        "https://unidexv4-api-production.up.railway.app/api/wallet",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "deposit",
+            tokenAddress: USDC_TOKEN,
+            amount: depositAmount.toString(),
+            smartAccountAddress: smartAccount.address,
+          }),
+        }
+      );
+
+      if (!depositResponse.ok) {
+        throw new Error("Failed to prepare deposit");
+      }
+
+      const depositData = await depositResponse.json();
+      const approveCalldata = encodeFunctionData({
+        abi: ERC20_ABI,
+        functionName: "approve",
+        args: [TRADING_CONTRACT, BigInt(Math.floor(depositAmount * 1e6))],
+      });
+
+      return {
+        calls: [
+          {
+            to: USDC_TOKEN,
+            data: approveCalldata,
+            value: 0n
+          },
+          {
+            to: depositData.vaultAddress,
+            data: depositData.calldata,
+            value: 0n
+          },
+          {
+            to: orderData.vaultAddress,
+            data: orderData.calldata,
+            value: 0n
+          }
+        ]
+      };
+    }
+
+    return {
+      calls: [{
+        to: orderData.vaultAddress,
+        data: orderData.calldata,
+        value: 0n
+      }]
+    };
+  };
+
   return {
     placeMarketOrder,
     placeLimitOrder,
+    prepare,
     placingOrders,
   };
 }

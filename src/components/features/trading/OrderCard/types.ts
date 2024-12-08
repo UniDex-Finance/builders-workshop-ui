@@ -97,6 +97,10 @@ export interface TradeDetailsProps {
   totalRequired: number;
   referrerSection: React.ReactNode;
   routingInfo: RoutingInfo;
+  splitOrderInfo?: {
+    unidex: { size: number; margin: number; } | null;
+    gtrade: { size: number; margin: number; } | null;
+  };
 }
 
 export interface RoutingInfo {

@@ -8,7 +8,8 @@ export function TradeDetails({
   tradingFee, 
   totalRequired, 
   referrerSection,
-  routingInfo 
+  routingInfo,
+  splitOrderInfo 
 }: TradeDetailsProps) {
   const { entryPrice, notionalSize, liquidationPrice, fees } = details;
 
@@ -32,15 +33,26 @@ export function TradeDetails({
       <div className="flex items-center justify-between">
         <span>Route</span>
         <div className="flex items-center gap-1.5">
-          <Image 
-            src={getRouteLogo(routingInfo.selectedRoute)}
-            alt={routingInfo.routeNames[routingInfo.selectedRoute]}
-            width={16}
-            height={16}
-          />
-          <span className="text-primary">
-            {routingInfo.routeNames[routingInfo.selectedRoute]}
-          </span>
+          {splitOrderInfo?.unidex && splitOrderInfo?.gtrade ? (
+            <div className="text-primary">
+              <span>Split: </span>
+              <span>{splitOrderInfo.unidex.size.toFixed(2)} UniDex</span>
+              <span> + </span>
+              <span>{splitOrderInfo.gtrade.size.toFixed(2)} gTrade</span>
+            </div>
+          ) : (
+            <>
+              <Image 
+                src={getRouteLogo(routingInfo.selectedRoute)}
+                alt={routingInfo.routeNames[routingInfo.selectedRoute]}
+                width={16}
+                height={16}
+              />
+              <span className="text-primary">
+                {routingInfo.routeNames[routingInfo.selectedRoute]}
+              </span>
+            </>
+          )}
         </div>
       </div>
 
