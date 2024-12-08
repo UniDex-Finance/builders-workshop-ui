@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useUsdmStaking } from "@/hooks/use-usdm-staking"
+import { useUsdmStaking } from "@/hooks/usdmHooks/use-usdm-staking"
 import { useUsdm } from "@/hooks/use-usdm"
 
 export function PositionCard() {

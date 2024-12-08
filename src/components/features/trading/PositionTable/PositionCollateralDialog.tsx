@@ -8,7 +8,7 @@ import { Input } from "../../../ui/input"
 import { Dialog, DialogContent } from "../../../ui/dialog"
 import { Position } from "../../../../hooks/use-positions"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { usePositionActions } from "@/hooks/use-position-actions"
+import { usePositionActions } from "@/hooks/unidex-hooks/use-position-actions"
 
 interface PositionCollateralDialogProps {
   position: Position | null

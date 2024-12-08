@@ -1,5 +1,5 @@
 import { useUsdm } from "@/hooks/use-usdm"
-import { useUsdmStaking } from "@/hooks/use-usdm-staking"
+import { useUsdmStaking } from "@/hooks/usdmHooks/use-usdm-staking"
 
 export function StatsActions() {
   const { usdmData } = useUsdm()

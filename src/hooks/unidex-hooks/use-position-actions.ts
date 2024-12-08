@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { usePublicClient } from 'wagmi';
-import { useToast } from './use-toast';
-import { useSmartAccount } from './use-smart-account';
+import { useToast } from '../use-toast';
+import { useSmartAccount } from '../use-smart-account';
 
 interface ClosePositionResponse {
   calldata: string;

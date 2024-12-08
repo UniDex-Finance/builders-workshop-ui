@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useMoltenStaking } from "@/hooks/use-molten-staking"
 import { useUsdmStaking } from "@/hooks/use-usdm-staking"
 import { useMoltenStats } from "@/hooks/use-molten-stats"
-import { useUsdm } from "@/hooks/use-usdm"
+import { useUsdm } from "@/hooks/usdmHooks/use-usdm"
 import { type Balances } from "@/hooks/use-balances"
 
 interface Props {

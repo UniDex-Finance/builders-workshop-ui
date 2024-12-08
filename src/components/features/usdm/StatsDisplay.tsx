@@ -1,4 +1,4 @@
-import { useUsdm } from "@/hooks/use-usdm"
+import { useUsdm } from "@/hooks/usdmHooks/use-usdm"
 import { formatLargeNumber } from "@/utils/format"
 import { useDuneData } from "@/hooks/use-dune-data"
 import { type Balances } from "@/hooks/use-balances"

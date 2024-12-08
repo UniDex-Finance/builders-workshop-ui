@@ -4,7 +4,7 @@ import { usePositions, Position } from "../../../hooks/use-positions";
 import { useOrders } from "../../../hooks/use-orders";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { usePositionActions } from "../../../hooks/use-position-actions";
+import { usePositionActions } from "../../../hooks/unidex-hooks/use-position-actions";
 import { PositionsContent } from "./PositionTable/PositionsContent";
 import { OrdersContent } from "./PositionTable/OrdersContent";
 import { TradesContent } from "./PositionTable/TradesContent";

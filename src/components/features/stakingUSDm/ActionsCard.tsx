@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { useUsdmStaking } from "@/hooks/use-usdm-staking"
+import { useUsdmStaking } from "@/hooks/usdmHooks/use-usdm-staking"
 import { useState } from "react"
 import { useWalletClient } from 'wagmi'
 import { parseUnits } from 'viem'
