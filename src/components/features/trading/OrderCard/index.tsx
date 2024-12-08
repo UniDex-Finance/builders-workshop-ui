@@ -16,7 +16,7 @@ import { useTradeCalculations } from "./hooks/useTradeCalculations";
 import { OrderCardProps, RoutingInfo } from "./types";
 import { useBalances } from "../../../../hooks/use-balances";
 import { useReferralContract } from "../../../../hooks/use-referral-contract";
-import { useRouting, RouteId } from '../../../../hooks/use-routing';
+import { useRouting, RouteId } from '../../../../hooks/trading-hooks/use-routing';
 import { toast } from "@/hooks/use-toast";
 
 

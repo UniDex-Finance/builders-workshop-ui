@@ -6,7 +6,7 @@ import { useSmartAccount } from './use-smart-account';
 import { lensAbi } from '../lib/abi/lens';
 import { arbitrum } from 'viem/chains';
 import { TRADING_PAIRS } from './use-market-data';
-import { GTRADE_PAIR_MAPPING, getUnidexPairFromGTradePair } from './use-gtrade-pairs';
+import { GTRADE_PAIR_MAPPING, getUnidexPairFromGTradePair } from './trading-hooks/gtrade-hooks/use-gtrade-pairs';
 
 const LENS_CONTRACT_ADDRESS = '0xeae57c7bce5caf160343a83440e98bc976ab7274' as `0x${string}`;
 const SCALING_FACTOR = 30; // For formatUnits

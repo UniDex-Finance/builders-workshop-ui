@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { usePublicClient } from 'wagmi';
-import { useToast } from '../use-toast';
-import { useSmartAccount } from '../use-smart-account';
-import { useBalances } from '../use-balances';
+import { useToast } from '../../use-toast';
+import { useSmartAccount } from '../../use-smart-account';
+import { useBalances } from '../../use-balances';
 import { encodeFunctionData } from 'viem';
 
 const TRADING_CONTRACT = "0x5f19704F393F983d5932b4453C6C87E85D22095E";

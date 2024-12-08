@@ -6,10 +6,10 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { usePositionActions } from "@/hooks/unidex-hooks/use-position-actions";
+import { usePositionActions } from "@/hooks/trading-hooks/unidex-hooks/use-position-actions";
 import { useState } from "react";
 
-interface Position {
+interface Position {  
   id: number;
   symbol: string;
   isLong: boolean;

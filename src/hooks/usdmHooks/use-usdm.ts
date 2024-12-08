@@ -3,7 +3,7 @@ import { formatUnits } from 'viem'
 import { useAccount } from 'wagmi'
 import { arbitrum } from 'viem/chains'
 import { useEffect, useState } from 'react'
-import { useBalances } from './use-balances'
+import { useBalances } from '../use-balances'
 
 const USDM_TOKEN = '0x1e0aa9b3345727979665fcc838d76324cba22253'
 const USDM_VAULT = '0x5f19704F393F983d5932b4453C6C87E85D22095E'

@@ -1,9 +1,9 @@
 // hooks/use-routing.ts
 import { useMemo } from 'react';
 import { useMarketOrderActions } from './unidex-hooks/use-market-order-actions';
-import { useGTradeOrderActions } from './use-gtrade-order-actions';
-import { useMarketData } from './use-market-data';
-import { GTRADE_PAIR_MAPPING } from './use-gtrade-pairs';
+import { useGTradeOrderActions } from './gtrade-hooks/use-gtrade-order-actions';
+import { useMarketData } from '../use-market-data';
+import { GTRADE_PAIR_MAPPING } from './gtrade-hooks/use-gtrade-pairs';
 
 export type RouteId = 'unidexv4' | 'gtrade';
 

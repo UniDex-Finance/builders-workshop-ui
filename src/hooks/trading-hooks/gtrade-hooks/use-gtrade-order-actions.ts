@@ -2,12 +2,12 @@
 import { useState } from 'react';
 import { parseUnits } from 'viem';
 import { useGTradeSdk } from './use-gtrade-sdk';
-import { useSmartAccount } from './use-smart-account';
-import { useToast } from './use-toast';
+import { useSmartAccount } from '../../use-smart-account';
+import { useToast } from '../../use-toast';
 import { encodeFunctionData } from 'viem';
 import { usePublicClient } from 'wagmi';
 import { GTRADE_PAIR_MAPPING } from './use-gtrade-pairs';
-import { TRADING_PAIRS } from './use-market-data';
+import { TRADING_PAIRS } from '../../use-market-data';
 
 const GTRADE_CONTRACT = "0xFF162c694eAA571f685030649814282eA457f169";
 const USDC_TOKEN = "0xaf88d065e77c8cc2239327c5edb3a432268e5831";

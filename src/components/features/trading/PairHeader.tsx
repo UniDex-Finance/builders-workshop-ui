@@ -22,7 +22,7 @@ import {
   TokenPairDisplay,
   PrefetchTokenImages,
 } from "../../../hooks/use-token-icon";
-import { useGTradeMarketData } from "../../../hooks/use-gtrade-market-data";
+import { useGTradeMarketData } from "../../../hooks/trading-hooks/gtrade-hooks/use-gtrade-market-data";
 import { usePairPrecision } from "../../../hooks/use-pair-precision";
 import { use24hChange } from "../../../hooks/use-24h-change";
 
