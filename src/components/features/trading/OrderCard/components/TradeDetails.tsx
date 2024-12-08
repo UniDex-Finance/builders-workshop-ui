@@ -1,6 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { TradeDetails as TradeDetailsType, RouteId, TradeDetailsProps } from "../types";
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 export function TradeDetails({ 
   details, 
@@ -32,28 +33,67 @@ export function TradeDetails({
     <div className="mt-4 space-y-2 text-[13px] text-muted-foreground">
       <div className="flex items-center justify-between">
         <span>Route</span>
-        <div className="flex items-center gap-1.5">
-          {splitOrderInfo?.unidex && splitOrderInfo?.gtrade ? (
-            <div className="text-primary">
-              <span>Split: </span>
-              <span>{splitOrderInfo.unidex.size.toFixed(2)} UniDex</span>
-              <span> + </span>
-              <span>{splitOrderInfo.gtrade.size.toFixed(2)} gTrade</span>
-            </div>
-          ) : (
-            <>
-              <Image 
-                src={getRouteLogo(routingInfo.selectedRoute)}
-                alt={routingInfo.routeNames[routingInfo.selectedRoute]}
-                width={16}
-                height={16}
-              />
-              <span className="text-primary">
-                {routingInfo.routeNames[routingInfo.selectedRoute]}
-              </span>
-            </>
-          )}
-        </div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-2">
+                {splitOrderInfo?.unidex && splitOrderInfo?.gtrade ? (
+                  // Split order - show both logos with names
+                  <>
+                    <div className="flex items-center gap-1">
+                      <Image 
+                        src="/static/images/logo-small.png"
+                        alt="UniDex"
+                        width={16}
+                        height={16}
+                      />
+                      <span className="text-sm text-primary">UniDex</span>
+                    </div>
+                    <span className="text-[#A0AEC0]">+</span>
+                    <div className="flex items-center gap-1">
+                      <Image 
+                        src="/static/images/gtrade.svg"
+                        alt="gTrade"
+                        width={16}
+                        height={16}
+                      />
+                      <span className="text-sm text-primary">gTrade</span>
+                    </div>
+                  </>
+                ) : (
+                  // Single route - show one logo with name
+                  <div className="flex items-center gap-1">
+                    <Image 
+                      src={getRouteLogo(routingInfo.selectedRoute)}
+                      alt={routingInfo.routeNames[routingInfo.selectedRoute]}
+                      width={16}
+                      height={16}
+                    />
+                    <span className="text-sm text-primary">
+                      {routingInfo.routeNames[routingInfo.selectedRoute]}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent className="p-2">
+              {splitOrderInfo?.unidex && splitOrderInfo?.gtrade ? (
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between gap-4">
+                    <span>UniDex:</span>
+                    <span>{splitOrderInfo.unidex.size.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <span>gTrade:</span>
+                    <span>{splitOrderInfo.gtrade.size.toFixed(2)}</span>
+                  </div>
+                </div>
+              ) : (
+                <span>{routingInfo.routeNames[routingInfo.selectedRoute]}</span>
+              )}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       <div className="flex justify-between">
