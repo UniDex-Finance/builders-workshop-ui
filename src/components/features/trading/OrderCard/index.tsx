@@ -58,7 +58,7 @@ export function OrderCard({
     isValid,
   } = useOrderForm({ leverage });
 
-  const { bestRoute, routes, executeOrder } = useRouting(
+  const { bestRoute, routes, executeOrder, splitOrderInfo } = useRouting(
     assetId,
     formState.amount,
     leverage,
@@ -246,6 +246,18 @@ const totalRequired = calculatedMargin + tradingFee;
   
     try {
       setPlacingOrders(true);
+      console.log('Placing order with params:', {  // Debug log
+        pair: parseInt(assetId, 10),
+        isLong: formState.isLong,
+        price: tradeDetails.entryPrice!,
+        slippagePercent: 100,
+        margin: calculatedMargin,
+        size: calculatedSize,
+        orderType: activeTab,
+        takeProfit: formState.tpslEnabled ? formState.takeProfit : undefined,
+        stopLoss: formState.tpslEnabled ? formState.stopLoss : undefined,
+        referrer: resolvedReferrer
+      });
   
       const orderParams = {
         pair: parseInt(assetId, 10),
@@ -260,7 +272,6 @@ const totalRequired = calculatedMargin + tradingFee;
         referrer: resolvedReferrer
       };
   
-      // The routing logic will now handle the order appropriately based on the selected route
       await executeOrder(orderParams);
   
     } catch (error) {
@@ -440,6 +451,7 @@ const totalRequired = calculatedMargin + tradingFee;
   totalRequired={totalRequired}
   referrerSection={referrerSection}
   routingInfo={routingInfo}
+  splitOrderInfo={splitOrderInfo}
 />
 
           {!isConnected ? (
