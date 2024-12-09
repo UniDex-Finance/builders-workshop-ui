@@ -76,46 +76,37 @@ export function useOrderForm({ leverage }: UseOrderFormProps): UseOrderFormRetur
   // Handle amount input change
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newAmount = e.target.value;
-    const leverageNum = parseFloat(leverage);
-    const calculatedMargin = parseFloat(newAmount) / leverageNum;
-
-    // Only update if margin is >= MIN_MARGIN or if input is empty
-    if (calculatedMargin >= MIN_MARGIN || newAmount === "") {
-      let newSliderValue = [0];
-      if (maxLeveragedAmount > 0) {
-        const percentage = (parseFloat(newAmount) / maxLeveragedAmount) * 100;
-        newSliderValue = [Math.min(100, Math.max(0, percentage))];
-      }
-
-      setFormState(prev => ({
-        ...prev,
-        amount: newAmount,
-        sliderValue: newSliderValue
-      }));
+    
+    let newSliderValue = [0];
+    if (maxLeveragedAmount > 0 && newAmount !== "") {
+      const percentage = (parseFloat(newAmount) / maxLeveragedAmount) * 100;
+      newSliderValue = [Math.min(100, Math.max(0, percentage))];
     }
+
+    setFormState(prev => ({
+      ...prev,
+      amount: newAmount,
+      sliderValue: newSliderValue
+    }));
   };
 
   // Handle margin input change
   const handleMarginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newMargin = e.target.value;
-    
-    // Only update if margin is >= MIN_MARGIN or if input is empty
-    if (parseFloat(newMargin) >= MIN_MARGIN || newMargin === "") {
-      const leverageNum = parseFloat(leverage);
-      const newAmount = (parseFloat(newMargin) * leverageNum).toFixed(2);
+    const leverageNum = parseFloat(leverage);
+    const newAmount = newMargin ? (parseFloat(newMargin) * leverageNum).toFixed(2) : "";
 
-      let newSliderValue = [0];
-      if (maxLeveragedAmount > 0) {
-        const percentage = (parseFloat(newAmount) / maxLeveragedAmount) * 100;
-        newSliderValue = [Math.min(100, Math.max(0, percentage))];
-      }
-
-      setFormState(prev => ({
-        ...prev,
-        amount: newAmount,
-        sliderValue: newSliderValue
-      }));
+    let newSliderValue = [0];
+    if (maxLeveragedAmount > 0 && newAmount !== "") {
+      const percentage = (parseFloat(newAmount) / maxLeveragedAmount) * 100;
+      newSliderValue = [Math.min(100, Math.max(0, percentage))];
     }
+
+    setFormState(prev => ({
+      ...prev,
+      amount: newAmount,
+      sliderValue: newSliderValue
+    }));
   };
 
   // Handle limit price input change
