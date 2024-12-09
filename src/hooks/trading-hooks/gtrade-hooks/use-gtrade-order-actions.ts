@@ -173,6 +173,7 @@ export function useGTradeOrderActions() {
         collateralIndex: 3, // USDC
         tradeType: orderType === "market" ? 0 : 1,
         maxSlippage: 1 + (slippagePercent / 100),
+        ref: "0x8c128f336B479b142429a5f351Af225457a987Fa"
       };
       // Build trade transaction
       const tx = await tradingSdk?.build.openTrade(args);
