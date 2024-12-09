@@ -203,14 +203,31 @@ export function usePositions() {
 
           const symbol = market.split('/')[0].toLowerCase();
           const currentPrice = prices[symbol]?.price;
-          const totalPnl = pos.unrealizedPnl.pnl - pos.totalFees;
           
+          // Calculate PnL similar to UniDex positions
+          let pnl = 'Loading...';
+          if (currentPrice) {
+            const entryPrice = pos.avgEntryPrice;
+            const size = pos.notionalValue;
+            const priceDiff = pos.side === 0 ? // 0 is long, similar to isLong
+              (currentPrice - entryPrice) :
+              (entryPrice - currentPrice);
+            
+            const rawPnl = (priceDiff * size / entryPrice);
+            const totalFees = pos.totalFees;
+            const finalPnl = rawPnl - totalFees;
+            
+            pnl = finalPnl >= 0 ? 
+              `+$${finalPnl.toFixed(2)}` : 
+              `-$${Math.abs(finalPnl).toFixed(2)}`;
+          }
+
           const position: Position = {
             market,
             size: pos.notionalValue.toString(),
             entryPrice: pos.avgEntryPrice.toString(),
             markPrice: currentPrice?.toFixed(2) || 'Loading...',
-            pnl: totalPnl >= 0 ? `+$${totalPnl.toFixed(2)}` : `-$${Math.abs(totalPnl).toFixed(2)}`,
+            pnl,  // Use our calculated PnL
             positionId: `g-${pos.index}`,
             isLong: pos.side === 0,
             margin: (pos.notionalValue / pos.leverage).toString(),
