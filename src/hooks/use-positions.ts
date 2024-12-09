@@ -132,6 +132,38 @@ function calculatePnL(
   };
 }
 
+function calculateGTradeLiquidationPrice(
+  position: {
+    size: string;
+    margin: string;
+    isLong: boolean;
+    entryPrice: string;
+    fees: { borrowFee: string; fundingFee: string; }
+  }
+): string {
+  const margin = Number(position.margin);
+  const size = Number(position.size);
+  const entryPrice = Number(position.entryPrice);
+  
+  // Convert fees to numbers
+  const totalFees = Number(position.fees.borrowFee) + Number(position.fees.fundingFee);
+  
+  // Same liquidation calculation as UniDEX positions:
+  // We want: (priceDiff * size / entryPrice) - fees = -0.9 * margin
+  // Rearranging for priceDiff:
+  // priceDiff * size / entryPrice = (-0.9 * margin) + fees
+  // priceDiff = ((-0.9 * margin) + fees) * entryPrice / size
+  
+  const targetPnL = (-0.9 * margin) + totalFees;
+  const requiredPriceDiff = (targetPnL * entryPrice) / size;
+
+  if (position.isLong) {
+    return (entryPrice + requiredPriceDiff).toFixed(2);
+  } else {
+    return (entryPrice - requiredPriceDiff).toFixed(2);
+  }
+}
+
 export function usePositions() {
   const [positions, setPositions] = useState<Position[]>([]);
   const { prices } = usePrices();
@@ -163,7 +195,6 @@ export function usePositions() {
       const positions = await response.json();
       return positions
         .map((pos: any) => {
-          // Get the market name from the marketKey using our pair mapping
           const market = getUnidexPairFromGTradePair(pos.marketKey);
           if (!market) {
             console.warn(`Unknown market key: ${pos.marketKey}`);
@@ -172,26 +203,35 @@ export function usePositions() {
 
           const symbol = market.split('/')[0].toLowerCase();
           const currentPrice = prices[symbol]?.price;
-          
-          // Calculate PnL including fees
           const totalPnl = pos.unrealizedPnl.pnl - pos.totalFees;
           
-          return {
+          const position: Position = {
             market,
             size: pos.notionalValue.toString(),
             entryPrice: pos.avgEntryPrice.toString(),
             markPrice: currentPrice?.toFixed(2) || 'Loading...',
             pnl: totalPnl >= 0 ? `+$${totalPnl.toFixed(2)}` : `-$${Math.abs(totalPnl).toFixed(2)}`,
-            positionId: `g-${pos.index}`, // Use the index as the position ID with 'g-' prefix
-            isLong: pos.side === 0, // 0 for LONG, 1 for SHORT
+            positionId: `g-${pos.index}`,
+            isLong: pos.side === 0,
             margin: (pos.notionalValue / pos.leverage).toString(),
-            liquidationPrice: pos.liquidationPrice.toString(),
+            liquidationPrice: calculateGTradeLiquidationPrice({
+              size: pos.notionalValue.toString(),
+              margin: (pos.notionalValue / pos.leverage).toString(),
+              isLong: pos.side === 0,
+              entryPrice: pos.avgEntryPrice.toString(),
+              fees: {
+                borrowFee: pos.owedInterest.toString(),
+                fundingFee: ((pos.totalFees * 0.9) - pos.owedInterest).toFixed(2)
+              }
+            }),
             fees: {
-              positionFee: (pos.totalFees * 0.1).toFixed(2), // Assuming 10% of total fees is position fee
+              positionFee: (pos.totalFees * 0.1).toFixed(2),
               borrowFee: pos.owedInterest.toString(),
-              fundingFee: ((pos.totalFees * 0.9) - pos.owedInterest).toFixed(2) // Remaining fees minus interest
+              fundingFee: ((pos.totalFees * 0.9) - pos.owedInterest).toFixed(2)
             }
-          } as Position;
+          };
+
+          return position;
         })
         .filter((pos: Position | undefined): pos is Position => pos !== undefined);
     } catch (error) {
