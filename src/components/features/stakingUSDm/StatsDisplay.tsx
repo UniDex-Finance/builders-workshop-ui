@@ -1,5 +1,5 @@
 import { useUsdmStaking } from "@/hooks/usdmHooks/use-usdm-staking"
-import { useUsdm } from "@/hooks/use-usdm"
+import { useUsdm } from "@/hooks/usdmHooks/use-usdm"
 import { formatLargeNumber } from "@/utils/format"
 
 export function StatsDisplay() {
