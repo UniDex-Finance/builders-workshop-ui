@@ -29,6 +29,35 @@ export function TradeDetails({
     }
   };
 
+  const calculateWeightedTradingFeePercent = () => {
+    if (splitOrderInfo?.unidex && splitOrderInfo?.gtrade) {
+      const totalSize = splitOrderInfo.unidex.size + splitOrderInfo.gtrade.size;
+      
+      // Calculate actual fees
+      const unidexFee = splitOrderInfo.unidex.size * (fees.tradingFeePercent / 100);
+      const gtradeFee = splitOrderInfo.gtrade.size * (0.06 / 100);
+      
+      // Calculate effective rate
+      const totalFee = unidexFee + gtradeFee;
+      const effectiveRate = (totalFee / totalSize) * 100;
+      
+      return effectiveRate.toFixed(3);
+    }
+
+    return routingInfo.selectedRoute === 'gtrade' 
+      ? '0.06'
+      : fees.tradingFeePercent.toString();
+  };
+
+  const calculateTradingFee = () => {
+    if (splitOrderInfo?.unidex && splitOrderInfo?.gtrade) {
+      const unidexFee = splitOrderInfo.unidex.size * (fees.tradingFeePercent / 100);
+      const gtradeFee = splitOrderInfo.gtrade.size * (0.06 / 100);
+      return unidexFee + gtradeFee;
+    }
+    return tradingFee;
+  };
+
   return (
     <div className="mt-4 space-y-2 text-[13px] text-muted-foreground">
       <div className="flex items-center justify-between">
@@ -117,13 +146,39 @@ export function TradeDetails({
       
       <div className="flex justify-between">
         <span>Trading Fee</span>
-        <span>
-          {tradingFee.toFixed(2)} USDC ({
-            routingInfo.selectedRoute === 'gtrade' 
-              ? '0.06' 
-              : (fees.tradingFeePercent)
-          }%)
-        </span>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="cursor-help">
+                {calculateTradingFee().toFixed(2)} USDC ({calculateWeightedTradingFeePercent()}%)
+              </span>
+            </TooltipTrigger>
+            <TooltipContent className="p-2">
+              {splitOrderInfo?.unidex && splitOrderInfo?.gtrade ? (
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between gap-4">
+                    <span>UniDex ({(splitOrderInfo.unidex.size / (splitOrderInfo.unidex.size + splitOrderInfo.gtrade.size) * 100).toFixed(0)}%):</span>
+                    <span>{fees.tradingFeePercent}%</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <span>gTrade ({(splitOrderInfo.gtrade.size / (splitOrderInfo.unidex.size + splitOrderInfo.gtrade.size) * 100).toFixed(0)}%):</span>
+                    <span>0.06%</span>
+                  </div>
+                  <div className="pt-1 mt-1 border-t border-[#404040]">
+                    <div className="flex items-center justify-between gap-4">
+                      <span>Combined:</span>
+                      <span>{calculateWeightedTradingFeePercent()}%</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <span>
+                  {routingInfo.selectedRoute === 'gtrade' ? 'gTrade' : 'UniDex'} Fee: {calculateWeightedTradingFeePercent()}%
+                </span>
+              )}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
       
       <div className="flex justify-between">
