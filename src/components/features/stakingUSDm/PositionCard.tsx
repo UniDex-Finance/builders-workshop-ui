@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useUsdmStaking } from "@/hooks/usdmHooks/use-usdm-staking"
-import { useUsdm } from "@/hooks/use-usdm"
+import { useUsdm } from "@/hooks/usdmHooks/use-usdm"
 
 export function PositionCard() {
   const { stakingData } = useUsdmStaking()
