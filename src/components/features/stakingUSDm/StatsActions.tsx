@@ -1,4 +1,4 @@
-import { useUsdm } from "@/hooks/use-usdm"
+import { useUsdm } from "@/hooks/usdmHooks/use-usdm"
 import { useUsdmStaking } from "@/hooks/usdmHooks/use-usdm-staking"
 
 export function StatsActions() {
