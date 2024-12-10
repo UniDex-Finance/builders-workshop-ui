@@ -19,7 +19,7 @@ interface PositionsContentProps {
   triggerOrders?: TriggerOrder[];
   loading: boolean;
   error: Error | null;
-  closingPositions: { [key: number]: boolean };
+  closingPositions: { [key: string]: boolean };
   handleClosePosition: (position: Position) => void;
   setRef: (positionId: string) => (el: HTMLTableCellElement | null) => void;
   handleMouseEnter: (positionId: string) => void;
@@ -166,9 +166,9 @@ export function PositionsContent({
                         variant="destructive"
                         size="sm"
                         onClick={() => handleClosePosition(position)}
-                        disabled={closingPositions[Number(position.positionId)]}
+                        disabled={closingPositions[position.positionId]}
                       >
-                        {closingPositions[Number(position.positionId)]
+                        {closingPositions[position.positionId]
                           ? "Closing..."
                           : "Close"}
                       </Button>
@@ -259,9 +259,9 @@ export function PositionsContent({
                     variant="destructive"
                     size="sm"
                     onClick={() => handleClosePosition(position)}
-                    disabled={closingPositions[Number(position.positionId)]}
+                    disabled={closingPositions[position.positionId]}
                   >
-                    {closingPositions[Number(position.positionId)]
+                    {closingPositions[position.positionId]
                       ? "Closing..."
                       : "Close"}
                   </Button>
@@ -283,7 +283,7 @@ export function PositionsContent({
           setSelectedPosition(null);
         }}
         onClosePosition={handleClosePosition}
-        isClosing={selectedPosition ? closingPositions[Number(selectedPosition.positionId)] : false}
+        isClosing={selectedPosition ? closingPositions[selectedPosition.positionId] : false}
         onOpenSLTP={handleOpenSLTP}
         onOpenCollateral={handleOpenCollateral}
       />

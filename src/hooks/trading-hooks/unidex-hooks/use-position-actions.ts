@@ -33,7 +33,7 @@ interface GTradeCloseResponse {
 const GTRADE_API_URL = "https://unidexv4-api-production.up.railway.app/api/gtrade";
 
 export function usePositionActions() {
-  const [closingPositions, setClosingPositions] = useState<{ [key: number]: boolean }>({});
+  const [closingPositions, setClosingPositions] = useState<{ [key: string | number]: boolean }>({});
   const [settingTPSL, setSettingTPSL] = useState<{ [key: number]: boolean }>({});
   const [modifyingCollateral, setModifyingCollateral] = useState<{ [key: number]: boolean }>({});
   const publicClient = usePublicClient();
