@@ -23,7 +23,7 @@ export function useTokenTransferActions() {
   const [isTransferring, setIsTransferring] = useState(false);
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
-  const { smartAccount } = useSmartAccount();
+  const { smartAccount, kernelClient } = useSmartAccount();
   const { toast } = useToast();
 
   const transferToSmartAccount = async (amount: string, fromAddress: string) => {
@@ -39,14 +39,12 @@ export function useTokenTransferActions() {
     try {
       setIsTransferring(true);
 
-      // Encode the transfer function call
       const calldata = encodeFunctionData({
         abi: ERC20_ABI,
         functionName: 'transfer',
         args: [smartAccount.address, parseUnits(amount, 6)]
       });
 
-      // Send the transaction
       const hash = await walletClient.sendTransaction({
         account: fromAddress as `0x${string}`,
         to: USDC_TOKEN,
@@ -59,7 +57,6 @@ export function useTokenTransferActions() {
         description: 'Waiting for confirmation...',
       });
 
-      // Wait for transaction confirmation
       await publicClient.waitForTransactionReceipt({ hash });
 
       toast({
@@ -69,10 +66,9 @@ export function useTokenTransferActions() {
 
       return hash;
     } catch (error: any) {
-      // Check for user rejection first
       if (error?.message?.includes("User rejected") || 
           error?.message?.toLowerCase().includes("rejected") ||
-          error?.code === 4001) {  // MetaMask user rejection code
+          error?.code === 4001) {
         toast({
           title: 'Error',
           description: 'User rejected the transaction',
@@ -91,8 +87,69 @@ export function useTokenTransferActions() {
     }
   };
 
+  const withdrawFromSmartAccount = async (amount: string, toAddress: string) => {
+    if (!kernelClient || !smartAccount) {
+      toast({
+        title: 'Error',
+        description: '1CT wallet not initialized',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      setIsTransferring(true);
+
+      const calldata = encodeFunctionData({
+        abi: ERC20_ABI,
+        functionName: 'transfer',
+        args: [toAddress as `0x${string}`, parseUnits(amount, 6)]
+      });
+
+      const hash = await kernelClient.sendTransaction({
+        to: USDC_TOKEN,
+        data: calldata,
+      });
+
+      toast({
+        title: 'Transaction Sent',
+        description: 'Withdrawing from 1CT wallet...',
+      });
+
+      // Wait for transaction confirmation
+      const receipt = await publicClient?.waitForTransactionReceipt({ hash });
+
+      toast({
+        title: 'Success',
+        description: `Successfully withdrawn ${amount} USDC from 1CT wallet`,
+      });
+
+      return receipt?.transactionHash;
+    } catch (error: any) {
+      if (error?.message?.includes("User rejected") || 
+          error?.message?.toLowerCase().includes("rejected") ||
+          error?.code === 4001) {
+        toast({
+          title: 'Error',
+          description: 'User rejected the transaction',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to withdraw from 1CT wallet',
+          variant: 'destructive',
+        });
+      }
+      throw error;
+    } finally {
+      setIsTransferring(false);
+    }
+  };
+
   return {
     transferToSmartAccount,
+    withdrawFromSmartAccount,
     isTransferring,
   };
 }

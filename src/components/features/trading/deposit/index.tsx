@@ -37,7 +37,7 @@ export default function DepositBox() {
     isLoading: isLoadingBalances,
     refetchBalances,
   } = useBalances(selectedNetwork);
-  const { transferToSmartAccount, isTransferring } = useTokenTransferActions();
+  const { transferToSmartAccount, isTransferring, withdrawFromSmartAccount } = useTokenTransferActions();
 
   const {
     isLoading,
@@ -177,20 +177,14 @@ export default function DepositBox() {
       return;
     }
 
-    if (type === "withdraw") {
-      toast({
-        title: "Coming Soon",
-        description: "Withdrawal to EOA functionality coming soon",
-      });
-      return;
-    }
-
     try {
       if (type === "deposit") {
         if (selectedNetwork === "optimism") {
           return;
         }
         await transferToSmartAccount(smartAccountAmount, eoaAddress);
+      } else if (type === "withdraw") {
+        await withdrawFromSmartAccount(smartAccountAmount, eoaAddress);
       }
 
       setSmartAccountAmount("");
