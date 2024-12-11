@@ -13,6 +13,12 @@ import { Input } from "@/components/ui/input";
 import { TokenIcon } from "@/hooks/use-token-icon";
 import { DepositCard } from "./DepositCard";
 import { WithdrawCard } from "./WithdrawCard";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface BalanceItemProps {
   title: string;
@@ -23,9 +29,28 @@ interface BalanceItemProps {
 }
 
 function BalanceItem({ title, balance, isLoading, suffix = "USDC", className }: BalanceItemProps) {
+  const tooltipContent = {
+    "Trading Account": "The trading account balance is the sum of the 1ct wallet and any margin account balances. This is the amount that you have which can be used to open trades.",
+    "1CT Wallet Balance": "This is the main wallet address that is placing trades across various platforms. Only you have permission to manage this address",
+    "UniDex Margin Balance": "This is the margin balance of the aggregated source \"UniDex V4\". This balence can be used to place orders on other exchanges, but we show it so you can micro manage if you wanted"
+  }[title];
+
   return (
     <div className={`flex items-center justify-between ${className}`}>
-      <span className="text-sm text-muted-foreground">{title}</span>
+      {tooltipContent ? (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger className="text-sm text-muted-foreground hover:text-muted-foreground/80">
+              {title}
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="max-w-[300px]">{tooltipContent}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ) : (
+        <span className="text-sm text-muted-foreground">{title}</span>
+      )}
       <span className="text-sm">
         {isLoading ? "Loading..." : `${balance} ${suffix}`}
       </span>
@@ -280,7 +305,18 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
                       <div className="text-2xl font-semibold">{calculateTotalEquity()}</div>
                     </div>
                     <div className="space-y-1 text-right">
-                      <div className="text-sm text-muted-foreground">Trading Account</div>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger className="text-sm text-muted-foreground">
+                            Trading Account
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-[300px]">
+                              The trading account balance is the sum of the 1ct wallet and any margin account balances. This is the amount that you have which can be used to open trades.
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                       <div className="text-lg">
                         ${parseFloat(balances?.formattedMusdBalance || "0").toFixed(2)}
                       </div>
@@ -293,17 +329,12 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
                   <div className="space-y-2">
                     <div className="text-sm text-muted-foreground">Balance Breakdown</div>
                     <BalanceItem
-                      title="Web3 Wallet Balance"
-                      balance={balances ? balances.formattedEoaUsdcBalance : "0.00"}
-                      isLoading={isLoading}
-                    />
-                    <BalanceItem
                       title="1CT Wallet Balance"
                       balance={balances ? balances.formattedUsdcBalance : "0.00"}
                       isLoading={isLoading}
                     />
                     <BalanceItem
-                      title="Margin Wallet Balance"
+                      title="UniDex Margin Balance"
                       balance={balances ? balances.formattedMusdBalance : "0.00"}
                       isLoading={isLoading}
                     />
