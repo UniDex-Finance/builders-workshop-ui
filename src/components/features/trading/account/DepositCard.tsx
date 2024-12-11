@@ -20,6 +20,8 @@ import { arbitrum, optimism } from "wagmi/chains"
 import { CrossChainDepositCall } from "../deposit/CrossChainDepositCall"
 import { formatUnits } from "viem"
 import { parseUnits } from "viem"
+import Image from "next/image"
+import USDCIcon from "@/../../public/static/images/tokens/USDC.svg"
 
 interface DepositCardProps {
   onClose: () => void;
@@ -269,16 +271,25 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
 
             <div>
               <label className="text-sm text-zinc-500 mb-1.5 block">Asset</label>
-              <Select defaultValue="usdc" disabled>
+              <Select defaultValue="usdc">
                 <SelectTrigger className="bg-[#272734] border-zinc-800 h-[52px]">
                   <SelectValue>
                     <div className="flex items-center gap-2">
-                      <TokenIcon pair="USDC" size={24} />
-                      {selectedChain === "arbitrum" ? "Arbitrum" : "Optimism"} USDC
+                      <Image src={USDCIcon} alt="USDC" width={24} height={24} />
+                      USD Coin
                       <span className="text-xs text-white px-1.5 py-0.5 bg-[#27272a] rounded ml-1">USDC</span>
                     </div>
                   </SelectValue>
                 </SelectTrigger>
+                <SelectContent className="bg-[#272734] border-zinc-800">
+                  <SelectItem value="usdc">
+                    <div className="flex items-center gap-2">
+                      <Image src={USDCIcon} alt="USDC" width={24} height={24} />
+                      USD Coin
+                      <span className="text-xs text-white px-1.5 py-0.5 bg-[#27272a] rounded ml-1">USDC</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
               </Select>
             </div>
 
