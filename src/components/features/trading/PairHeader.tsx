@@ -52,6 +52,25 @@ const formatCompactNumber = (num: number) => {
   return formatter.format(num);
 };
 
+const ProgressBar = ({ value, max, label }: { value: number; max: number; label: string }) => (
+  <div className="mb-4">
+    <div className="flex justify-between mb-1 text-xs">
+      <div className="text-muted-foreground">{label} Current</div>
+      <div className="text-muted-foreground">{label} Max</div>
+    </div>
+    <div className="flex justify-between mb-1.5">
+      <div className="text-white">${formatCompactNumber(value)}</div>
+      <div className="text-white">${formatCompactNumber(max)}</div>
+    </div>
+    <div className="w-full h-2 overflow-hidden rounded-full" style={{ backgroundColor: '#616161' }}>
+      <div 
+        className="h-full transition-all rounded-full bg-primary"
+        style={{ width: `${Math.min((value / max) * 100, 100)}%` }}
+      />
+    </div>
+  </div>
+);
+
 export const PairHeader: React.FC<PairHeaderProps> = ({
   selectedPair,
   onPairChange,
@@ -321,10 +340,27 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                       </div>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent className="bg-[#2b2b36] border-none">
-                    <p className="text-sm text-white">
-                      There are currently ${formatCompactNumber(combinedData.longOpenInterest)} worth of {selectedPair} positions open with only ${formatCompactNumber(combinedData.maxLongOpenInterest - combinedData.longOpenInterest)} left before the open interest cap is reached
-                    </p>
+                  <TooltipContent className="bg-[#2b2b36] border-none w-[300px] p-4">
+                    <p className="mb-4 text-sm font-medium text-white">Open Interest Distribution</p>
+                    {unidexMarketData && (
+                      <ProgressBar 
+                        value={unidexMarketData.longOpenInterest}
+                        max={unidexMarketData.maxLongOpenInterest}
+                        label="UniDex"
+                      />
+                    )}
+                    {gtradeMarket && (
+                      <ProgressBar 
+                        value={gtradeMarket.openInterest.long}
+                        max={gtradeMarket.openInterest.max}
+                        label="GTrade"
+                      />
+                    )}
+                    {combinedData && (
+                      <div className="mt-2 text-xs text-muted-foreground/80">
+                        <span className="text-white">${formatCompactNumber(combinedData.longOpenInterest)}</span> amount of long positions are open with <span className="text-white">${formatCompactNumber(combinedData.maxLongOpenInterest - combinedData.longOpenInterest)}</span> available
+                      </div>
+                    )}
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -339,10 +375,27 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                       </div>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent className="bg-[#2b2b36] border-none">
-                    <p className="text-sm text-white">
-                      There are currently ${formatCompactNumber(combinedData.shortOpenInterest)} worth of {selectedPair} positions open with only ${formatCompactNumber(combinedData.maxShortOpenInterest - combinedData.shortOpenInterest)} left before the open interest cap is reached
-                    </p>
+                  <TooltipContent className="bg-[#2b2b36] border-none w-[300px] p-4">
+                    <p className="mb-4 text-sm font-medium text-white">Open Interest Distribution</p>
+                    {unidexMarketData && (
+                      <ProgressBar 
+                        value={unidexMarketData.shortOpenInterest}
+                        max={unidexMarketData.maxShortOpenInterest}
+                        label="UniDex"
+                      />
+                    )}
+                    {gtradeMarket && (
+                      <ProgressBar 
+                        value={gtradeMarket.openInterest.short}
+                        max={gtradeMarket.openInterest.max}
+                        label="GTrade"
+                      />
+                    )}
+                    {combinedData && (
+                      <div className="mt-2 text-xs text-muted-foreground/80">
+                        <span className="text-white">${formatCompactNumber(combinedData.shortOpenInterest)}</span> amount of short positions are open with <span className="text-white">${formatCompactNumber(combinedData.maxShortOpenInterest - combinedData.shortOpenInterest)}</span> available
+                      </div>
+                    )}
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
