@@ -443,18 +443,68 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
             {/* Borrow Rates Group */}
             <div className="flex items-center px-4 min-w-[220px]">
               <div className="flex gap-4">
-                <div>
-                  <div className="text-xs text-muted-foreground">Borrowing (L)</div>
-                  <div className="text-sm text-red-500">
-                    {getAnnualizedRate(combinedData.borrowRateForLong).toFixed(4)}%
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">Borrowing (S)</div>
-                  <div className="text-sm text-red-500">
-                    {getAnnualizedRate(combinedData.borrowRateForShort).toFixed(4)}%
-                  </div>
-                </div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="cursor-help">
+                        <div className="text-xs text-muted-foreground">Borrowing (L)</div>
+                        <div className="text-sm text-red-500">
+                          {getAnnualizedRate(combinedData.borrowRateForLong).toFixed(4)}%
+                        </div>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-[#2b2b36] border-none w-[300px] p-4">
+                      <p className="mb-4 text-sm text-white">
+                        Borrow rate is a fee paid to keep your position open, regardless of market direction.
+                      </p>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">UniDex:</span>
+                          <span className="text-white">
+                            {unidexMarketData ? getAnnualizedRate(unidexMarketData.borrowRateForLong).toFixed(4) : '0.0000'}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">GTrade:</span>
+                          <span className="text-white">
+                            {gtradeMarket ? getAnnualizedRate(gtradeMarket.borrowingFees.borrowRateForLong).toFixed(4) : '0.0000'}%
+                          </span>
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="cursor-help">
+                        <div className="text-xs text-muted-foreground">Borrowing (S)</div>
+                        <div className="text-sm text-red-500">
+                          {getAnnualizedRate(combinedData.borrowRateForShort).toFixed(4)}%
+                        </div>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-[#2b2b36] border-none w-[300px] p-4">
+                      <p className="mb-4 text-sm text-white">
+                        Borrow rate is a fee paid to keep your position open, regardless of market direction.
+                      </p>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">UniDex:</span>
+                          <span className="text-white">
+                            {unidexMarketData ? getAnnualizedRate(unidexMarketData.borrowRateForShort).toFixed(4) : '0.0000'}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">GTrade:</span>
+                          <span className="text-white">
+                            {gtradeMarket ? getAnnualizedRate(gtradeMarket.borrowingFees.borrowRateForShort).toFixed(4) : '0.0000'}%
+                          </span>
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
           </div>
