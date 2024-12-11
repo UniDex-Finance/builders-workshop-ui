@@ -31,11 +31,10 @@ export function WithdrawCard({ onClose, balances, onSuccess }: WithdrawCardProps
   const [selectedSource, setSelectedSource] = useState<WithdrawSource>("1ct")
   const [isLoading, setIsLoading] = useState(false)
   const { address, chain } = useAccount()
-  const { smartAccount } = useSmartAccount()
+  const { smartAccount, kernelClient } = useSmartAccount()
   const { toast } = useToast()
   const { withdrawFromSmartAccount } = useTokenTransferActions()
   const { switchChain } = useSwitchChain()
-
   const isOnArbitrum = chain?.id === arbitrum.id
 
   const getAvailableBalance = () => {
@@ -99,19 +98,41 @@ export function WithdrawCard({ onClose, balances, onSuccess }: WithdrawCardProps
       if (selectedSource === "1ct") {
         await withdrawFromSmartAccount(amount, address);
       } else {
-        // Handle margin withdrawal logic here
-        // This would likely involve a different function call
-        console.log("Margin withdrawal not implemented yet");
+        const response = await fetch(
+          "https://unidexv4-api-production.up.railway.app/api/wallet",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              type: "withdraw",
+              tokenAddress: "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              amount,
+              smartAccountAddress: smartAccount.address,
+              fromMargin: true,
+            }),
+          }
+        );
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to process margin withdrawal");
+        }
+
+        await kernelClient.sendTransaction({
+          to: data.vaultAddress,
+          data: data.calldata,
+        });
       }
+
+      onSuccess?.();
+      setAmount("");
       
       toast({
         title: "Success",
-        description: "Withdrawal completed successfully",
+        description: `Successfully withdrawn ${amount} USDC from ${
+          selectedSource === "1ct" ? "1CT wallet" : "margin wallet"
+        }`,
       });
-
-      onSuccess?.();
-      onClose();
-      setAmount("");
 
     } catch (error: any) {
       console.error("Withdrawal error:", error);
