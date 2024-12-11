@@ -251,13 +251,17 @@ const totalRequired = calculatedMargin + tradingFee;
   
     try {
       setPlacingOrders(true);
+      
+      // Round down the size to 2 decimal places
+      const roundedSize = Math.floor(calculatedSize * 100) / 100;
+      
       console.log('Placing order with params:', {  // Debug log
         pair: parseInt(assetId, 10),
         isLong: formState.isLong,
         price: tradeDetails.entryPrice!,
         slippagePercent: 100,
         margin: calculatedMargin,
-        size: calculatedSize,
+        size: roundedSize, // Use rounded size
         orderType: activeTab,
         takeProfit: formState.tpslEnabled ? formState.takeProfit : undefined,
         stopLoss: formState.tpslEnabled ? formState.stopLoss : undefined,
@@ -270,7 +274,7 @@ const totalRequired = calculatedMargin + tradingFee;
         price: tradeDetails.entryPrice!,
         slippagePercent: 100,
         margin: calculatedMargin,
-        size: calculatedSize,
+        size: roundedSize, // Use rounded size
         orderType: activeTab as "market" | "limit",
         takeProfit: formState.tpslEnabled ? formState.takeProfit : undefined,
         stopLoss: formState.tpslEnabled ? formState.stopLoss : undefined,

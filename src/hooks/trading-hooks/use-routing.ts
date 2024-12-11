@@ -4,8 +4,6 @@ import { useMarketOrderActions } from './unidex-hooks/use-market-order-actions';
 import { useGTradeOrderActions } from './gtrade-hooks/use-gtrade-order-actions';
 import { useMarketData } from '../use-market-data';
 import { GTRADE_PAIR_MAPPING } from './gtrade-hooks/use-gtrade-pairs';
-import { getCustomNonceKeyFromString } from "@zerodev/sdk";
-import { ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { useSmartAccount } from '../use-smart-account';
 import { useBalances } from '../use-balances';
 
@@ -54,6 +52,10 @@ interface TransactionCall {
   data: string;
   value: bigint;
 }
+
+const roundDownTo6Decimals = (num: number): number => {
+  return Math.floor(num * 1e6) / 1e6;
+};
 
 export function useRouting(assetId: string, amount: string, leverage: string, isLong: boolean) {
   const { placeMarketOrder, prepare: prepareUnidex } = useMarketOrderActions();
@@ -165,18 +167,17 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
 
     const isGTradeSupported = GTRADE_PAIR_MAPPING[market.pair] !== undefined;
     
-    // Calculate how much can go to UniDex
-    let unidexSize = Math.min(orderSize, relevantLiquidity);
-    const unidexMargin = unidexSize / parseFloat(leverage || '1');
+    // Round down unidex size
+    let unidexSize = roundDownTo6Decimals(Math.min(orderSize, relevantLiquidity));
+    const unidexMargin = roundDownTo6Decimals(unidexSize / parseFloat(leverage || '1'));
     
-    // If unidex margin is below minimum, route everything to gTrade
     if (unidexMargin < MIN_MARGIN.unidexv4) {
       unidexSize = 0;
     }
 
-    // Calculate remaining size for gTrade
-    const gtradeSize = orderSize - unidexSize;
-    const gtradeMargin = gtradeSize / parseFloat(leverage || '1');
+    // Round down gtrade size
+    const gtradeSize = roundDownTo6Decimals(orderSize - unidexSize);
+    const gtradeMargin = roundDownTo6Decimals(gtradeSize / parseFloat(leverage || '1'));
 
     console.log('Order Split Details:', {
       totalOrderSize: orderSize,
@@ -210,60 +211,80 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
     }
 
     const split = splitOrderInfo;
-    console.log('Split order info:', split);
+    console.log('=== Order Split Details ===', {
+      totalOrderSize: parseFloat(params.size.toString()),
+      unidex: split.unidex ? {
+        size: roundDownTo6Decimals(split.unidex.size),
+        margin: roundDownTo6Decimals(split.unidex.margin),
+      } : null,
+      gtrade: split.gtrade ? {
+        size: roundDownTo6Decimals(split.gtrade.size),
+        margin: roundDownTo6Decimals(split.gtrade.margin),
+        tradingFee: roundDownTo6Decimals(split.gtrade.size * 0.0006) // 0.06% gTrade fee
+      } : null
+    });
 
     if (split.unidex && split.gtrade) {
-      console.log('Preparing split orders...');
-      try {
-        // Check balances
-        const marginWalletBalance = parseFloat(balances?.formattedMusdBalance || "0");
-        const onectBalance = parseFloat(balances?.formattedUsdcBalance || "0");
-        const gtradeMarginNeeded = split.gtrade.margin;
+      const marginWalletBalance = parseFloat(balances?.formattedMusdBalance || "0");
+      const onectBalance = parseFloat(balances?.formattedUsdcBalance || "0");
+      
+      // First calculate shortfall
+      const shortfall = roundDownTo6Decimals(Math.max(0, split.gtrade.margin - onectBalance));
+      
+      // Then adjust gTrade margin to match exactly what we'll have after withdrawal
+      split.gtrade.margin = roundDownTo6Decimals(onectBalance + shortfall);
+      split.gtrade.size = roundDownTo6Decimals(split.gtrade.margin * parseFloat(leverage));
 
-        const shortfall = Math.max(0, gtradeMarginNeeded - onectBalance);
-        const canWithdrawFromMargin = shortfall > 0 && marginWalletBalance >= shortfall;
-
-        let withdrawalCall = null;
-        if (canWithdrawFromMargin) {
-          // Prepare withdrawal transaction with exact shortfall amount
-          try {
-            const withdrawalResponse = await fetch(
-              "https://unidexv4-api-production.up.railway.app/api/wallet",
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  type: "withdraw",
-                  tokenAddress: "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
-                  amount: shortfall.toString(),
-                  smartAccountAddress: smartAccount.address,
-                }),
-              }
-            );
-
-            if (!withdrawalResponse.ok) {
-              const errorData = await withdrawalResponse.text();
-              console.error('Withdrawal API error:', {
-                status: withdrawalResponse.status,
-                statusText: withdrawalResponse.statusText,
-                error: errorData
-              });
-              throw new Error(`Failed to prepare withdrawal: ${errorData}`);
-            }
-
-            const withdrawalData = await withdrawalResponse.json();
-            console.log('Withdrawal data:', withdrawalData);
-
-            withdrawalCall = {
-              to: withdrawalData.vaultAddress as `0x${string}`,
-              data: withdrawalData.calldata as `0x${string}`,
-              value: 0n
-            };
-          } catch (error) {
-            console.error('Withdrawal preparation error:', error);
-            throw error;
-          }
+      console.log('=== Fund Flow Analysis ===', {
+        currentBalances: {
+          marginWallet: marginWalletBalance.toFixed(6),
+          onectWallet: onectBalance.toFixed(6)
+        },
+        requiredAmounts: {
+          unidexMargin: roundDownTo6Decimals(split.unidex.margin).toFixed(6),
+          gtradeMargin: split.gtrade.margin.toFixed(6),
+          shortfall: shortfall.toFixed(6)
+        },
+        expectedBalances: {
+          marginWallet: (marginWalletBalance - shortfall).toFixed(6),
+          onectWallet: "0.000000" // Will be exactly 0 now
         }
+      });
+
+      // Prepare withdrawal transaction with exact shortfall amount
+      try {
+        const withdrawalResponse = await fetch(
+          "https://unidexv4-api-production.up.railway.app/api/wallet",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              type: "withdraw",
+              tokenAddress: "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              amount: shortfall.toString(),
+              smartAccountAddress: smartAccount.address,
+            }),
+          }
+        );
+
+        if (!withdrawalResponse.ok) {
+          const errorData = await withdrawalResponse.text();
+          console.error('Withdrawal API error:', {
+            status: withdrawalResponse.status,
+            statusText: withdrawalResponse.statusText,
+            error: errorData
+          });
+          throw new Error(`Failed to prepare withdrawal: ${errorData}`);
+        }
+
+        const withdrawalData = await withdrawalResponse.json();
+        console.log('Withdrawal data:', withdrawalData);
+
+        const withdrawalCall = {
+          to: withdrawalData.vaultAddress as `0x${string}`,
+          data: withdrawalData.calldata as `0x${string}`,
+          value: 0n
+        };
 
         // Prepare orders
         const [unidexOrder, gtradeOrder] = await Promise.all([
@@ -272,8 +293,8 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
             params.isLong,
             params.price,
             params.slippagePercent,
-            split.unidex.margin,
-            split.unidex.size,
+            roundDownTo6Decimals(split.unidex.margin),
+            roundDownTo6Decimals(split.unidex.size),
             params.takeProfit,
             params.stopLoss,
             params.referrer
@@ -283,8 +304,8 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
             params.isLong,
             params.price,
             params.slippagePercent,
-            split.gtrade.margin,
-            split.gtrade.size,
+            roundDownTo6Decimals(split.gtrade.margin),
+            roundDownTo6Decimals(split.gtrade.size),
             params.orderType,
             params.takeProfit,
             params.stopLoss
@@ -311,34 +332,48 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
         console.error('Error executing split orders:', error);
         throw error;
       }
+    } else if (split.unidex) {
+      const marginWalletBalance = parseFloat(balances?.formattedMusdBalance || "0");
+      console.log('=== UniDex Only Order ===', {
+        margin: roundDownTo6Decimals(split.unidex.margin).toFixed(6),
+        size: roundDownTo6Decimals(split.unidex.size).toFixed(6),
+        expectedMarginWalletAfter: marginWalletBalance.toFixed(6)
+      });
+    } else if (split.gtrade) {
+      const onectBalance = parseFloat(balances?.formattedUsdcBalance || "0");
+      console.log('=== gTrade Only Order ===', {
+        margin: roundDownTo6Decimals(split.gtrade.margin).toFixed(6),
+        size: roundDownTo6Decimals(split.gtrade.size).toFixed(6),
+        tradingFee: roundDownTo6Decimals(split.gtrade.size * 0.0006).toFixed(6),
+        expectedOnectWalletAfter: (onectBalance - roundDownTo6Decimals(split.gtrade.margin)).toFixed(6)
+      });
+    }
+
+    // Single order - use default behavior
+    if (split.unidex) {
+      return placeMarketOrder(
+        params.pair,
+        params.isLong,
+        params.price,
+        params.slippagePercent,
+        params.margin,
+        params.size,
+        params.takeProfit,
+        params.stopLoss,
+        params.referrer
+      );
     } else {
-      console.log('Executing single order:', split.unidex ? 'unidex' : 'gtrade');
-      // Single order - use default behavior
-      if (split.unidex) {
-        return placeMarketOrder(
-          params.pair,
-          params.isLong,
-          params.price,
-          params.slippagePercent,
-          params.margin,
-          params.size,
-          params.takeProfit,
-          params.stopLoss,
-          params.referrer
-        );
-      } else {
-        return placeGTradeOrder(
-          params.pair,
-          params.isLong,
-          params.price,
-          params.slippagePercent,
-          params.margin,
-          params.size,
-          params.orderType,
-          params.takeProfit,
-          params.stopLoss
-        );
-      }
+      return placeGTradeOrder(
+        params.pair,
+        params.isLong,
+        params.price,
+        params.slippagePercent,
+        params.margin,
+        params.size,
+        params.orderType,
+        params.takeProfit,
+        params.stopLoss
+      );
     }
   };
 

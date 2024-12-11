@@ -8,9 +8,12 @@ import { encodeFunctionData } from 'viem';
 import { usePublicClient } from 'wagmi';
 import { GTRADE_PAIR_MAPPING } from './use-gtrade-pairs';
 import { TRADING_PAIRS } from '../../use-market-data';
+import { arbitrum } from 'viem/chains';
 
 const GTRADE_CONTRACT = "0xFF162c694eAA571f685030649814282eA457f169";
 const USDC_TOKEN = "0xaf88d065e77c8cc2239327c5edb3a432268e5831";
+// Maximum uint256 value for unlimited approval
+const MAX_UINT256 = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 
 const ERC20_ABI = [
   {
@@ -40,7 +43,7 @@ export function useGTradeOrderActions() {
   const tradingSdk = useGTradeSdk();
   const { toast } = useToast();
   const { smartAccount, kernelClient } = useSmartAccount();
-  const publicClient = usePublicClient();
+  const publicClient = usePublicClient({ chainId: arbitrum.id });
 
   const prepare = async (
     unidexPair: number,
@@ -89,7 +92,7 @@ export function useGTradeOrderActions() {
       const approveCalldata = encodeFunctionData({
         abi: ERC20_ABI,
         functionName: 'approve',
-        args: [GTRADE_CONTRACT, marginInWei],
+        args: [GTRADE_CONTRACT, MAX_UINT256],
       });
 
       return {
@@ -188,7 +191,7 @@ export function useGTradeOrderActions() {
         const approveCalldata = encodeFunctionData({
           abi: ERC20_ABI,
           functionName: 'approve',
-          args: [GTRADE_CONTRACT, marginInWei],
+          args: [GTRADE_CONTRACT, MAX_UINT256],
         });
 
         await kernelClient.sendTransactions({
