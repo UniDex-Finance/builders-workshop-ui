@@ -187,106 +187,111 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
       </Button>
 
       {isOpen && (
-        <Card className={`
-          absolute 
-          z-50 
-          p-4 
-          space-y-4 
-          bg-[#17161d]
-          text-white
-          border-zinc-800
+        <>
+          {/* Mobile overlay */}
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm md:hidden" />
           
-          /* Mobile styles */
-          fixed
-          inset-x-0
-          bottom-0
-          rounded-b-none
-          w-full
-          animate-slide-up-mobile
-          
-          /* Desktop styles */
-          md:animate-none
-          md:relative
-          md:inset-auto
-          md:w-[400px]
-          md:right-0
-          md:rounded-lg
-          md:mt-2
-        `}>
-          {/* Address Section */}
-          <div className="space-y-3">
-            <AddressDisplay
-              label="Source Address"
-              address={eoaAddress}
-              explorerUrl={eoaAddress ? getExplorerUrl(eoaAddress) : undefined}
-            />
-            <AddressDisplay
-              label="Trading Address"
-              address={smartAccount?.address}
-              explorerUrl={smartAccount?.address ? getExplorerUrl(smartAccount.address) : undefined}
-            />
-          </div>
-
-          <div className="h-px bg-border" />
-
-          {/* Net Worth and Trading Account Section */}
-          <div className="flex items-end justify-between">
-            <div className="space-y-1">
-              <div className="text-sm text-muted-foreground">Net Worth</div>
-              <div className="text-2xl font-semibold">{calculateTotalEquity()}</div>
+          <Card className={`
+            z-50 
+            p-4 
+            space-y-4 
+            bg-[#17161d]
+            text-white
+            border-zinc-800
+            
+            /* Mobile styles */
+            fixed
+            inset-x-0
+            bottom-0
+            rounded-b-none
+            w-full
+            animate-slide-up-mobile
+            
+            /* Desktop styles */
+            md:absolute
+            md:animate-none
+            md:bottom-auto
+            md:right-0
+            md:left-auto
+            md:w-[400px]
+            md:rounded-lg
+            md:mt-2
+          `}>
+            {/* Address Section */}
+            <div className="space-y-3">
+              <AddressDisplay
+                label="Source Address"
+                address={eoaAddress}
+                explorerUrl={eoaAddress ? getExplorerUrl(eoaAddress) : undefined}
+              />
+              <AddressDisplay
+                label="Trading Address"
+                address={smartAccount?.address}
+                explorerUrl={smartAccount?.address ? getExplorerUrl(smartAccount.address) : undefined}
+              />
             </div>
-            <div className="space-y-1 text-right">
-              <div className="text-sm text-muted-foreground">Trading Account</div>
-              <div className="text-lg">
-                ${parseFloat(balances?.formattedMusdBalance || "0").toFixed(2)}
+
+            <div className="h-px bg-border" />
+
+            {/* Net Worth and Trading Account Section */}
+            <div className="flex items-end justify-between">
+              <div className="space-y-1">
+                <div className="text-sm text-muted-foreground">Net Worth</div>
+                <div className="text-2xl font-semibold">{calculateTotalEquity()}</div>
+              </div>
+              <div className="space-y-1 text-right">
+                <div className="text-sm text-muted-foreground">Trading Account</div>
+                <div className="text-lg">
+                  ${parseFloat(balances?.formattedMusdBalance || "0").toFixed(2)}
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="h-px bg-border" />
+            <div className="h-px bg-border" />
 
-          {/* Detailed Breakdown */}
-          <div className="space-y-2">
-            <div className="text-sm text-muted-foreground">Balance Breakdown</div>
-            <BalanceItem
-              title="Web3 Wallet Balance"
-              balance={balances ? balances.formattedEoaUsdcBalance : "0.00"}
-              isLoading={isLoading}
-            />
-            <BalanceItem
-              title="1CT Wallet Balance"
-              balance={balances ? balances.formattedUsdcBalance : "0.00"}
-              isLoading={isLoading}
-            />
-            <BalanceItem
-              title="Margin Wallet Balance"
-              balance={balances ? balances.formattedMusdBalance : "0.00"}
-              isLoading={isLoading}
-            />
-            <BalanceItem
-              title="Unrealized PnL"
-              balance={totalUnrealizedPnl?.toFixed(2) || "0.00"}
-              isLoading={positionsLoading}
-              suffix="USD"
-              className={totalUnrealizedPnl && totalUnrealizedPnl >= 0 ? "text-green-400" : "text-red-400"}
-            />
-          </div>
+            {/* Detailed Breakdown */}
+            <div className="space-y-2">
+              <div className="text-sm text-muted-foreground">Balance Breakdown</div>
+              <BalanceItem
+                title="Web3 Wallet Balance"
+                balance={balances ? balances.formattedEoaUsdcBalance : "0.00"}
+                isLoading={isLoading}
+              />
+              <BalanceItem
+                title="1CT Wallet Balance"
+                balance={balances ? balances.formattedUsdcBalance : "0.00"}
+                isLoading={isLoading}
+              />
+              <BalanceItem
+                title="Margin Wallet Balance"
+                balance={balances ? balances.formattedMusdBalance : "0.00"}
+                isLoading={isLoading}
+              />
+              <BalanceItem
+                title="Unrealized PnL"
+                balance={totalUnrealizedPnl?.toFixed(2) || "0.00"}
+                isLoading={positionsLoading}
+                suffix="USD"
+                className={totalUnrealizedPnl && totalUnrealizedPnl >= 0 ? "text-green-400" : "text-red-400"}
+              />
+            </div>
 
-          <div className="flex gap-2">
-            <Button 
-              className="flex-1 bg-[#1f1f29] hover:bg-[#1f1f29]/90 text-white"
-              onClick={handleDepositClick}
-            >
-              Deposit
-            </Button>
-            <Button 
-              className="flex-1 bg-[#1f1f29] hover:bg-[#1f1f29]/90 text-white"
-              onClick={handleWithdrawClick}
-            >
-              Withdraw
-            </Button>
-          </div>
-        </Card>
+            <div className="flex gap-2">
+              <Button 
+                className="flex-1 bg-[#1f1f29] hover:bg-[#1f1f29]/90 text-white"
+                onClick={handleDepositClick}
+              >
+                Deposit
+              </Button>
+              <Button 
+                className="flex-1 bg-[#1f1f29] hover:bg-[#1f1f29]/90 text-white"
+                onClick={handleWithdrawClick}
+              >
+                Withdraw
+              </Button>
+            </div>
+          </Card>
+        </>
       )}
     </div>
   );
