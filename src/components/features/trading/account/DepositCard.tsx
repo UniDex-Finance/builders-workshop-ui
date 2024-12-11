@@ -201,8 +201,12 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm md:items-center">
+    <div className="fixed inset-0 z-50 flex md:items-center md:justify-center">
+      {/* Mobile overlay */}
+      <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden" />
+      
       <Card className={`
+        z-50
         w-full
         bg-[#17161d]
         text-white
@@ -216,8 +220,8 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
         animate-slide-up-mobile
         
         /* Desktop styles */
-        md:animate-none
         md:relative
+        md:animate-none
         md:w-[440px]
         md:rounded-lg
       `}>

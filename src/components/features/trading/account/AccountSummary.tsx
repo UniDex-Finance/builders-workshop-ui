@@ -188,8 +188,8 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
 
       {isOpen && (
         <>
-          {/* Mobile overlay */}
-          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm md:hidden" />
+          {/* Mobile overlay with lighter background */}
+          <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden" />
           
           <Card className={`
             z-50 
