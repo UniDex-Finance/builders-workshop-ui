@@ -314,12 +314,17 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
                   className="w-full bg-[#272734] border-zinc-800 rounded-md px-3 h-[52px] text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="0.0000"
                 />
-                {amount && (
+                {amount !== getAvailableBalance() && (
                   <button 
-                    onClick={() => setAmount("")}
-                    className="absolute -translate-y-1/2 right-3 top-1/2 text-zinc-400 hover:text-white"
+                    onClick={() => setAmount(getAvailableBalance())}
+                    className="absolute -translate-y-1/2 right-4 top-1/2 
+                      text-xs font-medium
+                      bg-[#272734] hover:bg-[#323242]
+                      text-zinc-400 hover:text-white
+                      px-2 py-1 rounded-md
+                      transition-colors"
                   >
-                    <X className="w-4 h-4" />
+                    MAX
                   </button>
                 )}
               </div>
