@@ -178,6 +178,24 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
     const gtradeSize = orderSize - unidexSize;
     const gtradeMargin = gtradeSize / parseFloat(leverage || '1');
 
+    console.log('Order Split Details:', {
+      totalOrderSize: orderSize,
+      availableLiquidity: relevantLiquidity,
+      unidex: {
+        size: unidexSize,
+        margin: unidexMargin,
+        minMargin: MIN_MARGIN.unidexv4,
+        belowMinMargin: unidexMargin < MIN_MARGIN.unidexv4
+      },
+      gtrade: {
+        size: gtradeSize,
+        margin: gtradeMargin,
+        minMargin: MIN_MARGIN.gtrade,
+        belowMinMargin: gtradeMargin < MIN_MARGIN.gtrade,
+        supported: isGTradeSupported
+      }
+    });
+
     return {
       unidex: unidexSize > 0 ? { size: unidexSize, margin: unidexMargin } : null,
       gtrade: gtradeSize > 0 && isGTradeSupported && gtradeMargin >= MIN_MARGIN.gtrade

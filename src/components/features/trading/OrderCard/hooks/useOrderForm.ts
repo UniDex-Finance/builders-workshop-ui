@@ -1,9 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useBalances } from '../../../../../hooks/use-balances';
+import { useMarketData } from '../../../../../hooks/use-market-data';
 import { OrderFormState } from '../types';
 
 interface UseOrderFormProps {
   leverage: string;
+  assetId: string;
+  isLong: boolean;
 }
 
 interface UseOrderFormReturn {
@@ -23,8 +26,9 @@ interface UseOrderFormReturn {
 
 const MIN_MARGIN = 1; // Add this constant
 
-export function useOrderForm({ leverage }: UseOrderFormProps): UseOrderFormReturn {
+export function useOrderForm({ leverage, assetId, isLong }: UseOrderFormProps): UseOrderFormReturn {
   const { balances } = useBalances();
+  const { allMarkets } = useMarketData();
   const [formState, setFormState] = useState<OrderFormState>({
     // Initialize with amount that corresponds to 1 USD margin
     amount: (1 * parseFloat(leverage)).toString(),
@@ -40,11 +44,21 @@ export function useOrderForm({ leverage }: UseOrderFormProps): UseOrderFormRetur
     entryPrice: 0
   });
 
-  // Calculate max leveraged amount
+  // Calculate max leveraged amount, accounting for fees
   const maxLeveragedAmount = useMemo(() => {
-    const balance = parseFloat(balances?.formattedMusdBalance || "0");
-    return balance * parseFloat(leverage);
-  }, [balances?.formattedMusdBalance, leverage]);
+    const marginBalance = parseFloat(balances?.formattedMusdBalance || "0");
+    const usdcBalance = parseFloat(balances?.formattedUsdcBalance || "0");
+    const combinedBalance = marginBalance + usdcBalance;
+
+    // Get the market's trading fee from market data
+    const market = allMarkets.find(m => m.assetId === assetId);
+    const tradingFeeRate = market 
+      ? (isLong ? market.longTradingFee : market.shortTradingFee)
+      : 0.001; // fallback to 0.1% if market data not available
+
+    const adjustedBalance = combinedBalance / (1 + tradingFeeRate);
+    return adjustedBalance * parseFloat(leverage);
+  }, [balances?.formattedMusdBalance, balances?.formattedUsdcBalance, leverage, assetId, isLong, allMarkets]);
 
   // Update slider value when maxLeveragedAmount changes
   useEffect(() => {
@@ -58,11 +72,22 @@ export function useOrderForm({ leverage }: UseOrderFormProps): UseOrderFormRetur
     }
   }, [maxLeveragedAmount]);
 
-  // Update handleSliderChange to handle percentages more directly
+  // Handle slider change using combined balance
   const handleSliderChange = (value: number[]) => {
     const percentage = value[0];
+    const market = allMarkets.find(m => m.assetId === assetId);
     const newAmount = (maxLeveragedAmount * percentage / 100).toFixed(2);
     const calculatedMargin = parseFloat(newAmount) / parseFloat(leverage);
+    
+    console.log('Slider Calculations:', {
+      percentage,
+      maxLeveragedAmount,
+      newAmount,
+      calculatedMargin,
+      tradingFee: calculatedMargin * (market?.longTradingFee || 0.001),
+      market: market?.longTradingFee,
+      leverage
+    });
     
     if (calculatedMargin >= MIN_MARGIN) {
       setFormState(prev => ({
@@ -73,7 +98,7 @@ export function useOrderForm({ leverage }: UseOrderFormProps): UseOrderFormRetur
     }
   };
 
-  // Handle amount input change
+  // Update amount input change handler
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newAmount = e.target.value;
     
@@ -90,7 +115,7 @@ export function useOrderForm({ leverage }: UseOrderFormProps): UseOrderFormRetur
     }));
   };
 
-  // Handle margin input change
+  // Update margin input change handler
   const handleMarginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newMargin = e.target.value;
     const leverageNum = parseFloat(leverage);

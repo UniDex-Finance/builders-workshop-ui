@@ -43,6 +43,7 @@ export function OrderCard({
   const referrerInputRef = useRef<HTMLInputElement>(null);
   const [tempReferrerCode, setTempReferrerCode] = useState("");
   const [placingOrders, setPlacingOrders] = useState(false);
+  const [initialIsLong] = useState(true);
 
   const {
     formState,
@@ -56,7 +57,11 @@ export function OrderCard({
     handleStopLossChange,
     setFormState,
     isValid,
-  } = useOrderForm({ leverage });
+  } = useOrderForm({ 
+    leverage,
+    assetId,
+    isLong: initialIsLong 
+  });
 
   const { bestRoute, routes, executeOrder, splitOrderInfo } = useRouting(
     assetId,
