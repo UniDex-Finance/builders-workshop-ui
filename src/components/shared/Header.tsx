@@ -185,9 +185,10 @@ export function Header() {
       </div>
 
       <div className="flex items-center ml-auto space-x-2">
-      <DepositBox />
-
-        <AccountSummary />
+        <AccountSummary 
+          buttonText="Deposit / Withdraw" 
+          className="h-9"
+        />
         
         <ConnectButton.Custom>
           {({

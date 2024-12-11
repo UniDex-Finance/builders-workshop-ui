@@ -12,10 +12,11 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { TokenIcon } from "@/hooks/use-token-icon"
-import { useAccount } from "wagmi"
+import { useAccount, useSwitchChain } from "wagmi"
 import { useSmartAccount } from "@/hooks/use-smart-account"
 import { useToast } from "@/hooks/use-toast"
 import { useTokenTransferActions } from "@/hooks/use-token-transfer-actions"
+import { arbitrum } from "wagmi/chains"
 
 interface WithdrawCardProps {
   onClose: () => void;
@@ -29,10 +30,13 @@ export function WithdrawCard({ onClose, balances, onSuccess }: WithdrawCardProps
   const [amount, setAmount] = useState("")
   const [selectedSource, setSelectedSource] = useState<WithdrawSource>("1ct")
   const [isLoading, setIsLoading] = useState(false)
-  const { address } = useAccount()
+  const { address, chain } = useAccount()
   const { smartAccount } = useSmartAccount()
   const { toast } = useToast()
   const { withdrawFromSmartAccount } = useTokenTransferActions()
+  const { switchChain } = useSwitchChain()
+
+  const isOnArbitrum = chain?.id === arbitrum.id
 
   const getAvailableBalance = () => {
     if (!balances) return "0.0000";
@@ -76,6 +80,11 @@ export function WithdrawCard({ onClose, balances, onSuccess }: WithdrawCardProps
   };
 
   const handleWithdraw = async () => {
+    if (!isOnArbitrum) {
+      switchChain?.({ chainId: arbitrum.id })
+      return
+    }
+
     if (!address || !smartAccount?.address) {
       toast({
         title: "Error",
@@ -210,7 +219,7 @@ export function WithdrawCard({ onClose, balances, onSuccess }: WithdrawCardProps
           </div>
 
           <Button 
-            className="w-full h-[52px] bg-indigo-500 hover:bg-indigo-600 text-white"
+            className="w-full h-[52px] bg-[#7142cf] hover:bg-[#7142cf]/80 text-white"
             disabled={
               !amount || 
               parseFloat(amount) <= 0 || 
@@ -219,9 +228,11 @@ export function WithdrawCard({ onClose, balances, onSuccess }: WithdrawCardProps
             }
             onClick={handleWithdraw}
           >
-            {isLoading 
-              ? "Processing..." 
-              : "Withdraw"
+            {!isOnArbitrum
+              ? "Switch to Arbitrum"
+              : isLoading 
+                ? "Processing..." 
+                : "Withdraw"
             }
           </Button>
         </CardContent>

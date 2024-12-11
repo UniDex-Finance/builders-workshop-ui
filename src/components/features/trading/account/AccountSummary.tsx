@@ -11,8 +11,8 @@ import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { TokenIcon } from "@/hooks/use-token-icon";
-import { DepositCard } from "../deposit/DepositCard";
-import { WithdrawCard } from "../withdraw/WithdrawCard";
+import { DepositCard } from "./DepositCard";
+import { WithdrawCard } from "./WithdrawCard";
 
 interface BalanceItemProps {
   title: string;
@@ -95,7 +95,12 @@ function AddressDisplay({ label, address, explorerUrl }: AddressDisplayProps) {
   );
 }
 
-export function AccountSummary() {
+interface AccountSummaryProps {
+  buttonText?: string;
+  className?: string;
+}
+
+export function AccountSummary({ buttonText = "Wallet", className = "" }: AccountSummaryProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showDeposit, setShowDeposit] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
@@ -176,10 +181,9 @@ export function AccountSummary() {
       <Button
         variant="outline"
         onClick={() => setIsOpen(!isOpen)}
-        className="bg-[#1f1f29] hover:bg-[#1f1f29]/90"
+        className={`bg-[#1f1f29] hover:bg-[#1f1f29]/90 ${className}`}
       >
-        <Wallet className="w-4 h-4 mr-2" />
-        Wallet
+        {buttonText}
       </Button>
 
       {isOpen && (
@@ -261,13 +265,13 @@ export function AccountSummary() {
 
           <div className="flex gap-2">
             <Button 
-              className="flex-1 bg-[#1f1f29] hover:bg-[#1f1f29]/90"
+              className="flex-1 bg-[#1f1f29] hover:bg-[#1f1f29]/90 text-white"
               onClick={handleDepositClick}
             >
               Deposit
             </Button>
             <Button 
-              className="flex-1 bg-[#1f1f29] hover:bg-[#1f1f29]/90"
+              className="flex-1 bg-[#1f1f29] hover:bg-[#1f1f29]/90 text-white"
               onClick={handleWithdrawClick}
             >
               Withdraw

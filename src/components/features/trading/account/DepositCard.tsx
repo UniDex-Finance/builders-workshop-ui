@@ -17,7 +17,7 @@ import { useSmartAccount } from "@/hooks/use-smart-account"
 import { useToast } from "@/hooks/use-toast"
 import { useTokenTransferActions } from "@/hooks/use-token-transfer-actions"
 import { arbitrum, optimism } from "wagmi/chains"
-import { CrossChainDepositCall } from "./CrossChainDepositCall"
+import { CrossChainDepositCall } from "../deposit/CrossChainDepositCall"
 import { formatUnits } from "viem"
 import { parseUnits } from "viem"
 
@@ -336,7 +336,7 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
             />
           ) : (
             <Button 
-              className="w-full h-[52px] bg-indigo-500 hover:bg-indigo-600 text-white"
+              className="w-full h-[52px] bg-[#7142cf] hover:bg-[#7142cf]/80 text-white"
               disabled={
                 !amount || 
                 parseFloat(amount) <= 0 || 
@@ -355,7 +355,7 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
           )}
 
           <p className="text-xs text-zinc-500">
-            I agree to the Terms of Use and Privacy Policy, including that I accept the risks associated with these products and services and will not use them from any restricted jurisdiction. View more.
+            I agree to the Terms of Use, including that I accept the risks associated with these products and services and will not use them from any restricted jurisdiction.
           </p>
         </CardContent>
       </Card>
