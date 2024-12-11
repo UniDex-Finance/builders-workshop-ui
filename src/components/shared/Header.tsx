@@ -13,6 +13,7 @@ import {
   faBug, 
   faChartLine 
 } from '@fortawesome/free-solid-svg-icons';
+import { AccountSummary } from "../features/trading/account/AccountSummary";
 
 export function Header() {
   return (
@@ -184,8 +185,10 @@ export function Header() {
       </div>
 
       <div className="flex items-center ml-auto space-x-2">
-        <DepositBox />
+      <DepositBox />
 
+        <AccountSummary />
+        
         <ConnectButton.Custom>
           {({
             account,
