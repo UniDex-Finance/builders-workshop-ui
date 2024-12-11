@@ -37,33 +37,34 @@ export function PositionCard({ balances, isLoading }: Props) {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
-          <div className="text-[#A0AEC0] text-sm">Wallet Balance</div>
-          <div className="text-2xl text-white">
-            {usdmData?.displayUsdmBalance || '0.00'} <span className="text-[#A0AEC0] text-sm">USD.m</span>{' '}
-            <span className="text-[#A0AEC0] text-sm">
+          <div className="text-[#A0AEC0] text-xs md:text-sm">Wallet Balance</div>
+          <div className="text-xl text-white md:text-2xl">
+            {usdmData?.displayUsdmBalance || '0.00'} 
+            <span className="text-[#A0AEC0] text-xs md:text-sm"> USD.m</span>{' '}
+            <span className="text-[#A0AEC0] text-xs md:text-sm">
               {formatUsdmValue(usdmData?.formattedUsdmBalance || '0')}
             </span>
           </div>
         </div>
         <div className="border-t border-[#272734]" />
         <div className="space-y-4">
-          <div className="flex justify-between text-sm">
+          <div className="flex justify-between text-xs md:text-sm">
             <span className="text-[#A0AEC0]">Amount Staked</span>
-            <span className="text-white">
+            <span className="text-right text-white">
               {usdmStakingData?.displayStakedBalance || '0.00'} USD.m {' '}
               <span className="text-[#A0AEC0]">
                 (${((parseFloat(usdmStakingData?.formattedStakedBalance || '0') * parseFloat(usdmData?.formattedUsdmPrice || '0')).toFixed(2))})
               </span>
             </span>
           </div>
-          <div className="flex justify-between text-sm">
+          <div className="flex justify-between text-xs md:text-sm">
             <span className="text-[#A0AEC0]">Vesting Rewards</span>
-            <span className="text-[#00FF00]">
+            <span className="text-[#00FF00] text-right">
               {moltenStakingData?.displayEarnedBalance || '0.00'} esMOLTEN {' '}
               <span className="text-[#A0AEC0]">{formatUsdmValue(moltenStakingData?.formattedEarnedBalance || '0')}</span>
             </span>
           </div>
-          <div className="flex justify-between text-sm">
+          <div className="flex justify-between text-xs md:text-sm">
             <span className="text-[#A0AEC0]">Share of the Vault</span>
             <span className="text-white">{calculateShareOfPool()}%</span>
           </div>

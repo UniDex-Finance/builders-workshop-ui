@@ -220,20 +220,20 @@ export function ActionsCard({
 
   return (
     <Card className="bg-[#16161D] border-[#1b1b22]">
-      <CardHeader className="pt-4 pb-0">
+      <CardHeader className="pt-3 pb-0 sm:pt-4">
         <div className="flex items-center justify-between">
-          <CardTitle>{action === 'mint' ? 'Mint' : 'Burn'} USD.m</CardTitle>
-          <div className="flex gap-2">
+          <CardTitle className="text-base sm:text-lg">{action === 'mint' ? 'Mint' : 'Burn'} USD.m</CardTitle>
+          <div className="flex gap-1 sm:gap-2">
             <Button 
               variant="ghost" 
-              className={`text-[#A0AEC0] hover:text-white ${action === 'mint' ? 'bg-[#272734]' : ''}`}
+              className={`text-[#A0AEC0] hover:text-white text-sm px-2 sm:px-4 ${action === 'mint' ? 'bg-[#272734]' : ''}`}
               onClick={() => setAction('mint')}
             >
               Mint
             </Button>
             <Button 
               variant="ghost" 
-              className={`text-[#A0AEC0] hover:text-white ${action === 'burn' ? 'bg-[#272734]' : ''}`}
+              className={`text-[#A0AEC0] hover:text-white text-sm px-2 sm:px-4 ${action === 'burn' ? 'bg-[#272734]' : ''}`}
               onClick={() => setAction('burn')}
             >
               Burn
@@ -243,34 +243,33 @@ export function ActionsCard({
       </CardHeader>
       <CardContent className="pt-4 space-y-6">
         <div className="space-y-4">
-          <div className="relative mb-2">
-            <div className="flex gap-2">
-              <Select defaultValue="usdc" disabled>
-                <SelectTrigger className="w-[140px] h-[42px] bg-[#272734] border-0 focus:ring-0">
-                  <SelectValue>
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center justify-center w-6 h-6 text-sm bg-blue-500 rounded-full">
-                        $
-                      </div>
-                      <span>USDC</span>
+          <div className="flex flex-col gap-2 md:flex-row">
+            <Select defaultValue="usdc" disabled>
+              <SelectTrigger className="w-full md:w-[140px] h-[42px] bg-[#272734] border-0 focus:ring-0">
+                <SelectValue>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-center w-6 h-6 text-sm bg-blue-500 rounded-full">
+                      $
                     </div>
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="usdc">USDC</SelectItem>
-                </SelectContent>
-              </Select>
-              <div className="relative flex-1">
-                <Input
-                  type="text"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="w-full h-[42px] bg-[#272734] border-0 text-lg pr-20"
-                  placeholder="0.00"
-                />
-                <div className="absolute text-[#A0AEC0] -translate-y-1/2 right-3 top-1/2">
-                  ~${calculateUsdValue(amount)}
-                </div>
+                    <span>USDC</span>
+                  </div>
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="usdc">USDC</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <div className="relative flex-1">
+              <Input
+                type="text"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="w-full h-[42px] bg-[#272734] border-0 text-lg pr-20"
+                placeholder="0.00"
+              />
+              <div className="absolute text-[#A0AEC0] -translate-y-1/2 right-3 top-1/2">
+                ~${calculateUsdValue(amount)}
               </div>
             </div>
           </div>
@@ -293,13 +292,13 @@ export function ActionsCard({
           </div>
 
           <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-            <CollapsibleTrigger className="flex items-center justify-between w-full p-4 bg-[#272734] rounded-lg">
+            <CollapsibleTrigger className="flex items-center justify-between w-full p-3 sm:p-4 bg-[#272734] rounded-lg text-sm">
               <span className="text-[#A0AEC0]">Summary</span>
-              <ChevronDown className={`h-5 w-5 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+              <ChevronDown className={`h-4 w-4 sm:h-5 sm:w-5 transition-transform ${isOpen ? "rotate-180" : ""}`} />
             </CollapsibleTrigger>
-            <CollapsibleContent className="bg-[#272734] rounded-lg mt-px p-4">
+            <CollapsibleContent className="bg-[#272734] rounded-lg mt-px p-3 sm:p-4">
               <div className="flex flex-col gap-2">
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-[#A0AEC0]">Balance</span>
                   <div className="flex items-center gap-2">
                     <span>0.00</span>
@@ -308,7 +307,7 @@ export function ActionsCard({
                     <span className="text-[#A0AEC0]">{action === 'mint' ? 'USD.m' : 'USDC'}</span>
                   </div>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-[#A0AEC0]">Fees (0.25%)</span>
                   <div className="flex items-center gap-2">
                     <span>{amount ? calculateFees(amount) : '0.00'}</span>
@@ -320,7 +319,7 @@ export function ActionsCard({
           </Collapsible>
 
           <Button 
-            className="w-full h-14 bg-[#7C5CFF] hover:bg-[#6B4FE0] text-base text-white"
+            className="w-full h-12 sm:h-14 bg-[#7C5CFF] hover:bg-[#6B4FE0] text-sm sm:text-base text-white"
             onClick={handleTransaction}
             disabled={!canSubmit()}
           >
