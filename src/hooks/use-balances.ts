@@ -63,7 +63,7 @@ export function useBalances(selectedNetwork: 'arbitrum' | 'optimism' = 'arbitrum
   const { address: eoaAddress } = useAccount()
   const { balances, setBalances, setLoading, setError } = useBalancesStore()
 
-  // Memoize the contract read arguments to ensure stability
+  // Memoize the contract read arguments
   const smartAccountArgs = useMemo(() => {
     if (!smartAccount?.address) return undefined;
     return [smartAccount.address] as const;
@@ -74,6 +74,7 @@ export function useBalances(selectedNetwork: 'arbitrum' | 'optimism' = 'arbitrum
     return [eoaAddress] as const;
   }, [eoaAddress]);
 
+  // Smart Account balances (always on Arbitrum)
   const {
     data: smartAccountData,
     isError: isSmartAccountError,
@@ -118,7 +119,7 @@ export function useBalances(selectedNetwork: 'arbitrum' | 'optimism' = 'arbitrum
     args: eoaArgs,
     chainId: arbitrum.id,
     query: {
-      enabled: !!eoaAddress && selectedNetwork === 'arbitrum',
+      enabled: !!eoaAddress,
       staleTime: 4000,
       refetchInterval: 5000,
     }
@@ -135,7 +136,7 @@ export function useBalances(selectedNetwork: 'arbitrum' | 'optimism' = 'arbitrum
     args: eoaArgs,
     chainId: optimism.id,
     query: {
-      enabled: !!eoaAddress && selectedNetwork === 'optimism',
+      enabled: !!eoaAddress,
       staleTime: 4000,
       refetchInterval: 5000,
     }
@@ -145,16 +146,14 @@ export function useBalances(selectedNetwork: 'arbitrum' | 'optimism' = 'arbitrum
   useEffect(() => {
     if (!smartAccountData) return;
 
-    const currentEoaBalance = selectedNetwork === 'arbitrum' ? eoaUsdcBalance : eoaOptimismUsdcBalance;
-
     setBalances({
       ...smartAccountData,
       eoaUsdcBalance: eoaUsdcBalance || BigInt(0),
       eoaOptimismUsdcBalance: eoaOptimismUsdcBalance || BigInt(0),
-      formattedEoaUsdcBalance: currentEoaBalance ? formatUnits(currentEoaBalance, 6) : '0',
+      formattedEoaUsdcBalance: eoaUsdcBalance ? formatUnits(eoaUsdcBalance, 6) : '0',
       formattedEoaOptimismUsdcBalance: eoaOptimismUsdcBalance ? formatUnits(eoaOptimismUsdcBalance, 6) : '0'
     });
-  }, [smartAccountData, eoaUsdcBalance, eoaOptimismUsdcBalance, selectedNetwork]);
+  }, [smartAccountData, eoaUsdcBalance, eoaOptimismUsdcBalance]);
 
   // Update loading state
   useEffect(() => {
@@ -170,8 +169,8 @@ export function useBalances(selectedNetwork: 'arbitrum' | 'optimism' = 'arbitrum
     try {
       await Promise.all([
         smartAccountArgs ? refetchSmartAccount() : Promise.resolve(null),
-        eoaArgs && selectedNetwork === 'arbitrum' ? refetchEoaArbitrum() : Promise.resolve(null),
-        eoaArgs && selectedNetwork === 'optimism' ? refetchEoaOptimism() : Promise.resolve(null)
+        eoaArgs ? refetchEoaArbitrum() : Promise.resolve(null),
+        eoaArgs ? refetchEoaOptimism() : Promise.resolve(null)
       ]);
     } catch (error) {
       console.error('Error refetching balances:', error);

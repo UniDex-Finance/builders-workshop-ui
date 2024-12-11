@@ -4,10 +4,15 @@ import { Button } from "@/components/ui/button";
 import { useSmartAccount } from "@/hooks/use-smart-account";
 import { useBalances } from "@/hooks/use-balances";
 import { useAccount } from "wagmi";
-import { Wallet, Copy, ExternalLink } from "lucide-react";
+import { Wallet, Copy, ExternalLink, ChevronDown } from "lucide-react";
 import { usePositions } from "@/hooks/use-positions";
 import { useToast } from "@/hooks/use-toast";
 import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { TokenIcon } from "@/hooks/use-token-icon";
+import { DepositCard } from "../deposit/DepositCard";
+import { WithdrawCard } from "../withdraw/WithdrawCard";
 
 interface BalanceItemProps {
   title: string;
@@ -92,6 +97,10 @@ function AddressDisplay({ label, address, explorerUrl }: AddressDisplayProps) {
 
 export function AccountSummary() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showDeposit, setShowDeposit] = useState(false);
+  const [showWithdraw, setShowWithdraw] = useState(false);
+  const [selectedChain, setSelectedChain] = useState<"arbitrum" | "optimism">("arbitrum");
+  const [amount, setAmount] = useState("");
   const summaryRef = useRef<HTMLDivElement>(null);
   const { smartAccount } = useSmartAccount();
   const { address: eoaAddress } = useAccount();
@@ -124,6 +133,22 @@ export function AccountSummary() {
     return `https://arbiscan.io/address/${address}`;
   };
 
+  const handleDepositClick = () => {
+    setShowDeposit(true);
+    setIsOpen(false);
+  };
+
+  const handleWithdrawClick = () => {
+    setShowWithdraw(true);
+    setIsOpen(false);
+  };
+
+  const handleMaxClick = () => {
+    if (balances) {
+      setAmount(balances.formattedEoaUsdcBalance);
+    }
+  };
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -137,6 +162,14 @@ export function AccountSummary() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  if (showWithdraw) {
+    return <WithdrawCard onClose={() => setShowWithdraw(false)} balances={balances} />;
+  }
+
+  if (showDeposit) {
+    return <DepositCard onClose={() => setShowDeposit(false)} balances={balances} />;
+  }
 
   return (
     <div className="relative" ref={summaryRef}>
@@ -229,13 +262,13 @@ export function AccountSummary() {
           <div className="flex gap-2">
             <Button 
               className="flex-1 bg-[#1f1f29] hover:bg-[#1f1f29]/90"
-              onClick={() => console.log("Deposit clicked")}
+              onClick={handleDepositClick}
             >
               Deposit
             </Button>
             <Button 
               className="flex-1 bg-[#1f1f29] hover:bg-[#1f1f29]/90"
-              onClick={() => console.log("Withdraw clicked")}
+              onClick={handleWithdrawClick}
             >
               Withdraw
             </Button>

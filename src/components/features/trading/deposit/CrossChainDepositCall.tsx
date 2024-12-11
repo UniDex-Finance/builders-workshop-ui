@@ -23,12 +23,18 @@ interface CrossChainDepositCallProps {
   amount?: string;
   onSuccess?: () => void;
   chain?: number;
+  isLoading?: boolean;
+  disabled?: boolean;
+  quoteData?: any;
 }
 
 export function CrossChainDepositCall({
   amount = "0",
   onSuccess,
   chain,
+  isLoading,
+  disabled,
+  quoteData,
 }: CrossChainDepositCallProps) {
   const { toast } = useToast();
   const { address } = useAccount();
@@ -63,28 +69,11 @@ export function CrossChainDepositCall({
     }
 
     try {
-      console.log("Converting amount to USDC units...");
-      const amountInUsdcUnits = parseUnits(amount, 6).toString();
-      console.log("Amount in USDC units:", amountInUsdcUnits);
-
-      console.log("Fetching quote...");
-      const quoteUrl = `https://li.quest/v1/quote?fromChain=10&toChain=42161&fromToken=0x0b2c639c533813f4aa9d7837caf62653d097ff85&toToken=0xaf88d065e77c8cc2239327c5edb3a432268e5831&fromAddress=${address}&toAddress=${smartAccount.address}&fromAmount=${amountInUsdcUnits}&integrator=unidex&allowBridges=across&skipSimulation=true`;
-      console.log("Quote URL:", quoteUrl);
-
-      const response = await fetch(quoteUrl);
-
-      if (!response.ok) {
-        console.error(
-          "Quote fetch failed:",
-          response.status,
-          response.statusText
-        );
-        throw new Error("Failed to fetch quote");
+      if (!quoteData?.transactionRequest) {
+        throw new Error("No quote data available");
       }
 
-      const data = await response.json();
-      console.log("Quote data:", data);
-      const { transactionRequest } = data;
+      const { transactionRequest } = quoteData;
 
       console.log("Sending transaction...");
       const hash = await walletClient.sendTransaction({
@@ -131,13 +120,17 @@ export function CrossChainDepositCall({
   };
 
   return (
-    <Button
+    <Button 
       onClick={handleClick}
-      variant="outline"
-      className="w-full"
-      data-testid="cross-chain-deposit-button"
+      className="w-full h-[52px] bg-indigo-500 hover:bg-indigo-600 text-white"
+      disabled={disabled || isLoading}
     >
-      {isOnOptimism ? "Deposit to 1CT Wallet" : "Switch to Optimism"}
+      {!isOnOptimism 
+        ? "Switch to Optimism" 
+        : isLoading 
+          ? "Processing..." 
+          : "Acknowledge terms and deposit"
+      }
     </Button>
   );
 }
