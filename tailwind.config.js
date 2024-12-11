@@ -55,6 +55,21 @@ module.exports = {
             '4': 'hsl(var(--chart-4))',
             '5': 'hsl(var(--chart-5))'
           }
+        },
+        keyframes: {
+          'slide-up-mobile': {
+            '0%': { 
+              transform: 'translateY(100%)',
+              opacity: '0.3'
+            },
+            '100%': { 
+              transform: 'translateY(0)',
+              opacity: '1'
+            },
+          }
+        },
+        animation: {
+          'slide-up-mobile': 'slide-up-mobile 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
         }
       }
     },

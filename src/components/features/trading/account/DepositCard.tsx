@@ -201,8 +201,26 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <Card className="w-[440px] bg-[#17161d] text-white border-zinc-800 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm md:items-center">
+      <Card className={`
+        w-full
+        bg-[#17161d]
+        text-white
+        border-zinc-800
+        p-4
+        
+        /* Mobile styles */
+        fixed
+        bottom-0
+        rounded-b-none
+        animate-slide-up-mobile
+        
+        /* Desktop styles */
+        md:animate-none
+        md:relative
+        md:w-[440px]
+        md:rounded-lg
+      `}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium">Deposit</h3>
           <Button 
@@ -251,13 +269,8 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
                 <SelectTrigger className="bg-[#272734] border-zinc-800 h-[52px]">
                   <SelectValue>
                     <div className="flex items-center gap-2">
-                      <img 
-                        src="/static/images/tokens/USDC.svg" 
-                        alt="USDC" 
-                        width={24} 
-                        height={24} 
-                      />
-                      USD Coin
+                      <TokenIcon pair="USDC" size={24} />
+                      {selectedChain === "arbitrum" ? "Arbitrum" : "Optimism"} USDC
                       <span className="text-xs text-white px-1.5 py-0.5 bg-[#27272a] rounded ml-1">USDC</span>
                     </div>
                   </SelectValue>

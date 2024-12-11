@@ -126,8 +126,26 @@ export function WithdrawCard({ onClose, balances, onSuccess }: WithdrawCardProps
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <Card className="w-[440px] bg-[#17161d] text-white border-zinc-800 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm md:items-center">
+      <Card className={`
+        w-full
+        bg-[#17161d]
+        text-white
+        border-zinc-800
+        p-4
+        
+        /* Mobile styles */
+        fixed
+        bottom-0
+        rounded-b-none
+        animate-slide-up-mobile
+        
+        /* Desktop styles */
+        md:animate-none
+        md:relative
+        md:w-[440px]
+        md:rounded-lg
+      `}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium">Withdraw</h3>
           <Button 

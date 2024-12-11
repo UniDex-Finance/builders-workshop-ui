@@ -192,17 +192,26 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
           z-50 
           p-4 
           space-y-4 
-          bg-[hsl(var(--component-background))]
-          shadow-lg
+          bg-[#17161d]
+          text-white
+          border-zinc-800
           
           /* Mobile styles */
-          w-[90vw]
-          right-0
-          mt-2
+          fixed
+          inset-x-0
+          bottom-0
+          rounded-b-none
+          w-full
+          animate-slide-up-mobile
           
           /* Desktop styles */
+          md:animate-none
+          md:relative
+          md:inset-auto
           md:w-[400px]
           md:right-0
+          md:rounded-lg
+          md:mt-2
         `}>
           {/* Address Section */}
           <div className="space-y-3">
