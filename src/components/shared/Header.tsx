@@ -14,6 +14,7 @@ import {
   faChartLine 
 } from '@fortawesome/free-solid-svg-icons';
 import { AccountSummary } from "../features/trading/account/AccountSummary";
+import { getUsersnapApi } from "../../lib/usersnap";
 
 export function Header() {
   return (
@@ -91,7 +92,12 @@ export function Header() {
                 key="feedback"
                 description="Provide your feedback"
                 startContent={<FontAwesomeIcon icon={faComments} />}
-                onClick={() => window.open("https://samplelink.com/feedback", "_blank")}
+                onClick={() => {
+                  const api = getUsersnapApi();
+                  if (api) {
+                    api.logEvent("feedback-button-clicked");
+                  }
+                }}
               >
                 Give Feedback
               </DropdownItem>
@@ -99,7 +105,12 @@ export function Header() {
                 key="bug-bounty"
                 description="Participate in our bug bounty program"
                 startContent={<FontAwesomeIcon icon={faBug} />}
-                onClick={() => window.open("https://samplelink.com/bug-bounty", "_blank")}
+                onClick={() => {
+                  const api = getUsersnapApi();
+                  if (api) {
+                    api.logEvent("survey-button-clicked");
+                  }
+                }}
               >
                 Bug Bounty
               </DropdownItem>
@@ -161,14 +172,24 @@ export function Header() {
               <DropdownItem
                 key="feedback"
                 description="Provide your feedback"
-                onClick={() => window.open("https://samplelink.com/feedback", "_blank")}
+                onClick={() => {
+                  const api = getUsersnapApi();
+                  if (api) {
+                    api.logEvent("survey-button-clicked");
+                  }
+                }}
               >
                 Give Feedback
               </DropdownItem>
               <DropdownItem
                 key="bug-bounty"
                 description="Participate in our bug bounty program"
-                onClick={() => window.open("https://samplelink.com/bug-bounty", "_blank")}
+                onClick={() => {
+                  const api = getUsersnapApi();
+                  if (api) {
+                    api.logEvent("feedback-button-clicked");
+                  }
+                }}
               >
                 Bug Bounty
               </DropdownItem>

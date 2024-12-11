@@ -10,6 +10,8 @@ import { useMarketData } from "../hooks/use-market-data";
 import { usePrices } from "../lib/websocket-price-context";
 import { usePairFromUrl } from "../hooks/use-pair-from-url";
 import { usePositions } from "../hooks/use-positions";
+import { loadSpace } from '@usersnap/browser';
+import { setUsersnapApi } from "../lib/usersnap";
 
 export default function TradingInterface() {
   const { selectedPair, setPair } = usePairFromUrl();
@@ -27,6 +29,17 @@ export default function TradingInterface() {
   const assetId = selectedMarket ? selectedMarket.assetId : "";
 
   const [chartHeight, setChartHeight] = useState<number>(500);
+
+  useEffect(() => {
+    // Initialize Usersnap
+    const spaceApiKey = process.env.NEXT_PUBLIC_USERSNAP_API_KEY;
+    if (spaceApiKey) {
+      loadSpace(spaceApiKey).then((api) => {
+        api.init();
+        setUsersnapApi(api);
+      });
+    }
+  }, []); // Empty dependency array means this runs once on mount
 
   useEffect(() => {
     const basePair = selectedPair.split("/")[0].toLowerCase();
