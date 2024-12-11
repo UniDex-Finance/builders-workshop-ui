@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useSmartAccount } from "@/hooks/use-smart-account";
 import { useBalances } from "@/hooks/use-balances";
 import { useAccount } from "wagmi";
-import { Wallet, Copy, ExternalLink, ChevronDown } from "lucide-react";
+import { Wallet, Copy, ExternalLink, ChevronDown, RefreshCcw } from "lucide-react";
 import { usePositions } from "@/hooks/use-positions";
 import { useToast } from "@/hooks/use-toast";
 import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
@@ -62,9 +62,11 @@ interface AddressDisplayProps {
   label: string;
   address?: string;
   explorerUrl?: string;
+  onRevoke?: () => void;
+  showRevoke?: boolean;
 }
 
-function AddressDisplay({ label, address, explorerUrl }: AddressDisplayProps) {
+function AddressDisplay({ label, address, explorerUrl, onRevoke, showRevoke }: AddressDisplayProps) {
   const { toast } = useToast();
 
   const handleCopy = () => {
@@ -98,22 +100,57 @@ function AddressDisplay({ label, address, explorerUrl }: AddressDisplayProps) {
       </div>
       {address && (
         <div className="flex space-x-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleCopy}
-            className="p-0 h-7 w-7"
-          >
-            <Copy className="w-3.5 h-3.5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleExplorer}
-            className="p-0 h-7 w-7"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCopy}
+                  className="p-0 h-7 w-7"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Copy Address</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleExplorer}
+                  className="p-0 h-7 w-7"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>View in Explorer</p>
+              </TooltipContent>
+            </Tooltip>
+
+            {showRevoke && onRevoke && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onRevoke}
+                    className="p-0 h-7 w-7 text-muted-foreground hover:text-muted-foreground/80"
+                  >
+                    <RefreshCcw className="w-3.5 h-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Reset Session</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </TooltipProvider>
         </div>
       )}
     </div>
@@ -132,7 +169,7 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
   const [selectedChain, setSelectedChain] = useState<"arbitrum" | "optimism">("arbitrum");
   const [amount, setAmount] = useState("");
   const summaryRef = useRef<HTMLDivElement>(null);
-  const { smartAccount, setupSessionKey, isSigningSessionKey } = useSmartAccount();
+  const { smartAccount, setupSessionKey, isSigningSessionKey, revokeCurrentSession } = useSmartAccount();
   const { address: eoaAddress } = useAccount();
   const { balances, isLoading } = useBalances("arbitrum");
   const { positions, loading: positionsLoading } = usePositions();
@@ -192,6 +229,23 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
   const handleMaxClick = () => {
     if (balances) {
       setAmount(balances.formattedEoaUsdcBalance);
+    }
+  };
+
+  const handleRevoke = async () => {
+    try {
+      await revokeCurrentSession();
+      toast({
+        title: "Success",
+        description: "Session key revoked successfully",
+      });
+      setIsOpen(false);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to revoke session key",
+        variant: "destructive",
+      });
     }
   };
 
@@ -294,6 +348,8 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
                     label="Trading Address"
                     address={smartAccount?.address}
                     explorerUrl={smartAccount?.address ? getExplorerUrl(smartAccount.address) : undefined}
+                    onRevoke={handleRevoke}
+                    showRevoke={true}
                   />
 
                   <div className="h-px bg-border" />

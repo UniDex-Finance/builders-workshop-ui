@@ -269,6 +269,32 @@ export function useSmartAccount() {
     initializeFromStoredSession();
   }, [initializeFromStoredSession]);
 
+  const revokeCurrentSession = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      
+      // Clear all stored data
+      localStorage.removeItem('sessionKey');
+      sessionStorage.clear();
+      
+      // Reset state
+      setSmartAccount(null);
+      setKernelClient(null);
+      setSessionKeyAddress(null);
+      setIsInitialized(false);
+      
+      // Force page refresh
+      window.location.reload();
+      
+      return true;
+    } catch (err) {
+      console.error('Failed to revoke session:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   return {
     smartAccount,
     kernelClient,
@@ -279,6 +305,7 @@ export function useSmartAccount() {
     sessionKeyAddress,
     isInitialized,
     isInitializing,
-    isNetworkSwitching
+    isNetworkSwitching,
+    revokeCurrentSession
   };
 }
