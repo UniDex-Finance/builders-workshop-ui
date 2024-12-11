@@ -1,8 +1,14 @@
 import { usePositions } from "../../../hooks/use-positions";
 import { useBalances } from "../../../hooks/use-balances";
 import { useAccount } from "wagmi";
+import { DepositCard } from "./account/DepositCard";
+import { WithdrawCard } from "./account/WithdrawCard";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 export function WalletBox() {
+  const [showDeposit, setShowDeposit] = useState(false);
+  const [showWithdraw, setShowWithdraw] = useState(false);
   const { positions, loading: positionsLoading } = usePositions();
   const { balances, isLoading: balancesLoading } = useBalances("arbitrum");
   const { address: eoaAddress } = useAccount();
@@ -47,56 +53,111 @@ export function WalletBox() {
     return `$${total.toFixed(2)}`;
   };
 
-  // Show connect wallet message if no wallet is connected
-  if (!eoaAddress) {
-    return (
-      <div className="text-sm text-center text-muted-foreground">
-        Connect wallet to view balances
-      </div>
-    );
-  }
+  const calculateTradingAccountBalance = () => {
+    if (balancesLoading) return "Loading...";
+    const musdBalance = parseFloat(balances?.formattedMusdBalance || "0");
+    const usdcBalance = parseFloat(balances?.formattedUsdcBalance || "0");
+    return `$${(musdBalance + usdcBalance).toFixed(2)} USD`;
+  };
+
+  const calculateTotalExposure = () => {
+    if (positionsLoading) return "Loading...";
+    const totalSize = positions?.reduce((total, position) => {
+      const size = parseFloat(position.size.replace(/[^0-9.-]/g, ""));
+      return total + Math.abs(size);
+    }, 0);
+    return totalSize ? `$${totalSize.toFixed(2)} USD` : "$0.00 USD";
+  };
+
+  const calculateUsedMargin = () => {
+    if (positionsLoading) return "Loading...";
+    const totalMargin = positions?.reduce((total, position) => {
+      const margin = parseFloat(position.margin.replace(/[^0-9.-]/g, ""));
+      return total + Math.abs(margin);
+    }, 0);
+    return totalMargin ? `$${totalMargin.toFixed(2)} USD` : "$0.00 USD";
+  };
 
   return (
     <div>
-      <div className="flex justify-between mb-2">
-        <span className="text-sm font-semibold text-muted-foreground">
-          Account Equity
+      <div className="flex items-center justify-between mb-4">
+        <span className="font-medium">Your Account</span>
+        <span className="text-sm">
+          <button 
+            onClick={() => setShowDeposit(true)}
+            className="text-[#7142cf] hover:opacity-80"
+          >
+            Deposit
+          </button>
+          <span className="mx-1 text-border">|</span>
+          <button 
+            onClick={() => setShowWithdraw(true)}
+            className="text-[#7142cf] hover:opacity-80"
+          >
+            Withdraw
+          </button>
         </span>
-        <span className="text-base">{calculateTotalBalance()}</span>
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            Account Equity
+          </span>
+          <span className="text-sm text-white">
+            {calculateTotalBalance()}
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            Trading Account
+          </span>
+          <span className="text-sm text-muted-foreground">
+            {calculateTradingAccountBalance()}
+          </span>
+        </div>
       </div>
 
       <div className="h-px my-4 bg-border" />
 
-      <div className="space-y-2 text-sm text-muted-foreground">
+      <div className="space-y-2">
         <div className="flex justify-between">
-          <span>Unrealized PnL</span>
+          <span className="text-sm text-muted-foreground">Unrealized PnL</span>
           <span
-            className={
+            className={`text-sm ${
               (totalUnrealizedPnl || 0) >= 0 ? "text-green-400" : "text-red-400"
-            }
+            }`}
           >
             {positionsLoading ? "Loading..." : formatPnL(totalUnrealizedPnl)} USD
           </span>
         </div>
 
         <div className="flex justify-between">
-          <span>Margin Wallet Balance</span>
-          <span>
-            {balancesLoading
-              ? "Loading..."
-              : `$${formatBalance(balances?.formattedMusdBalance)} USD`}
-          </span>
+          <span className="text-sm text-muted-foreground">Open Exposure</span>
+          <span className="text-sm text-muted-foreground">{calculateTotalExposure()}</span>
         </div>
 
         <div className="flex justify-between">
-          <span>1CT Wallet Balance</span>
-          <span>
-            {balancesLoading
-              ? "Loading..."
-              : `${formatBalance(balances?.formattedUsdcBalance)} USDC`}
-          </span>
+          <span className="text-sm text-muted-foreground">Used Margin</span>
+          <span className="text-sm text-muted-foreground">{calculateUsedMargin()}</span>
         </div>
       </div>
+
+      {/* Modals */}
+      {showDeposit && (
+        <DepositCard 
+          onClose={() => setShowDeposit(false)} 
+          balances={balances} 
+        />
+      )}
+      
+      {showWithdraw && (
+        <WithdrawCard 
+          onClose={() => setShowWithdraw(false)} 
+          balances={balances} 
+        />
+      )}
     </div>
   );
 }
