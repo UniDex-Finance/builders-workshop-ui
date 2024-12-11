@@ -107,11 +107,27 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
   const [selectedChain, setSelectedChain] = useState<"arbitrum" | "optimism">("arbitrum");
   const [amount, setAmount] = useState("");
   const summaryRef = useRef<HTMLDivElement>(null);
-  const { smartAccount } = useSmartAccount();
+  const { smartAccount, setupSessionKey, isSigningSessionKey } = useSmartAccount();
   const { address: eoaAddress } = useAccount();
   const { balances, isLoading } = useBalances("arbitrum");
   const { positions, loading: positionsLoading } = usePositions();
   const { toast } = useToast();
+
+  const handleSetupSmartAccount = async () => {
+    try {
+      await setupSessionKey();
+      toast({
+        title: "Success",
+        description: "1CT Account successfully created",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to setup 1CT account",
+        variant: "destructive",
+      });
+    }
+  };
 
   // Calculate total unrealized PnL
   const totalUnrealizedPnl = positions?.reduce((total, position) => {
@@ -188,7 +204,6 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
 
       {isOpen && (
         <>
-          {/* Mobile overlay with lighter background */}
           <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden" />
           
           <Card className={`
@@ -224,71 +239,99 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
                 address={eoaAddress}
                 explorerUrl={eoaAddress ? getExplorerUrl(eoaAddress) : undefined}
               />
-              <AddressDisplay
-                label="Trading Address"
-                address={smartAccount?.address}
-                explorerUrl={smartAccount?.address ? getExplorerUrl(smartAccount.address) : undefined}
-              />
-            </div>
+              
+              {!smartAccount?.address ? (
+                <>
+                  <div className="my-4 border-t border-zinc-800" />
+                  <div className="space-y-4">
+                    <p className="text-sm text-zinc-400">
+                      To start trading, you need to setup a trading account.
+                    </p>
+                    <Button
+                      className="w-full h-[52px] bg-[#7142cf] hover:bg-[#7142cf]/80 text-white"
+                      onClick={handleSetupSmartAccount}
+                      disabled={isSigningSessionKey}
+                    >
+                      {isSigningSessionKey ? (
+                        <div className="flex items-center gap-2">
+                          <span className="w-4 h-4 border-2 border-white rounded-full animate-spin border-t-transparent" />
+                          Setting up...
+                        </div>
+                      ) : (
+                        "Establish Connection"
+                      )}
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <AddressDisplay
+                    label="Trading Address"
+                    address={smartAccount?.address}
+                    explorerUrl={smartAccount?.address ? getExplorerUrl(smartAccount.address) : undefined}
+                  />
 
-            <div className="h-px bg-border" />
+                  <div className="h-px bg-border" />
 
-            {/* Net Worth and Trading Account Section */}
-            <div className="flex items-end justify-between">
-              <div className="space-y-1">
-                <div className="text-sm text-muted-foreground">Net Worth</div>
-                <div className="text-2xl font-semibold">{calculateTotalEquity()}</div>
-              </div>
-              <div className="space-y-1 text-right">
-                <div className="text-sm text-muted-foreground">Trading Account</div>
-                <div className="text-lg">
-                  ${parseFloat(balances?.formattedMusdBalance || "0").toFixed(2)}
-                </div>
-              </div>
-            </div>
+                  {/* Net Worth and Trading Account Section */}
+                  <div className="flex items-end justify-between">
+                    <div className="space-y-1">
+                      <div className="text-sm text-muted-foreground">Net Worth</div>
+                      <div className="text-2xl font-semibold">{calculateTotalEquity()}</div>
+                    </div>
+                    <div className="space-y-1 text-right">
+                      <div className="text-sm text-muted-foreground">Trading Account</div>
+                      <div className="text-lg">
+                        ${parseFloat(balances?.formattedMusdBalance || "0").toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
 
-            <div className="h-px bg-border" />
+                  <div className="h-px bg-border" />
 
-            {/* Detailed Breakdown */}
-            <div className="space-y-2">
-              <div className="text-sm text-muted-foreground">Balance Breakdown</div>
-              <BalanceItem
-                title="Web3 Wallet Balance"
-                balance={balances ? balances.formattedEoaUsdcBalance : "0.00"}
-                isLoading={isLoading}
-              />
-              <BalanceItem
-                title="1CT Wallet Balance"
-                balance={balances ? balances.formattedUsdcBalance : "0.00"}
-                isLoading={isLoading}
-              />
-              <BalanceItem
-                title="Margin Wallet Balance"
-                balance={balances ? balances.formattedMusdBalance : "0.00"}
-                isLoading={isLoading}
-              />
-              <BalanceItem
-                title="Unrealized PnL"
-                balance={totalUnrealizedPnl?.toFixed(2) || "0.00"}
-                isLoading={positionsLoading}
-                suffix="USD"
-                className={totalUnrealizedPnl && totalUnrealizedPnl >= 0 ? "text-green-400" : "text-red-400"}
-              />
-            </div>
+                  {/* Detailed Breakdown */}
+                  <div className="space-y-2">
+                    <div className="text-sm text-muted-foreground">Balance Breakdown</div>
+                    <BalanceItem
+                      title="Web3 Wallet Balance"
+                      balance={balances ? balances.formattedEoaUsdcBalance : "0.00"}
+                      isLoading={isLoading}
+                    />
+                    <BalanceItem
+                      title="1CT Wallet Balance"
+                      balance={balances ? balances.formattedUsdcBalance : "0.00"}
+                      isLoading={isLoading}
+                    />
+                    <BalanceItem
+                      title="Margin Wallet Balance"
+                      balance={balances ? balances.formattedMusdBalance : "0.00"}
+                      isLoading={isLoading}
+                    />
+                    <BalanceItem
+                      title="Unrealized PnL"
+                      balance={totalUnrealizedPnl?.toFixed(2) || "0.00"}
+                      isLoading={positionsLoading}
+                      suffix="USD"
+                      className={totalUnrealizedPnl && totalUnrealizedPnl >= 0 ? "text-green-400" : "text-red-400"}
+                    />
+                  </div>
 
-            <div className="flex gap-2">
-              <Button 
-                className="flex-1 bg-[#1f1f29] hover:bg-[#1f1f29]/90 text-white"
-                onClick={handleDepositClick}
-              >
-                Deposit
-              </Button>
-              <Button 
-                className="flex-1 bg-[#1f1f29] hover:bg-[#1f1f29]/90 text-white"
-                onClick={handleWithdrawClick}
-              >
-                Withdraw
-              </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      className="flex-1 bg-[#1f1f29] hover:bg-[#1f1f29]/90 text-white"
+                      onClick={handleDepositClick}
+                    >
+                      Deposit
+                    </Button>
+                    <Button 
+                      className="flex-1 bg-[#1f1f29] hover:bg-[#1f1f29]/90 text-white"
+                      onClick={handleWithdrawClick}
+                    >
+                      Withdraw
+                    </Button>
+                  </div>
+                </>
+              )}
             </div>
           </Card>
         </>
