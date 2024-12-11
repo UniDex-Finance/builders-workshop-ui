@@ -148,7 +148,7 @@ export function WithdrawCard({ onClose, balances, onSuccess }: WithdrawCardProps
                 <SelectTrigger className="bg-[#272734] border-zinc-800 h-[52px]">
                   <SelectValue>
                     <div className="flex items-center gap-2">
-                      <TokenIcon pair="USDC/USD" size={24} />
+                      <TokenIcon pair="USDC" size={24} />
                       <span>{selectedSource === "margin" ? "Margin Wallet" : "1CT Wallet"}</span>
                     </div>
                   </SelectValue>
@@ -156,13 +156,13 @@ export function WithdrawCard({ onClose, balances, onSuccess }: WithdrawCardProps
                 <SelectContent className="bg-[#272734] border-zinc-800">
                   <SelectItem value="1ct">
                     <div className="flex items-center gap-2">
-                      <TokenIcon pair="USDC/USD" size={24} />
+                      <TokenIcon pair="USDC" size={24} />
                       <span>1CT Wallet</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="margin">
                     <div className="flex items-center gap-2">
-                      <TokenIcon pair="USDC/USD" size={24} />
+                      <TokenIcon pair="USDC" size={24} />
                       <span>Margin Wallet</span>
                     </div>
                   </SelectItem>

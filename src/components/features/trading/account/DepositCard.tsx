@@ -251,8 +251,13 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
                 <SelectTrigger className="bg-[#272734] border-zinc-800 h-[52px]">
                   <SelectValue>
                     <div className="flex items-center gap-2">
-                      <TokenIcon pair="USDC/USD" size={24} />
-                      {selectedChain === "arbitrum" ? "Arbitrum" : "Optimism"} USDC
+                      <img 
+                        src="/static/images/tokens/USDC.svg" 
+                        alt="USDC" 
+                        width={24} 
+                        height={24} 
+                      />
+                      USD Coin
                       <span className="text-xs text-white px-1.5 py-0.5 bg-[#27272a] rounded ml-1">USDC</span>
                     </div>
                   </SelectValue>
