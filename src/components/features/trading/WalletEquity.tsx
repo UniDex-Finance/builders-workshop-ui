@@ -85,14 +85,14 @@ export function WalletBox() {
         <span className="text-sm">
           <button 
             onClick={() => setShowDeposit(true)}
-            className="text-[#7142cf] hover:opacity-80"
+            className="text-[#815acf] hover:opacity-80"
           >
             Deposit
           </button>
           <span className="mx-1 text-border">|</span>
           <button 
             onClick={() => setShowWithdraw(true)}
-            className="text-[#7142cf] hover:opacity-80"
+            className="text-[#815acf] hover:opacity-80"
           >
             Withdraw
           </button>
