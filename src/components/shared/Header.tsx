@@ -231,28 +231,31 @@ export function Header() {
         <Modal 
           isOpen={isOpen} 
           onClose={onClose}
+          hideCloseButton
+          isDismissable={false}
           classNames={{
             base: "h-screen m-0 max-w-[80%] w-[300px] absolute left-0",
+            wrapper: "!items-start",
+            closeButton: "hidden",
           }}
           motionProps={{
             variants: {
               enter: {
                 x: 0,
-                opacity: 1,
                 transition: {
-                  duration: 0.3,
+                  duration: 0.2,
                   ease: "easeOut",
                 },
               },
               exit: {
-                x: -300,
-                opacity: 0,
+                x: "-100%",
                 transition: {
                   duration: 0.2,
                   ease: "easeIn",
                 },
               },
-            }
+            },
+            initial: { x: "-100%" }
           }}
         >
           <ModalContent>
