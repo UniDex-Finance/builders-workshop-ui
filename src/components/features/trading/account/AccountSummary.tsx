@@ -254,7 +254,8 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
     function handleClickOutside(event: MouseEvent) {
       if (
         summaryRef.current &&
-        !summaryRef.current.contains(event.target as Node)
+        !summaryRef.current.contains(event.target as Node) ||
+        (event.target as Element).classList.contains('bg-black/50')
       ) {
         setIsOpen(false);
       }
@@ -284,7 +285,10 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
 
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden" />
+          <div 
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden" 
+            onClick={() => setIsOpen(false)}
+          />
           
           <Card className={`
             z-50 
