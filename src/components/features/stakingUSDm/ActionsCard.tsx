@@ -5,6 +5,8 @@ import { useUsdmStaking } from "@/hooks/usdmHooks/use-usdm-staking"
 import { useState } from "react"
 import { useWalletClient } from 'wagmi'
 import { parseUnits } from 'viem'
+import { ArrowUpRight } from 'lucide-react'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface ActionsCardProps {
   isStaking: boolean
@@ -180,34 +182,48 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
                 {/* Desktop rewards layout */}
                 <div className="hidden md:flex items-center justify-between p-4 bg-[#272734] rounded-lg">
                     <div className="space-y-1">
-                        <div className="text-sm text-[#A0AEC0]">USD.m Staking Rewards</div>
-                        <div className="text-white">
-                            {stakingData?.displayEarnedBalance || '0.00'} USD.m
-                        </div>
+                        <div className="text-sm text-white">Claim Earned Staking Rewards</div>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger className="text-[#A0AEC0] hover:text-[#B0BED0] text-xs">
+                                    What is Sablier?
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p className="max-w-xs">Every month, you can claim your staking rewards through our partner Sablier and vest your esMOLTEN into MOLTEN.</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                     </div>
                     <Button 
-                        className="bg-[#7B3FE4] hover:bg-[#6B2FD4] text-white"
-                        disabled={!stakingData?.earnedBalance || stakingData.earnedBalance <= 0n}
-                        onClick={handleClaim}
+                        className="bg-[#7B3FE4] hover:bg-[#6B2FD4] text-white flex items-center gap-2"
+                        onClick={() => window.open('https://app.sablier.com/airdrops/?t=eligible', '_blank')}
                     >
                         Claim Rewards
+                        <ArrowUpRight className="w-4 h-4" />
                     </Button>
                 </div>
 
                 {/* Mobile rewards layout */}
                 <div className="flex md:hidden flex-col gap-4 p-4 bg-[#272734] rounded-lg">
                     <div className="space-y-1">
-                        <div className="text-sm text-[#A0AEC0]">USD.m Staking Rewards</div>
-                        <div className="text-white">
-                            {stakingData?.displayEarnedBalance || '0.00'} USD.m
-                        </div>
+                        <div className="text-sm text-white">Claim Earned Staking Rewards</div>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger className="text-[#A0AEC0] hover:text-[#B0BED0] text-xs">
+                                    What is Sablier?
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p className="max-w-xs">Every month, you can claim your staking rewards through our partner Sablier and vest your esMOLTEN into MOLTEN.</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                     </div>
                     <Button 
-                        className="w-full bg-[#7B3FE4] hover:bg-[#6B2FD4] text-white"
-                        disabled={!stakingData?.earnedBalance || stakingData.earnedBalance <= 0n}
-                        onClick={handleClaim}
+                        className="w-full bg-[#7B3FE4] hover:bg-[#6B2FD4] text-white flex items-center justify-center gap-2"
+                        onClick={() => window.open('https://app.sablier.com/airdrops/?t=eligible', '_blank')}
                     >
                         Claim Rewards
+                        <ArrowUpRight className="w-4 h-4" />
                     </Button>
                 </div>
             </CardContent>
