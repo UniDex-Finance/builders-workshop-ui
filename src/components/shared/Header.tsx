@@ -419,34 +419,6 @@ export function Header() {
                       variant="ghost"
                       className="justify-start w-full gap-2"
                       onClick={() => {
-                        const api = getUsersnapApi();
-                        if (api) {
-                          api.logEvent("feedback-button-clicked");
-                        }
-                        onClose();
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faComments} className="w-4 h-4" />
-                      Give Feedback
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="justify-start w-full gap-2"
-                      onClick={() => {
-                        const api = getUsersnapApi();
-                        if (api) {
-                          api.logEvent("survey-button-clicked");
-                        }
-                        onClose();
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faBug} className="w-4 h-4" />
-                      Bug Bounty
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="justify-start w-full gap-2"
-                      onClick={() => {
                         window.open("https://dune.com/supakawaiidesu/unidex-molten-stats", "_blank");
                         onClose();
                       }}
