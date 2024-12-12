@@ -19,6 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 interface BalanceItemProps {
   title: string;
@@ -170,7 +171,7 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
   const [amount, setAmount] = useState("");
   const summaryRef = useRef<HTMLDivElement>(null);
   const { smartAccount, setupSessionKey, isSigningSessionKey, revokeCurrentSession } = useSmartAccount();
-  const { address: eoaAddress } = useAccount();
+  const { address: eoaAddress, isConnected } = useAccount();
   const { balances, isLoading } = useBalances("arbitrum");
   const { positions, loading: positionsLoading } = usePositions();
   const { toast } = useToast();
@@ -319,12 +320,33 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
                 explorerUrl={eoaAddress ? getExplorerUrl(eoaAddress) : undefined}
               />
               
-              {!smartAccount?.address ? (
+              {!isConnected ? (
+                <>
+                  <div className="my-4 border-t border-zinc-800" />
+                  <div className="space-y-4">
+                    <p className="text-sm text-zinc-400">
+                      Connect your wallet to start trading.
+                    </p>
+                    <ConnectButton.Custom>
+                      {({ openConnectModal }) => (
+                        <Button
+                          className="w-full h-[52px] bg-[#7142cf] hover:bg-[#7142cf]/80 text-white"
+                          onClick={openConnectModal}
+                        >
+                          Connect Wallet
+                        </Button>
+                      )}
+                    </ConnectButton.Custom>
+                  </div>
+                </>
+              ) : !smartAccount?.address ? (
                 <>
                   <div className="my-4 border-t border-zinc-800" />
                   <div className="space-y-4">
                     <p className="text-sm text-zinc-400">
                       To start trading, you need to setup a trading account.
+                      <br /><br />
+                      Every trading account address is unique to the wallet address used to setup the account.
                     </p>
                     <Button
                       className="w-full h-[52px] bg-[#7142cf] hover:bg-[#7142cf]/80 text-white"
