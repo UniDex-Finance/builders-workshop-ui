@@ -328,10 +328,6 @@ const totalRequired = calculatedMargin + tradingFee;
       }
     }
 
-    if (needsDeposit) {
-      return `Batch & Place ${formState.isLong ? "Long" : "Short"}`;
-    }
-
     return `Place ${activeTab === "market" ? "Market" : "Limit"} ${
       formState.isLong ? "Long" : "Short"
     }`;
