@@ -54,6 +54,9 @@ export function Header() {
           <Link href="/usdm">
             <Button variant="ghost">USD.m</Button>
           </Link>
+          <Link href="/usdm-staking">
+            <Button variant="ghost">USD.m Staking</Button>
+          </Link>
           <Link href="/referrals">
             <Button variant="ghost">Referrals</Button>
           </Link>
@@ -143,60 +146,39 @@ export function Header() {
                 description: "text-xs text-default-400"
               }}
             >
-              <DropdownItem onClick={() => window.location.href = "/staking"}>
-                Stake
-              </DropdownItem>
               <DropdownItem onClick={() => window.location.href = "/"}>
                 Trade
+              </DropdownItem>
+              <DropdownItem onClick={() => window.location.href = "/staking"}>
+                Stake
               </DropdownItem>
               <DropdownItem onClick={() => window.location.href = "/usdm"}>
                 USD.m
               </DropdownItem>
-              <DropdownItem onClick={() => window.location.href = "/referral"}>
+              <DropdownItem onClick={() => window.location.href = "/usdm-staking"}>
+                USD.m Staking
+              </DropdownItem>
+              <DropdownItem onClick={() => window.location.href = "/referrals"}>
                 Referrals
               </DropdownItem>
               <DropdownItem
                 key="help"
                 description="Get help and support"
-                onClick={() => window.open("https://samplelink.com/help", "_blank")}
+                onClick={() => window.open("https://discord.gg/W2TByeuD7R", "_blank")}
               >
                 Help & Support
               </DropdownItem>
               <DropdownItem
                 key="documentation"
                 description="Read the documentation"
-                onClick={() => window.open("https://samplelink.com/documentation", "_blank")}
+                onClick={() => window.open("https://docs.unidex.exchange/introduction", "_blank")}
               >
                 Documentation
               </DropdownItem>
               <DropdownItem
-                key="feedback"
-                description="Provide your feedback"
-                onClick={() => {
-                  const api = getUsersnapApi();
-                  if (api) {
-                    api.logEvent("survey-button-clicked");
-                  }
-                }}
-              >
-                Give Feedback
-              </DropdownItem>
-              <DropdownItem
-                key="bug-bounty"
-                description="Participate in our bug bounty program"
-                onClick={() => {
-                  const api = getUsersnapApi();
-                  if (api) {
-                    api.logEvent("feedback-button-clicked");
-                  }
-                }}
-              >
-                Bug Bounty
-              </DropdownItem>
-              <DropdownItem
                 key="stats"
                 description="View the latest stats"
-                onClick={() => window.open("https://samplelink.com/stats", "_blank")}
+                onClick={() => window.open("https://dune.com/supakawaiidesu/unidex-molten-stats", "_blank")}
               >
                 Stats
               </DropdownItem>

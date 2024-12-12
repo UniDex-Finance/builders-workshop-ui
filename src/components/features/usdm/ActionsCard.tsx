@@ -137,7 +137,7 @@ export function ActionsCard({
     if (needsApproval()) {
       return action === 'mint' ? 'Approve USDC' : 'Approve USD.m'
     }
-    return action === 'mint' ? 'Mint USD.m' : 'Burn USD.m'
+    return action === 'mint' ? 'Mint USD.m' : 'Redeem USD.m'
   }
 
   // Fix: Update getAvailableBalance to use correct balance
@@ -238,7 +238,7 @@ export function ActionsCard({
     <Card className="bg-[#16161D] border-[#1b1b22]">
       <CardHeader className="pt-3 pb-0 sm:pt-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base sm:text-lg">{action === 'mint' ? 'Mint' : 'Burn'} USD.m</CardTitle>
+          <CardTitle className="text-base sm:text-lg">{action === 'mint' ? 'Mint' : 'Redeem'} USD.m</CardTitle>
           <div className="flex gap-1 sm:gap-2">
             <Button 
               variant="ghost" 
@@ -252,7 +252,7 @@ export function ActionsCard({
               className={`text-[#A0AEC0] hover:text-white text-sm px-2 sm:px-4 ${action === 'burn' ? 'bg-[#272734]' : ''}`}
               onClick={() => setAction('burn')}
             >
-              Burn
+              Redeem
             </Button>
           </div>
         </div>
