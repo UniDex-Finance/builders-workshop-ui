@@ -13,14 +13,13 @@ export function PnLTooltip({ position, rect }: PnLTooltipProps) {
       : `-$${Math.abs(numValue).toFixed(2)}`;
   };
 
+  const finalPnl = parseFloat(position.pnl.replace(/[^0-9.-]/g, ""));
   const totalFees = (
     parseFloat(position.fees.positionFee) +
     parseFloat(position.fees.borrowFee) +
     parseFloat(position.fees.fundingFee)
-  ).toFixed(2);
-
-  const pnlWithoutFees = parseFloat(position.pnl.replace(/[^0-9.-]/g, ""));
-  const finalPnl = (pnlWithoutFees - parseFloat(totalFees)).toFixed(2);
+  );
+  const marketPnl = finalPnl + totalFees;
 
   return (
     <div
@@ -39,8 +38,8 @@ export function PnLTooltip({ position, rect }: PnLTooltipProps) {
         <h4 className="mb-2 font-semibold">PnL Breakdown</h4>
         <div className="flex justify-between">
           <span>Market PnL:</span>
-          <span className={pnlWithoutFees >= 0 ? "text-green-400" : "text-red-400"}>
-            {formatPnL(pnlWithoutFees)}
+          <span className={marketPnl >= 0 ? "text-green-400" : "text-red-400"}>
+            {formatPnL(marketPnl)}
           </span>
         </div>
         <div className="pt-2 mt-2 border-t border-gray-700">
@@ -72,7 +71,7 @@ export function PnLTooltip({ position, rect }: PnLTooltipProps) {
             <span>Final PnL:</span>
             <span
               className={
-                parseFloat(finalPnl) >= 0 ? "text-green-400" : "text-red-400"
+                finalPnl >= 0 ? "text-green-400" : "text-red-400"
               }
             >
               {formatPnL(finalPnl)}

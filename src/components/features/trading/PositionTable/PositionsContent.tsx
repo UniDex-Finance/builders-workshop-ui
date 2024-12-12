@@ -51,12 +51,7 @@ export function PositionsContent({
   };
 
   const calculateFinalPnl = (position: Position) => {
-    const pnlWithoutFees = parseFloat(position.pnl.replace(/[^0-9.-]/g, ""));
-    const totalFees =
-      parseFloat(position.fees.positionFee) +
-      parseFloat(position.fees.borrowFee) +
-      parseFloat(position.fees.fundingFee);
-    return (pnlWithoutFees - totalFees).toFixed(2);
+    return parseFloat(position.pnl.replace(/[^0-9.-]/g, "")).toFixed(2);
   };
 
   const formatPnL = (value: string | number) => {
