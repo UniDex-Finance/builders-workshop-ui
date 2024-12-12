@@ -58,7 +58,7 @@ const roundDownTo6Decimals = (num: number): number => {
 };
 
 export function useRouting(assetId: string, amount: string, leverage: string, isLong: boolean) {
-  const { placeMarketOrder, prepare: prepareUnidex } = useMarketOrderActions();
+  const { placeMarketOrder, prepare: prepareUnidex, checkBalancesAndGetDepositAmount } = useMarketOrderActions();
   const { placeGTradeOrder, prepare: prepareGTrade } = useGTradeOrderActions();
   const { allMarkets } = useMarketData();
   const { smartAccount, kernelClient } = useSmartAccount();
@@ -220,7 +220,7 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
       gtrade: split.gtrade ? {
         size: roundDownTo6Decimals(split.gtrade.size),
         margin: roundDownTo6Decimals(split.gtrade.margin),
-        tradingFee: roundDownTo6Decimals(split.gtrade.size * 0.0006) // 0.06% gTrade fee
+        tradingFee: roundDownTo6Decimals(split.gtrade.size * 0.0006)
       } : null
     });
 
@@ -228,12 +228,25 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
       const marginWalletBalance = parseFloat(balances?.formattedMusdBalance || "0");
       const onectBalance = parseFloat(balances?.formattedUsdcBalance || "0");
       
-      // First calculate shortfall
-      const shortfall = roundDownTo6Decimals(Math.max(0, split.gtrade.margin - onectBalance));
-      
-      // Then adjust gTrade margin to match exactly what we'll have after withdrawal
-      split.gtrade.margin = roundDownTo6Decimals(onectBalance + shortfall);
-      split.gtrade.size = roundDownTo6Decimals(split.gtrade.margin * parseFloat(leverage));
+      // Check if we need to deposit for Unidex portion
+      const { needsDeposit, depositAmount } = checkBalancesAndGetDepositAmount(
+        split.unidex.margin,
+        split.unidex.size
+      );
+
+      // If we need to deposit, adjust gTrade size based on remaining 1CT
+      if (needsDeposit) {
+        const remaining1CTBalance = roundDownTo6Decimals(onectBalance - depositAmount);
+        split.gtrade.margin = roundDownTo6Decimals(remaining1CTBalance);
+        split.gtrade.size = roundDownTo6Decimals(split.gtrade.margin * parseFloat(leverage));
+      } else {
+        // Original withdrawal logic for gTrade portion
+        const shortfall = roundDownTo6Decimals(Math.max(0, split.gtrade.margin - onectBalance));
+        if (shortfall > 0) {
+          split.gtrade.margin = roundDownTo6Decimals(onectBalance + shortfall);
+          split.gtrade.size = roundDownTo6Decimals(split.gtrade.margin * parseFloat(leverage));
+        }
+      }
 
       console.log('=== Fund Flow Analysis ===', {
         currentBalances: {
@@ -242,96 +255,88 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
         },
         requiredAmounts: {
           unidexMargin: roundDownTo6Decimals(split.unidex.margin).toFixed(6),
+          unidexDepositNeeded: needsDeposit ? depositAmount.toFixed(6) : "0.000000",
           gtradeMargin: split.gtrade.margin.toFixed(6),
-          shortfall: shortfall.toFixed(6)
-        },
-        expectedBalances: {
-          marginWallet: (marginWalletBalance - shortfall).toFixed(6),
-          onectWallet: "0.000000" // Will be exactly 0 now
+          ...(needsDeposit 
+            ? { remaining1CTBalance: (onectBalance - depositAmount).toFixed(6) }
+            : { shortfall: roundDownTo6Decimals(Math.max(0, split.gtrade.margin - onectBalance)).toFixed(6) })
         }
       });
 
-      // Prepare withdrawal transaction with exact shortfall amount
-      try {
-        const withdrawalResponse = await fetch(
-          "https://unidexv4-api-production.up.railway.app/api/wallet",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              type: "withdraw",
-              tokenAddress: "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
-              amount: shortfall.toString(),
-              smartAccountAddress: smartAccount.address,
-            }),
+      // Prepare orders with adjusted sizes
+      const [unidexOrder, gtradeOrder] = await Promise.all([
+        prepareUnidex(
+          params.pair,
+          params.isLong,
+          params.price,
+          params.slippagePercent,
+          roundDownTo6Decimals(split.unidex.margin),
+          roundDownTo6Decimals(split.unidex.size),
+          params.takeProfit,
+          params.stopLoss,
+          params.referrer
+        ),
+        prepareGTrade(
+          params.pair,
+          params.isLong,
+          params.price,
+          params.slippagePercent,
+          roundDownTo6Decimals(split.gtrade.margin),
+          roundDownTo6Decimals(split.gtrade.size),
+          params.orderType,
+          params.takeProfit,
+          params.stopLoss
+        )
+      ]);
+
+      // Prepare withdrawal if needed (only if we didn't need to deposit)
+      let withdrawalCall = null;
+      if (!needsDeposit) {
+        const shortfall = roundDownTo6Decimals(Math.max(0, split.gtrade.margin - onectBalance));
+        if (shortfall > 0) {
+          const withdrawalResponse = await fetch(
+            "https://unidexv4-api-production.up.railway.app/api/wallet",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                type: "withdraw",
+                tokenAddress: "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+                amount: shortfall.toString(),
+                smartAccountAddress: smartAccount.address,
+              }),
+            }
+          );
+
+          if (!withdrawalResponse.ok) {
+            throw new Error("Failed to prepare withdrawal");
           }
-        );
 
-        if (!withdrawalResponse.ok) {
-          const errorData = await withdrawalResponse.text();
-          console.error('Withdrawal API error:', {
-            status: withdrawalResponse.status,
-            statusText: withdrawalResponse.statusText,
-            error: errorData
-          });
-          throw new Error(`Failed to prepare withdrawal: ${errorData}`);
+          const withdrawalData = await withdrawalResponse.json();
+          withdrawalCall = {
+            to: withdrawalData.vaultAddress as `0x${string}`,
+            data: withdrawalData.calldata as `0x${string}`,
+            value: 0n
+          };
         }
-
-        const withdrawalData = await withdrawalResponse.json();
-        console.log('Withdrawal data:', withdrawalData);
-
-        const withdrawalCall = {
-          to: withdrawalData.vaultAddress as `0x${string}`,
-          data: withdrawalData.calldata as `0x${string}`,
-          value: 0n
-        };
-
-        // Prepare orders
-        const [unidexOrder, gtradeOrder] = await Promise.all([
-          prepareUnidex(
-            params.pair,
-            params.isLong,
-            params.price,
-            params.slippagePercent,
-            roundDownTo6Decimals(split.unidex.margin),
-            roundDownTo6Decimals(split.unidex.size),
-            params.takeProfit,
-            params.stopLoss,
-            params.referrer
-          ),
-          prepareGTrade(
-            params.pair,
-            params.isLong,
-            params.price,
-            params.slippagePercent,
-            roundDownTo6Decimals(split.gtrade.margin),
-            roundDownTo6Decimals(split.gtrade.size),
-            params.orderType,
-            params.takeProfit,
-            params.stopLoss
-          )
-        ]);
-
-        // Combine all transactions
-        const allCalls = [
-          ...(withdrawalCall ? [withdrawalCall] : []),
-          ...unidexOrder.calls,
-          ...gtradeOrder.calls
-        ] as TransactionCall[];
-
-        console.log('Combined transactions:', allCalls);
-
-        return kernelClient.sendTransactions({
-          transactions: allCalls.map(call => ({
-            to: call.to as `0x${string}`,
-            data: call.data as `0x${string}`,
-            value: call.value || 0n
-          }))
-        });
-      } catch (error) {
-        console.error('Error executing split orders:', error);
-        throw error;
       }
+
+      // Combine all transactions in the correct order
+      const allCalls = [
+        ...(withdrawalCall ? [withdrawalCall] : []),
+        ...unidexOrder.calls,  // This will include deposit transactions if needed
+        ...gtradeOrder.calls
+      ] as TransactionCall[];
+
+      console.log('Combined transactions:', allCalls);
+
+      return kernelClient.sendTransactions({
+        transactions: allCalls.map(call => ({
+          to: call.to as `0x${string}`,
+          data: call.data as `0x${string}`,
+          value: call.value || 0n
+        }))
+      });
     } else if (split.unidex) {
       const marginWalletBalance = parseFloat(balances?.formattedMusdBalance || "0");
       console.log('=== UniDex Only Order ===', {

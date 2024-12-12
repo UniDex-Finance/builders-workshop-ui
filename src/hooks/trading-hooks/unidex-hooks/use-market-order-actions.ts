@@ -381,5 +381,6 @@ export function useMarketOrderActions() {
     placeLimitOrder,
     prepare,
     placingOrders,
+    checkBalancesAndGetDepositAmount
   };
 }
