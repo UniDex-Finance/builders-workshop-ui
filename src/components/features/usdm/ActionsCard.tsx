@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { ChevronDown } from 'lucide-react'
-import { useWalletClient } from 'wagmi'
+import { useWalletClient, useAccount, useSwitchChain } from 'wagmi'
 import { parseUnits } from 'viem'
 import { useUsdm } from "@/hooks/usdmHooks/use-usdm"
 import { Button } from "@/components/ui/button"
@@ -53,8 +53,21 @@ export function ActionsCard({
     usdcBalanceRaw // Add this
   } = useUsdm()
   const { price: usdcPrice } = useUsdcPrice()
+  const { chain } = useAccount()
+  const { switchChain } = useSwitchChain()
+  
+  const isArbitrum = chain?.id === 42161
+
+  const handleNetworkSwitch = async () => {
+    if (switchChain) {
+      await switchChain({ chainId: 42161 })
+    }
+  }
 
   const handleTransaction = async () => {
+    if (!isArbitrum) {
+      return handleNetworkSwitch()
+    }
     if (!walletClient || !amount) return
 
     try {
@@ -118,6 +131,9 @@ export function ActionsCard({
 
   // Update the button text based on action and approval status
   const getButtonText = () => {
+    if (!isArbitrum) {
+      return 'Switch to Arbitrum'
+    }
     if (needsApproval()) {
       return action === 'mint' ? 'Approve USDC' : 'Approve USD.m'
     }
