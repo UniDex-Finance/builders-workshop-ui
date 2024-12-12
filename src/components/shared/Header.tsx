@@ -1,9 +1,8 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import Image from 'next/image';
 import { Button } from "../ui/button";
-import DepositBox from "../features/trading/deposit";
 import Link from "next/link";
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/react";
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownSection, DropdownItem } from "@nextui-org/react";
 import { Menu, ChevronDown, Wallet } from "lucide-react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -48,15 +47,49 @@ export function Header() {
           <Link href="/">
             <Button variant="ghost">Trade</Button>
           </Link>
-          <Link href="/staking">
-            <Button variant="ghost">Stake</Button>
-          </Link>
-          <Link href="/usdm">
-            <Button variant="ghost">USD.m</Button>
-          </Link>
-          <Link href="/usdm-staking">
-            <Button variant="ghost">USD.m Staking</Button>
-          </Link>
+          <Dropdown>
+            <DropdownTrigger>
+              <Button variant="ghost" className="gap-1">
+                Earn <ChevronDown size={16} />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu 
+              aria-label="Earn options"
+              className="w-[240px]"
+              itemClasses={{
+                base: "gap-4",
+                title: "text-sm",
+                description: "text-xs text-default-400"
+              }}
+            >
+              <DropdownSection title="Earn with MOLTEN" showDivider>
+                <DropdownItem
+                  key="molten-staking"
+                  description="Stake MOLTEN for rewards"
+                  onClick={() => window.location.href = "/staking"}
+                >
+                  Stake MOLTEN
+                </DropdownItem>
+              </DropdownSection>
+              
+              <DropdownSection title="Earn with USD.m">
+                <DropdownItem
+                  key="mint-usdm"
+                  description="Market make for traders and earn yield"
+                  onClick={() => window.location.href = "/usdm"}
+                >
+                  Mint USD.m
+                </DropdownItem>
+                <DropdownItem
+                  key="usdm-staking"
+                  description="Stake USD.m for rewards"
+                  onClick={() => window.location.href = "/usdm-staking"}
+                >
+                  Stake USD.m
+                </DropdownItem>
+              </DropdownSection>
+            </DropdownMenu>
+          </Dropdown>
           <Link href="/referrals">
             <Button variant="ghost">Referrals</Button>
           </Link>
@@ -149,15 +182,33 @@ export function Header() {
               <DropdownItem onClick={() => window.location.href = "/"}>
                 Trade
               </DropdownItem>
-              <DropdownItem onClick={() => window.location.href = "/staking"}>
-                Stake
-              </DropdownItem>
-              <DropdownItem onClick={() => window.location.href = "/usdm"}>
-                USD.m
-              </DropdownItem>
-              <DropdownItem onClick={() => window.location.href = "/usdm-staking"}>
-                USD.m Staking
-              </DropdownItem>
+              
+              <DropdownSection title="Earn with MOLTEN" showDivider>
+                <DropdownItem
+                  key="molten-staking"
+                  description="Stake MOLTEN for rewards"
+                  onClick={() => window.location.href = "/staking"}
+                >
+                  Stake MOLTEN
+                </DropdownItem>
+              </DropdownSection>
+              
+              <DropdownSection title="Earn with USD.m">
+                <DropdownItem
+                  key="mint-usdm"
+                  description="Market make for traders and earn yield"
+                  onClick={() => window.location.href = "/usdm"}
+                >
+                  Mint USD.m
+                </DropdownItem>
+                <DropdownItem
+                  key="usdm-staking"
+                  description="Stake USD.m for rewards"
+                  onClick={() => window.location.href = "/usdm-staking"}
+                >
+                  Stake USD.m
+                </DropdownItem>
+              </DropdownSection>
               <DropdownItem onClick={() => window.location.href = "/referrals"}>
                 Referrals
               </DropdownItem>
