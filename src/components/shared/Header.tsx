@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownSection, DropdownItem, Modal, ModalContent, useDisclosure } from "@nextui-org/react";
-import { Menu, ChevronDown, Wallet, Coins, DollarSign, PiggyBank, Users2, MessageCircle, Send, Twitter } from "lucide-react";
+import { Menu, ChevronDown, Wallet, Coins, DollarSign, PiggyBank, Users2, MessageCircle, Send, Twitter, X } from "lucide-react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faQuestionCircle, 
@@ -14,6 +14,12 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { AccountSummary } from "../features/trading/account/AccountSummary";
 import { getUsersnapApi } from "../../lib/usersnap";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 
 export function Header() {
   const {isOpen, onOpen, onClose} = useDisclosure();
@@ -218,223 +224,157 @@ export function Header() {
 
         {/* Mobile Navigation */}
         <div className="md:hidden">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={onOpen}
-          >
-            <Menu size={20} />
-          </Button>
-        </div>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu size={20} />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[300px] p-0">
+              <div className="flex flex-col h-full overflow-y-auto">
+                {/* Logo Section */}
+                <SheetHeader className="p-4 border-b border-divider">
+                  <Link href="/">
+                    <Image
+                      src="/static/images/logo-large.png"
+                      alt="UniDex Logo"
+                      width={100}
+                      height={32}
+                      priority
+                    />
+                  </Link>
+                </SheetHeader>
 
-        {/* Mobile Sidebar */}
-        <Modal 
-          isOpen={isOpen} 
-          onClose={onClose}
-          hideCloseButton
-          isDismissable={false}
-          classNames={{
-            base: "h-screen m-0 max-w-[80%] w-[300px] absolute left-0",
-            wrapper: "!items-start",
-            closeButton: "hidden",
-          }}
-          motionProps={{
-            variants: {
-              enter: {
-                x: 0,
-                transition: {
-                  duration: 0.2,
-                  ease: "easeOut",
-                },
-              },
-              exit: {
-                x: "-100%",
-                transition: {
-                  duration: 0.2,
-                  ease: "easeIn",
-                },
-              },
-            },
-            initial: { x: "-100%" }
-          }}
-        >
-          <ModalContent>
-            <div className="flex flex-col h-full overflow-y-auto">
-              {/* Logo Section */}
-              <div className="p-4 border-b border-divider">
-                <Link href="/" onClick={onClose}>
-                  <Image
-                    src="/static/images/logo-large.png"
-                    alt="UniDex Logo"
-                    width={100}
-                    height={32}
-                    priority
-                  />
-                </Link>
-              </div>
+                {/* Navigation Items */}
+                <div className="flex-1 p-2">
+                  <div className="space-y-2">
+                    {/* Trade */}
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start w-full" 
+                      onClick={() => window.location.href = "/"}
+                    >
+                      Trade
+                    </Button>
 
-              {/* Navigation Items */}
-              <div className="flex-1 p-2">
-                <div className="space-y-2">
-                  {/* Trade */}
-                  <Button 
-                    variant="ghost" 
-                    className="justify-start w-full" 
-                    onClick={() => {
-                      window.location.href = "/";
-                      onClose();
-                    }}
-                  >
-                    Trade
-                  </Button>
-
-                  {/* Earn Section */}
-                  <div className="space-y-1">
-                    <div className="px-3 py-2 text-xs font-semibold text-foreground-500">
-                      Earn with MOLTEN
+                    {/* Earn Section */}
+                    <div className="space-y-1">
+                      <div className="px-3 py-2 text-xs font-semibold text-foreground-500">
+                        Earn with MOLTEN
+                      </div>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2"
+                        onClick={() => window.location.href = "/staking"}
+                      >
+                        <Coins className="w-4 h-4" />
+                        Stake MOLTEN
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      className="justify-start w-full gap-2"
-                      onClick={() => {
-                        window.location.href = "/staking";
-                        onClose();
-                      }}
-                    >
-                      <Coins className="w-4 h-4" />
-                      Stake MOLTEN
-                    </Button>
-                  </div>
 
-                  <div className="space-y-1">
-                    <div className="px-3 py-2 text-xs font-semibold text-foreground-500">
-                      Earn with USD.m
+                    <div className="space-y-1">
+                      <div className="px-3 py-2 text-xs font-semibold text-foreground-500">
+                        Earn with USD.m
+                      </div>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2"
+                        onClick={() => window.location.href = "/usdm"}
+                      >
+                        <DollarSign className="w-4 h-4" />
+                        Mint USD.m
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2"
+                        onClick={() => window.location.href = "/usdm-staking"}
+                      >
+                        <PiggyBank className="w-4 h-4" />
+                        Stake USD.m
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      className="justify-start w-full gap-2"
-                      onClick={() => {
-                        window.location.href = "/usdm";
-                        onClose();
-                      }}
-                    >
-                      <DollarSign className="w-4 h-4" />
-                      Mint USD.m
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="justify-start w-full gap-2"
-                      onClick={() => {
-                        window.location.href = "/usdm-staking";
-                        onClose();
-                      }}
-                    >
-                      <PiggyBank className="w-4 h-4" />
-                      Stake USD.m
-                    </Button>
-                  </div>
 
-                  <div className="space-y-1">
-                    <div className="px-3 py-2 text-xs font-semibold text-foreground-500">
-                      Earn by Referring
+                    <div className="space-y-1">
+                      <div className="px-3 py-2 text-xs font-semibold text-foreground-500">
+                        Earn by Referring
+                      </div>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2"
+                        onClick={() => window.location.href = "/referrals"}
+                      >
+                        <Users2 className="w-4 h-4" />
+                        Refer Traders
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      className="justify-start w-full gap-2"
-                      onClick={() => {
-                        window.location.href = "/referrals";
-                        onClose();
-                      }}
-                    >
-                      <Users2 className="w-4 h-4" />
-                      Refer Traders
-                    </Button>
-                  </div>
 
-                  {/* Social Links */}
-                  <div className="space-y-1">
-                    <div className="px-3 py-2 text-xs font-semibold text-foreground-500">
-                      Social Links
+                    {/* Social Links */}
+                    <div className="space-y-1">
+                      <div className="px-3 py-2 text-xs font-semibold text-foreground-500">
+                        Social Links
+                      </div>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2"
+                        onClick={() => window.open("https://discord.gg/W2TByeuD7R", "_blank")}
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        Discord
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2"
+                        onClick={() => window.open("https://t.me/unidexfinance", "_blank")}
+                      >
+                        <Send className="w-4 h-4" />
+                        Telegram
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2"
+                        onClick={() => window.open("https://x.com/UniDexFinance", "_blank")}
+                      >
+                        <Twitter className="w-4 h-4" />
+                        Twitter
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      className="justify-start w-full gap-2"
-                      onClick={() => {
-                        window.open("https://discord.gg/W2TByeuD7R", "_blank");
-                        onClose();
-                      }}
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                      Discord
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="justify-start w-full gap-2"
-                      onClick={() => {
-                        window.open("https://t.me/unidexfinance", "_blank");
-                        onClose();
-                      }}
-                    >
-                      <Send className="w-4 h-4" />
-                      Telegram
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="justify-start w-full gap-2"
-                      onClick={() => {
-                        window.open("https://x.com/UniDexFinance", "_blank");
-                        onClose();
-                      }}
-                    >
-                      <Twitter className="w-4 h-4" />
-                      Twitter
-                    </Button>
-                  </div>
 
-                  {/* More Section */}
-                  <div className="space-y-1">
-                    <div className="px-3 py-2 text-xs font-semibold text-foreground-500">
-                      More
+                    {/* More Section */}
+                    <div className="space-y-1">
+                      <div className="px-3 py-2 text-xs font-semibold text-foreground-500">
+                        More
+                      </div>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2"
+                        onClick={() => window.open("https://discord.gg/W2TByeuD7R", "_blank")}
+                      >
+                        <FontAwesomeIcon icon={faQuestionCircle} className="w-4 h-4" />
+                        Help & Support
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2"
+                        onClick={() => window.open("https://docs.unidex.exchange/introduction", "_blank")}
+                      >
+                        <FontAwesomeIcon icon={faBook} className="w-4 h-4" />
+                        Documentation
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2"
+                        onClick={() => window.open("https://dune.com/supakawaiidesu/unidex-molten-stats", "_blank")}
+                      >
+                        <FontAwesomeIcon icon={faChartLine} className="w-4 h-4" />
+                        Stats
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      className="justify-start w-full gap-2"
-                      onClick={() => {
-                        window.open("https://discord.gg/W2TByeuD7R", "_blank");
-                        onClose();
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faQuestionCircle} className="w-4 h-4" />
-                      Help & Support
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="justify-start w-full gap-2"
-                      onClick={() => {
-                        window.open("https://docs.unidex.exchange/introduction", "_blank");
-                        onClose();
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faBook} className="w-4 h-4" />
-                      Documentation
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="justify-start w-full gap-2"
-                      onClick={() => {
-                        window.open("https://dune.com/supakawaiidesu/unidex-molten-stats", "_blank");
-                        onClose();
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faChartLine} className="w-4 h-4" />
-                      Stats
-                    </Button>
                   </div>
                 </div>
               </div>
-            </div>
-          </ModalContent>
-        </Modal>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
 
       <div className="flex items-center ml-auto space-x-2">
