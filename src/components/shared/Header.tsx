@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownSection, DropdownItem } from "@nextui-org/react";
-import { Menu, ChevronDown, Wallet } from "lucide-react";
+import { Menu, ChevronDown, Wallet, Coins, DollarSign, PiggyBank, Users2, MessageCircle, Send, Twitter } from "lucide-react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faQuestionCircle, 
@@ -66,16 +66,18 @@ export function Header() {
                 <DropdownItem
                   key="molten-staking"
                   description="Stake MOLTEN for rewards"
+                  startContent={<Coins className="w-4 h-4" />}
                   onClick={() => window.location.href = "/staking"}
                 >
                   Stake MOLTEN
                 </DropdownItem>
               </DropdownSection>
               
-              <DropdownSection title="Earn with USD.m">
+              <DropdownSection title="Earn with USD.m" showDivider>
                 <DropdownItem
                   key="mint-usdm"
                   description="Market make for traders and earn yield"
+                  startContent={<DollarSign className="w-4 h-4" />}
                   onClick={() => window.location.href = "/usdm"}
                 >
                   Mint USD.m
@@ -83,16 +85,66 @@ export function Header() {
                 <DropdownItem
                   key="usdm-staking"
                   description="Stake USD.m for rewards"
+                  startContent={<PiggyBank className="w-4 h-4" />}
                   onClick={() => window.location.href = "/usdm-staking"}
                 >
                   Stake USD.m
                 </DropdownItem>
               </DropdownSection>
+
+              <DropdownSection title="Earn by Referring">
+                <DropdownItem
+                  key="referrals"
+                  description="Onboard traders, earn in real-time"
+                  startContent={<Users2 className="w-4 h-4" />}
+                  onClick={() => window.location.href = "/referrals"}
+                >
+                  Refer Traders
+                </DropdownItem>
+              </DropdownSection>
             </DropdownMenu>
           </Dropdown>
-          <Link href="/referrals">
-            <Button variant="ghost">Referrals</Button>
-          </Link>
+          <Dropdown>
+            <DropdownTrigger>
+              <Button variant="ghost" className="gap-1">
+                Socials <ChevronDown size={16} />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu 
+              aria-label="Social links"
+              className="w-[240px]"
+              itemClasses={{
+                base: "gap-4",
+                title: "text-sm",
+                description: "text-xs text-default-400"
+              }}
+            >
+              <DropdownItem
+                key="discord"
+                description="DAO, traders, and memes"
+                startContent={<MessageCircle className="w-4 h-4" />}
+                onClick={() => window.open("https://discord.gg/W2TByeuD7R", "_blank")}
+              >
+                Discord
+              </DropdownItem>
+              <DropdownItem
+                key="telegram"
+                description="Chill & good vibes only"
+                startContent={<Send className="w-4 h-4" />}
+                onClick={() => window.open("https://t.me/unidexfinance", "_blank")}
+              >
+                Telegram
+              </DropdownItem>
+              <DropdownItem
+                key="twitter"
+                description="Stay up to date on news"
+                startContent={<Twitter className="w-4 h-4" />}
+                onClick={() => window.open("https://x.com/UniDexFinance", "_blank")}
+              >
+                Twitter
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
           <Dropdown>
             <DropdownTrigger>
               <Button variant="ghost" className="gap-1">
@@ -179,24 +231,23 @@ export function Header() {
                 description: "text-xs text-default-400"
               }}
             >
-              <DropdownItem onClick={() => window.location.href = "/"}>
-                Trade
-              </DropdownItem>
               
               <DropdownSection title="Earn with MOLTEN" showDivider>
                 <DropdownItem
                   key="molten-staking"
                   description="Stake MOLTEN for rewards"
+                  startContent={<Coins className="w-4 h-4" />}
                   onClick={() => window.location.href = "/staking"}
                 >
                   Stake MOLTEN
                 </DropdownItem>
               </DropdownSection>
               
-              <DropdownSection title="Earn with USD.m">
+              <DropdownSection title="Earn with USD.m" showDivider>
                 <DropdownItem
                   key="mint-usdm"
                   description="Market make for traders and earn yield"
+                  startContent={<DollarSign className="w-4 h-4" />}
                   onClick={() => window.location.href = "/usdm"}
                 >
                   Mint USD.m
@@ -204,14 +255,23 @@ export function Header() {
                 <DropdownItem
                   key="usdm-staking"
                   description="Stake USD.m for rewards"
+                  startContent={<PiggyBank className="w-4 h-4" />}
                   onClick={() => window.location.href = "/usdm-staking"}
                 >
                   Stake USD.m
                 </DropdownItem>
               </DropdownSection>
-              <DropdownItem onClick={() => window.location.href = "/referrals"}>
-                Referrals
-              </DropdownItem>
+
+              <DropdownSection title="Earn by Referring">
+                <DropdownItem
+                  key="referrals"
+                  description="Onboard traders, earn in real-time"
+                  startContent={<Users2 className="w-4 h-4" />}
+                  onClick={() => window.location.href = "/referrals"}
+                >
+                  Refer Traders
+                </DropdownItem>
+              </DropdownSection>
               <DropdownItem
                 key="help"
                 description="Get help and support"
