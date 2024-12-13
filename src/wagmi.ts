@@ -12,7 +12,7 @@ const chains = [
 // Create and export the config
 export const config = getDefaultConfig({
   appName: 'RainbowKit App',
-  projectId: 'YOUR_PROJECT_ID',
+  projectId: '51445d14652b7a86dab5f5d7a4b8b70c',
   chains,
   transports: {
     [arbitrum.id]: http(process.env.NEXT_PUBLIC_ARBITRUM_RPC || 'https://rpc.ankr.com/arbitrum'),
