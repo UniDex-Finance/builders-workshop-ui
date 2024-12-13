@@ -224,9 +224,6 @@ export function PositionDetails({
               <Share2 className="w-4 h-4 mr-2" />
               Share Trade
             </DropdownMenuItem>
-            <DropdownMenuItem className="focus:bg-zinc-700 focus:text-white">
-              Edit Position Size
-            </DropdownMenuItem>
             <DropdownMenuItem 
               className="focus:bg-zinc-700 focus:text-white"
               onClick={handleCollateralClick}
