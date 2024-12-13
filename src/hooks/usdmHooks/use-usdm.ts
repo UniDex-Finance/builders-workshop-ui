@@ -97,29 +97,11 @@ export function useUsdm() {
   const { balances } = useBalances('arbitrum')
 
   const fetchData = async () => {
-    if (!address || !publicClient) return
+    if (!publicClient) return
     setIsLoading(true)
     try {
-      const [usdcAllowance, usdmAllowance, usdmBalance, usdmPrice, vaultBalance] = await publicClient.multicall({
+      const [usdmPrice, vaultBalance] = await publicClient.multicall({
         contracts: [
-          {
-            address: USDC_TOKEN,
-            abi: ERC20_ABI,
-            functionName: 'allowance',
-            args: [address, USDM_VAULT],
-          },
-          {
-            address: USDM_TOKEN,
-            abi: ERC20_ABI,
-            functionName: 'allowance',
-            args: [address, USDM_VAULT],
-          },
-          {
-            address: USDM_TOKEN,
-            abi: ERC20_ABI,
-            functionName: 'balanceOf',
-            args: [address],
-          },
           {
             address: USDM_VAULT,
             abi: USDM_ABI,
@@ -135,16 +117,49 @@ export function useUsdm() {
         ],
       })
 
-      const formattedUsdmBalance = formatUnits(usdmBalance.result || BigInt(0), 18)
+      let userAllowances = {
+        usdcAllowance: BigInt(0),
+        usdmAllowance: BigInt(0),
+        usdmBalance: BigInt(0),
+      }
+
+      if (address) {
+        const [usdcAllowance, usdmAllowance, usdmBalance] = await publicClient.multicall({
+          contracts: [
+            {
+              address: USDC_TOKEN,
+              abi: ERC20_ABI,
+              functionName: 'allowance',
+              args: [address, USDM_VAULT],
+            },
+            {
+              address: USDM_TOKEN,
+              abi: ERC20_ABI,
+              functionName: 'allowance',
+              args: [address, USDM_VAULT],
+            },
+            {
+              address: USDM_TOKEN,
+              abi: ERC20_ABI,
+              functionName: 'balanceOf',
+              args: [address],
+            },
+          ],
+        })
+        userAllowances = {
+          usdcAllowance: usdcAllowance.result || BigInt(0),
+          usdmAllowance: usdmAllowance.result || BigInt(0),
+          usdmBalance: usdmBalance.result || BigInt(0),
+        }
+      }
+
+      const formattedUsdmBalance = formatUnits(userAllowances.usdmBalance, 18)
       const formattedUsdmPrice = formatUnits(usdmPrice.result || BigInt(0), 5)
-      // Update vault balance calculation: divide by 10^30
       const rawVaultBalance = vaultBalance.result || BigInt(0)
       const formattedVaultBalance = (Number(rawVaultBalance) / Number(10n ** 30n)).toFixed(2)
       
       setUsdmData({
-        usdcAllowance: usdcAllowance.result || BigInt(0),
-        usdmAllowance: usdmAllowance.result || BigInt(0),
-        usdmBalance: usdmBalance.result || BigInt(0),
+        ...userAllowances,
         usdmPrice: usdmPrice.result || BigInt(0),
         vaultBalance: rawVaultBalance,
         formattedUsdmBalance,

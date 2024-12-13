@@ -118,35 +118,12 @@ export function useMoltenStaking() {
     const [isLoading, setIsLoading] = useState(false)
 
     const fetchBalances = async () => {
-        if (!eoaAddress || !publicClient) return
+        if (!publicClient) return
         setIsLoading(true)
         try {
-            const [walletBalance, stakedBalance, earnedBalance, allowance, totalStaked] = await publicClient.multicall({
+            // First fetch public data (total staked)
+            const [totalStaked] = await publicClient.multicall({
                 contracts: [
-                    {
-                        address: MOLTEN_TOKEN,
-                        abi: TOKEN_ABI,
-                        functionName: 'balanceOf',
-                        args: [eoaAddress]
-                    },
-                    {
-                        address: MOLTEN_STAKING,
-                        abi: STAKING_ABI,
-                        functionName: 'balanceOf',
-                        args: [eoaAddress]
-                    },
-                    {
-                        address: MOLTEN_STAKING,
-                        abi: STAKING_ABI,
-                        functionName: 'earned',
-                        args: [eoaAddress, MOLTEN_TOKEN]
-                    },
-                    {
-                        address: MOLTEN_TOKEN,
-                        abi: TOKEN_ABI,
-                        functionName: 'allowance',
-                        args: [eoaAddress, MOLTEN_STAKING]
-                    },
                     {
                         address: MOLTEN_STAKING,
                         abi: STAKING_ABI,
@@ -154,23 +131,75 @@ export function useMoltenStaking() {
                     }
                 ]
             })
-            const formattedWalletBalance = formatUnits(walletBalance.result || BigInt(0), 18)
-            const formattedStakedBalance = formatUnits(stakedBalance.result || BigInt(0), 18)
-            const formattedEarnedBalance = formatUnits(earnedBalance.result || BigInt(0), 18)
+
+            // Initialize data with public values
             const formattedTotalStaked = formatUnits(totalStaked.result || BigInt(0), 18)
             const percentageStaked = ((Number(totalStaked.result || BigInt(0)) / 10**18) / 3900000 * 100).toFixed(2)
 
+            let userData = {
+                walletBalance: BigInt(0),
+                stakedBalance: BigInt(0),
+                earnedBalance: BigInt(0),
+                formattedWalletBalance: '0',
+                formattedStakedBalance: '0',
+                formattedEarnedBalance: '0',
+                displayWalletBalance: '0',
+                displayStakedBalance: '0',
+                displayEarnedBalance: '0',
+                allowance: BigInt(0),
+            }
+
+            // Only fetch user-specific data if wallet is connected
+            if (eoaAddress) {
+                const [walletBalance, stakedBalance, earnedBalance, allowance] = await publicClient.multicall({
+                    contracts: [
+                        {
+                            address: MOLTEN_TOKEN,
+                            abi: TOKEN_ABI,
+                            functionName: 'balanceOf',
+                            args: [eoaAddress]
+                        },
+                        {
+                            address: MOLTEN_STAKING,
+                            abi: STAKING_ABI,
+                            functionName: 'balanceOf',
+                            args: [eoaAddress]
+                        },
+                        {
+                            address: MOLTEN_STAKING,
+                            abi: STAKING_ABI,
+                            functionName: 'earned',
+                            args: [eoaAddress, MOLTEN_TOKEN]
+                        },
+                        {
+                            address: MOLTEN_TOKEN,
+                            abi: TOKEN_ABI,
+                            functionName: 'allowance',
+                            args: [eoaAddress, MOLTEN_STAKING]
+                        }
+                    ]
+                })
+
+                const formattedWalletBalance = formatUnits(walletBalance.result || BigInt(0), 18)
+                const formattedStakedBalance = formatUnits(stakedBalance.result || BigInt(0), 18)
+                const formattedEarnedBalance = formatUnits(earnedBalance.result || BigInt(0), 18)
+
+                userData = {
+                    walletBalance: walletBalance.result || BigInt(0),
+                    stakedBalance: stakedBalance.result || BigInt(0),
+                    earnedBalance: earnedBalance.result || BigInt(0),
+                    formattedWalletBalance,
+                    formattedStakedBalance,
+                    formattedEarnedBalance,
+                    displayWalletBalance: formatDisplayValue(formattedWalletBalance),
+                    displayStakedBalance: formatDisplayValue(formattedStakedBalance),
+                    displayEarnedBalance: formatDisplayValue(formattedEarnedBalance),
+                    allowance: allowance.result || BigInt(0),
+                }
+            }
+
             setStakingData({
-                walletBalance: walletBalance.result || BigInt(0),
-                stakedBalance: stakedBalance.result || BigInt(0),
-                earnedBalance: earnedBalance.result || BigInt(0),
-                formattedWalletBalance,
-                formattedStakedBalance,
-                formattedEarnedBalance,
-                displayWalletBalance: formatDisplayValue(formattedWalletBalance),
-                displayStakedBalance: formatDisplayValue(formattedStakedBalance),
-                displayEarnedBalance: formatDisplayValue(formattedEarnedBalance),
-                allowance: allowance.result || BigInt(0),
+                ...userData,
                 totalStaked: totalStaked.result || BigInt(0),
                 formattedTotalStaked,
                 percentageStaked

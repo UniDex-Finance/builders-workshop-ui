@@ -1,30 +1,20 @@
-import { useUsdm } from "@/hooks/usdmHooks/use-usdm"
+import { useMoltenStaking } from "@/hooks/use-molten-staking"
 import { formatLargeNumber } from "@/utils/format"
-import { useDuneData } from "@/hooks/use-dune-data"
-import { type Balances } from "@/hooks/use-balances"
 
-interface Props {
-  balances: Balances | null
-  isLoading: boolean
-}
-
-export function StatsDisplay({ balances, isLoading }: Props) {
-  const { usdmData } = useUsdm()
-  const { cumulativeReturn } = useDuneData(usdmData?.formattedVaultBalance || '0')
-
+export function StatsDisplay() {
+  const { stakingData } = useMoltenStaking()
+  
   return (
-    <div className="flex flex-wrap gap-8">
+    <div className="flex flex-wrap gap-4">
       <div className="space-y-1">
-        <div className="text-sm text-[#A0AEC0]">USD.m TVL</div>
-        <div className="text-xl text-white">
-          ${formatLargeNumber(usdmData?.formattedVaultBalance || '0')} <span className="text-[#A0AEC0] text-sm">USD</span>
+        <div className="text-[#A0AEC0] text-sm">Total Staked</div>
+        <div className="text-base text-white md:text-xl">
+          {formatLargeNumber(stakingData?.formattedTotalStaked || '0')} <span className="hidden md:inline text-[#A0AEC0] text-sm">MOLTEN</span>
         </div>
       </div>
       <div className="space-y-1">
-        <div className="text-sm text-[#A0AEC0]">Total Vault Return</div>
-        <div className="text-xl text-white">
-          ${formatLargeNumber(cumulativeReturn.toFixed(2))} <span className="text-[#A0AEC0] text-sm">USD</span>
-        </div>
+        <div className="text-[#A0AEC0] text-sm">% of Circ. Supply</div>
+        <div className="text-base text-white md:text-xl">{stakingData?.percentageStaked || '0'}%</div>
       </div>
     </div>
   )
