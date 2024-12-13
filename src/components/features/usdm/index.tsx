@@ -31,7 +31,7 @@ export function Usdm() {
 
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-6">
-              <StatsDisplay />
+              <StatsDisplay balances={balances} isLoading={isLoading} />
               <PositionCard balances={balances} isLoading={isLoading} />
             </div>
 
