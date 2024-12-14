@@ -100,7 +100,7 @@ export function useReferrals() {
 
   const copyReferralUrl = () => {
     if (referralData?.referralCode) {
-      const referralUrl = `https://builders-workshop.vercel.app/?ref=${referralData.referralCode}`
+      const referralUrl = `https://leverage.unidex.exchange/?ref=${referralData.referralCode}`
       navigator.clipboard
         .writeText(referralUrl)
         .then(() => {
@@ -124,7 +124,7 @@ export function useReferrals() {
   const generateTweet = () => {
     if (referralData?.referralCode) {
       const tweetText = encodeURIComponent(
-        `I'm currently using Builders Workshop!\n\nJoin me using my referral link 👇\nhttps://builders-workshop.vercel.app/?ref=${referralData.referralCode}`
+        `I'm currently using Builders Workshop!\n\nJoin me using my referral link 👇\nhhttps://leverage.unidex.exchange/?ref=${referralData.referralCode}`
       )
       window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, '_blank')
     }
