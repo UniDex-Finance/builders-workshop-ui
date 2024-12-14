@@ -90,11 +90,16 @@ interface UsdmData {
 }
 
 export function useUsdm() {
-  const { address } = useAccount()
+  const { address, isConnected } = useAccount()
   const publicClient = usePublicClient({ chainId: arbitrum.id })
   const [usdmData, setUsdmData] = useState<UsdmData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const { balances } = useBalances('arbitrum')
+  const { balances, refetchBalances } = useBalances('arbitrum')
+
+  console.log('useUsdm - isConnected:', isConnected)
+  console.log('useUsdm - address:', address)
+  console.log('useUsdm - balances:', balances)
+  console.log('useUsdm - formattedEoaUsdcBalance:', balances?.formattedEoaUsdcBalance)
 
   const fetchData = async () => {
     if (!publicClient) return
@@ -245,10 +250,12 @@ export function useUsdm() {
   }
 
   useEffect(() => {
-    fetchData()
-    const interval = setInterval(fetchData, 10000)
-    return () => clearInterval(interval)
-  }, [address])
+    if (isConnected && address) {
+      console.log('useUsdm - triggering fetches')
+      refetchBalances()
+      fetchData()
+    }
+  }, [isConnected, address])
 
   return {
     usdmData,
@@ -258,7 +265,7 @@ export function useUsdm() {
     mint,
     burn,
     refetch: fetchData,
-    usdcBalance: balances?.formattedEoaUsdcBalance || '0',
-    usdcBalanceRaw: balances?.eoaUsdcBalance || BigInt(0),
+    usdcBalance: isConnected ? (balances?.formattedEoaUsdcBalance || '0') : '0',
+    usdcBalanceRaw: isConnected ? (balances?.eoaUsdcBalance || BigInt(0)) : BigInt(0),
   }
 }

@@ -59,8 +59,8 @@ function truncateToTwoDecimals(value: string): string {
 }
 
 export function useBalances(selectedNetwork: 'arbitrum' | 'optimism' = 'arbitrum') {
-  const { smartAccount, isInitialized } = useSmartAccount()
   const { address: eoaAddress } = useAccount()
+  const { smartAccount, isInitialized } = useSmartAccount()
   const { balances, setBalances, setLoading, setError } = useBalancesStore()
 
   // Memoize the contract read arguments
@@ -116,7 +116,7 @@ export function useBalances(selectedNetwork: 'arbitrum' | 'optimism' = 'arbitrum
     address: USDC_TOKEN,
     abi: ERC20_ABI,
     functionName: 'balanceOf',
-    args: eoaArgs,
+    args: eoaAddress ? [eoaAddress] : undefined,
     chainId: arbitrum.id,
     query: {
       enabled: !!eoaAddress,
@@ -176,6 +176,28 @@ export function useBalances(selectedNetwork: 'arbitrum' | 'optimism' = 'arbitrum
       console.error('Error refetching balances:', error);
     }
   };
+
+  // When we get the EOA USDC balance
+  useEffect(() => {
+    if (eoaUsdcBalance) {
+      setBalances({
+        ...balances || {
+          ethBalance: BigInt(0),
+          usdcBalance: BigInt(0),
+          usdcAllowance: BigInt(0),
+          musdBalance: BigInt(0),
+          formattedEthBalance: '0',
+          formattedUsdcBalance: '0',
+          formattedUsdcAllowance: '0',
+          formattedMusdBalance: '0',
+          eoaOptimismUsdcBalance: BigInt(0),
+          formattedEoaOptimismUsdcBalance: '0'
+        },
+        eoaUsdcBalance: eoaUsdcBalance,
+        formattedEoaUsdcBalance: formatUnits(eoaUsdcBalance, 6)
+      })
+    }
+  }, [eoaUsdcBalance])
 
   return {
     balances,
