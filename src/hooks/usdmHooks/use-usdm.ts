@@ -100,6 +100,9 @@ export function useUsdm() {
   console.log('useUsdm - address:', address)
   console.log('useUsdm - balances:', balances)
   console.log('useUsdm - formattedEoaUsdcBalance:', balances?.formattedEoaUsdcBalance)
+  console.log('useUsdm - usdmData:', usdmData)
+  console.log('useUsdm - displayUsdmBalance:', usdmData?.displayUsdmBalance)
+  console.log('useUsdm - formattedUsdmBalance:', usdmData?.formattedUsdmBalance)
 
   const fetchData = async () => {
     if (!publicClient) return
@@ -250,12 +253,15 @@ export function useUsdm() {
   }
 
   useEffect(() => {
+    console.log('useUsdm - fetching public data')
     fetchData()
   }, [])
 
   useEffect(() => {
     if (isConnected && address) {
+      console.log('useUsdm - fetching wallet data')
       refetchBalances()
+      fetchData()
     }
   }, [isConnected, address])
 
