@@ -72,7 +72,7 @@ export function StatsActions({ balances, isLoading }: Props) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="text-xl text-white cursor-help">
-                  {isLoading ? "Loading..." : `${totalApr.toFixed(2)}%`}
+                  {totalApr === 0 ? "Loading..." : `${totalApr.toFixed(2)}%`}
                 </div>
               </TooltipTrigger>
               <TooltipContent className="w-80 p-4 bg-[#2b2b36] border-none">
