@@ -261,7 +261,6 @@ export function useUsdm() {
 
   return {
     usdmData,
-    isLoading,
     approveUsdc,
     approveUsdm,
     mint,
@@ -269,5 +268,7 @@ export function useUsdm() {
     refetch: fetchData,
     usdcBalance: isConnected ? (balances?.formattedEoaUsdcBalance || '0') : '0',
     usdcBalanceRaw: isConnected ? (balances?.eoaUsdcBalance || BigInt(0)) : BigInt(0),
+    displayUsdmBalance: isConnected ? (usdmData?.displayUsdmBalance || '0.00') : '0.00',
+    formattedUsdmBalance: isConnected ? (usdmData?.formattedUsdmBalance || '0') : '0'
   }
 }
