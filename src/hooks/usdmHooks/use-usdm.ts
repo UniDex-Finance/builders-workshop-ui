@@ -250,10 +250,12 @@ export function useUsdm() {
   }
 
   useEffect(() => {
+    fetchData()
+  }, [])
+
+  useEffect(() => {
     if (isConnected && address) {
-      console.log('useUsdm - triggering fetches')
       refetchBalances()
-      fetchData()
     }
   }, [isConnected, address])
 

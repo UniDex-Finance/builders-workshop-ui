@@ -75,9 +75,7 @@ export function useDuneData(tvl: string | number) {
       }
     }
 
-    if (tvl !== '0') {
-      fetchDuneData()
-    }
+    fetchDuneData()
   }, [tvl])
 
   return data
