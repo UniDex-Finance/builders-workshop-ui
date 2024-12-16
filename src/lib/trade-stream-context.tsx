@@ -57,6 +57,9 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
   const MAX_TRADES = 40;
 
   useEffect(() => {
+    // Clear existing trades when pair changes
+    setTrades([]);
+
     const connections = {
       hyperliquid: new WebSocket('wss://api.hyperliquid.xyz/ws'),
       dydx: new WebSocket('wss://dydx-ws-wrapper-production.up.railway.app')

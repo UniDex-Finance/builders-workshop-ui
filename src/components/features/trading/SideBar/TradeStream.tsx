@@ -35,9 +35,14 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
   };
 
   const formatUSD = (amount: number) => {
+    // For amounts less than 10, show 4 decimal places
+    // For amounts less than 100, show 2 decimal places
+    // For amounts >= 100, show 0 decimal places
+    const decimals = amount < 10 ? 4 : amount < 100 ? 2 : 0;
+    
     return `$${amount.toLocaleString('en-US', { 
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
     })}`;
   };
 
