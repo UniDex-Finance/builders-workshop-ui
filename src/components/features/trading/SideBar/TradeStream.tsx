@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import * as HoverCard from '@radix-ui/react-hover-card';
 import { useTradeStream } from '@/lib/trade-stream-context';
 import Image from 'next/image';
+import { Pencil } from 'lucide-react';
 
 interface TradeStreamProps {
   isExpanded: boolean;
@@ -15,7 +16,14 @@ const getTradeBarWidth = (sizeUSD: number) => {
 };
 
 export function TradeStream({ isExpanded }: TradeStreamProps) {
+  const [minSize, setMinSize] = useState(0);
+  const [isEditing, setIsEditing] = useState(false);
   const { trades } = useTradeStream();
+
+  // Filter trades based on minimum size
+  const filteredTrades = useMemo(() => {
+    return trades.filter(trade => trade.sizeUSD >= minSize);
+  }, [trades, minSize]);
 
   const formatTime = (timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString([], { 
@@ -64,6 +72,28 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
           <div className="relative grid items-center grid-cols-[120px_70px_auto] text-xs">
             <div className="flex items-center gap-1">
               <span className="text-muted-foreground">Size</span>
+              <button 
+                onClick={() => setIsEditing(!isEditing)}
+                className="p-0.5 hover:bg-accent rounded"
+              >
+                <Pencil size={12} className="text-muted-foreground" />
+              </button>
+              {isEditing && (
+                <input
+                  type="number"
+                  value={minSize}
+                  onChange={(e) => setMinSize(Math.max(0, Number(e.target.value)))}
+                  className="w-16 px-1 py-0.5 text-xs bg-background border border-border rounded"
+                  placeholder="Min size"
+                  onBlur={() => setIsEditing(false)}
+                  autoFocus
+                />
+              )}
+              {!isEditing && minSize > 0 && (
+                <span className="text-[10px] text-muted-foreground">
+                  (≥{formatUSD(minSize)})
+                </span>
+              )}
             </div>
             <span className="text-right text-muted-foreground">Price</span>
             <span className="text-right text-muted-foreground">Time</span>
@@ -71,7 +101,7 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
         </div>
       )}
       
-      {trades.map((trade) => (
+      {filteredTrades.map((trade) => (
         <HoverCard.Root key={trade.id} openDelay={0} closeDelay={0}>
           <HoverCard.Trigger asChild>
             <div className="group relative px-2 py-1.5 transition-colors border-b border-border hover:bg-accent/50">
