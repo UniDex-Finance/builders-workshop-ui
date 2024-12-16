@@ -10,7 +10,7 @@ const SIDEBAR_MODES = {
 type SidebarMode = keyof typeof SIDEBAR_MODES;
 
 export function SideBar() {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   const [activeMode, setActiveMode] = useState<SidebarMode>('TRADE_STREAM');
 
   const handleModeClick = (mode: SidebarMode) => {
