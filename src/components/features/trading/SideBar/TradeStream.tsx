@@ -21,6 +21,7 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
     return new Date(timestamp).toLocaleTimeString([], { 
       hour: '2-digit', 
       minute: '2-digit',
+      second: '2-digit',
       hour12: false
     });
   };
@@ -60,7 +61,7 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
     <div className="absolute inset-0 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
       {isExpanded && (
         <div className="group relative px-2 py-1.5 border-b border-border">
-          <div className="relative grid items-center grid-cols-[1fr_70px_50px] gap-1 text-xs">
+          <div className="relative grid items-center grid-cols-[120px_70px_auto] text-xs">
             <div className="flex items-center gap-1">
               <span className="text-muted-foreground">Size</span>
             </div>
@@ -86,7 +87,7 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
                     }}
                   />
                   
-                  <div className="relative grid items-center grid-cols-[1fr_70px_50px] gap-1 text-xs">
+                  <div className="relative grid items-center grid-cols-[120px_70px_auto] text-xs">
                     <div className="flex items-center gap-1">
                       {getSourceIcon(trade.id)}
                       <span className="text-muted-foreground group-hover:text-foreground">
