@@ -1,65 +1,13 @@
 import { useMemo } from 'react';
 import * as HoverCard from '@radix-ui/react-hover-card';
+import { useTradeStream } from '@/lib/trade-stream-context';
 
 interface TradeStreamProps {
   isExpanded: boolean;
 }
 
-interface DetailedTradeInfo {
-  pair: string;
-  side: 'LONG' | 'SHORT';
-  size: number;
-  collateral: number;
-  closedPrice: number;
-  pnlPercentage?: number;
-  txHash?: string;
-  timestamp: number;
-}
-
-// Updated mock data with PnL for closing trades
-const mockTrades = [
-  {
-    id: 1,
-    pair: 'BTC/USD',
-    side: 'LONG',
-    price: 106045.26,
-    sizeUSD: 3872.11,
-    collateral: 77.44,
-    timestamp: new Date().getTime(),
-    isPnL: true,
-    pnlPercentage: 132.43,
-    isLiquidated: false,
-    txHash: '0x75...0f98',
-  },
-  {
-    id: 2,
-    pair: 'BTC/USD',
-    side: 'SHORT',
-    price: 42123.45,
-    sizeUSD: 21061.72,
-    timestamp: new Date().getTime() - 1000,
-    isPnL: false,
-    isLiquidated: false,
-  },
-  // Example of a liquidated trade
-  {
-    id: 3,
-    pair: 'ETH/USD',
-    side: 'LONG',
-    price: 2345.67,
-    sizeUSD: 5000.00,
-    collateral: 100,
-    timestamp: new Date().getTime() - 2000,
-    isPnL: true,
-    pnlPercentage: -100,
-    isLiquidated: true,
-    txHash: '0x82...1a23',
-  },
-  // Add more mock trades as needed
-];
-
 export function TradeStream({ isExpanded }: TradeStreamProps) {
-  const MAX_TRADES = 40;
+  const { trades } = useTradeStream();
 
   const formatTime = (timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString([], { 
@@ -76,41 +24,24 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
     })}`;
   };
 
-  const visibleTrades = mockTrades.slice(-MAX_TRADES);
-
   return (
     <div className="absolute inset-0 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-      {visibleTrades.map((trade) => (
+      {trades.map((trade) => (
         <HoverCard.Root key={trade.id} openDelay={0} closeDelay={0}>
           <HoverCard.Trigger asChild>
             <div className="group px-2 py-1.5 transition-colors border-b border-border hover:bg-accent/50">
               {isExpanded ? (
-                <div className="grid items-center grid-cols-[50px_70px_1fr_70px] gap-1 text-xs">
-                  <span className="text-muted-foreground group-hover:text-foreground">
-                    {formatTime(trade.timestamp)}
-                  </span>
-                  <span className={trade.side === 'LONG' ? 'text-green-500' : 'text-red-500'}>
-                    {trade.pair}
-                  </span>
+                <div className="grid items-center grid-cols-[1fr_70px_50px] gap-1 text-xs">
                   <div className="flex items-center gap-1">
                     <span className="text-muted-foreground group-hover:text-foreground">
                       {formatUSD(trade.sizeUSD)}
                     </span>
-                    {trade.isPnL && (
-                      <>
-                        {trade.pnlPercentage !== undefined && (
-                          <span className={`${
-                            trade.pnlPercentage >= 0 ? 'text-green-500' : 'text-red-500'
-                          }`}>
-                            |
-                          </span>
-                        )}
-                        {trade.isLiquidated && <span title="Liquidated">🔥</span>}
-                      </>
-                    )}
                   </div>
-                  <span className="text-right text-muted-foreground group-hover:text-foreground">
+                  <span className={`text-right ${trade.side === 'LONG' ? 'text-green-500' : 'text-red-500'}`}>
                     {formatUSD(trade.price)}
+                  </span>
+                  <span className="text-right text-muted-foreground group-hover:text-foreground">
+                    {formatTime(trade.timestamp)}
                   </span>
                 </div>
               ) : (
@@ -146,26 +77,14 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
                     <span>{formatUSD(trade.sizeUSD)} USDC</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Collateral</span>
-                    <span>${trade.collateral}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Closed Price</span>
+                    <span className="text-muted-foreground">Price</span>
                     <span>{formatUSD(trade.price)}</span>
                   </div>
-                  {trade.isPnL && trade.pnlPercentage !== undefined && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">PNL %</span>
-                      <span className={trade.pnlPercentage >= 0 ? 'text-green-500' : 'text-red-500'}>
-                        {trade.pnlPercentage > 0 ? '+' : ''}{trade.pnlPercentage}%
-                      </span>
-                    </div>
-                  )}
                 </div>
 
-                {trade.txHash && (
+                {trade.user && (
                   <div className="pt-1.5 mt-1.5 text-[11px] border-t text-muted-foreground border-border/40">
-                    <span className="font-mono">{trade.txHash}</span>
+                    <span className="font-mono">{trade.user}</span>
                   </div>
                 )}
               </div>
