@@ -20,7 +20,6 @@ import { PriceProvider } from "../lib/websocket-price-context";
 import { Footer } from "../components/shared/Footer";
 import { Toaster } from "../components/ui/toaster";
 import  NewVersionNotification from "../components/shared/NewVersionNotification";
-import { TradeStreamProvider } from "../lib/trade-stream-context";
 
 const client = new QueryClient();
 const Disclaimer: DisclaimerComponent = ({ Text, Link }) => (
@@ -69,14 +68,12 @@ function MyApp({ Component, pageProps }: AppProps) {
               initialChain={arbitrum}
             >
               <PriceProvider>
-                <TradeStreamProvider>
-                  <div className="pb-8">
-                    <Component {...pageProps} />
-                  </div>
-                  <Footer />
-                  <Toaster />
-                  <NewVersionNotification />
-                </TradeStreamProvider>
+                <div className="pb-8">
+                  <Component {...pageProps} />
+                </div>
+                <Footer />
+                <Toaster />
+                <NewVersionNotification />
               </PriceProvider>
             </RainbowKitProvider>
           </QueryClientProvider>

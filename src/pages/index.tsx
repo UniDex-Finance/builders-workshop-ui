@@ -13,6 +13,7 @@ import { usePositions } from "../hooks/use-positions";
 import { loadSpace } from '@usersnap/browser';
 import { setUsersnapApi } from "../lib/usersnap";
 import { SideBar } from "../components/features/trading/SideBar/SideBar";
+import { TradeStreamProvider } from "../lib/trade-stream-context";
 
 export default function TradingInterface() {
   const { selectedPair, setPair } = usePairFromUrl();
@@ -76,26 +77,29 @@ export default function TradingInterface() {
             />
           </div>
         </aside>
-{/* Right Side - Chart and Positions Container */}
-<div className="flex flex-col flex-1 min-w-0 px-2 overflow-x-auto md:pl-0">
-  <div className="hidden md:block">
-    <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
-  </div>
-  
-  <div className="flex flex-col flex-1">
-    <div className="flex"> {/* This flex container will hold Chart and Sidebar */}
-      <div className="flex-1">
-        <Chart 
-          selectedPair={selectedPair} 
-          height={chartHeight}
-          onHeightChange={setChartHeight}
-          positions={positionsLoading ? [] : positions}
-        />
-      </div>
-      <SideBar />
-    </div>
-    <div className="flex-1 mt-3 overflow-x-auto">
-      <PositionsTable address={address} />
+
+        {/* Right Side - Chart and Positions Container */}
+        <div className="flex flex-col flex-1 min-w-0 px-2 overflow-x-auto md:pl-0">
+          <div className="hidden md:block">
+            <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
+          </div>
+          
+          <div className="flex flex-col flex-1">
+            <div className="flex">
+              <div className="flex-1">
+                <Chart 
+                  selectedPair={selectedPair} 
+                  height={chartHeight}
+                  onHeightChange={setChartHeight}
+                  positions={positionsLoading ? [] : positions}
+                />
+              </div>
+              <TradeStreamProvider pair={selectedPair}>
+                <SideBar />
+              </TradeStreamProvider>
+            </div>
+            <div className="flex-1 mt-3 overflow-x-auto">
+              <PositionsTable address={address} />
             </div>
           </div>
         </div>

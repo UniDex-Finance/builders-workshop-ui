@@ -36,25 +36,25 @@ function shortenAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
-export function TradeStreamProvider({ children }: { children: ReactNode }) {
+export function TradeStreamProvider({ children, pair }: { children: ReactNode, pair: string }) {
   const [trades, setTrades] = useState<Trade[]>([]);
   const MAX_TRADES = 40;
 
   useEffect(() => {
     const ws = new WebSocket('wss://api.hyperliquid.xyz/ws');
 
-    // Heartbeat setup
     const heartbeatInterval = setInterval(() => {
       if (ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ method: 'ping' }));
       }
-    }, 30000); // Send heartbeat every 30 seconds
+    }, 30000);
 
     ws.onopen = () => {
       console.log('Connected to Hyperliquid WebSocket');
+      const coin = pair.split('/')[0];
       ws.send(JSON.stringify({
         method: 'subscribe',
-        subscription: { type: 'trades', coin: 'BTC' }
+        subscription: { type: 'trades', coin }
       }));
     };
 
@@ -72,7 +72,6 @@ export function TradeStreamProvider({ children }: { children: ReactNode }) {
             
             return {
               id: `${trade.tid}-${user}`,
-              pair: 'BTC/USD',
               side: trade.side === 'B' ? 'LONG' as const : 'SHORT' as const,
               price: parseFloat(trade.px),
               sizeUSD: parseFloat(trade.sz) * parseFloat(trade.px),
@@ -93,7 +92,7 @@ export function TradeStreamProvider({ children }: { children: ReactNode }) {
       clearInterval(heartbeatInterval);
       ws.close();
     };
-  }, []);
+  }, [pair]);
 
   return (
     <TradeStreamContext.Provider value={{ trades }}>
