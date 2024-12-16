@@ -312,29 +312,31 @@ const totalRequired = calculatedMargin + tradingFee;
     if (placingOrders) return "Placing Order...";
     if (hasInsufficientBalance) return "Insufficient Balance";
     
-    // Add minimum margin check based on selected route
+    // Add specific validation for limit orders
+    if (activeTab === "limit") {
+      const market = allMarkets.find((m) => m.assetId === assetId);
+      const availableLiquidity = formState.isLong
+        ? market?.availableLiquidity?.long
+        : market?.availableLiquidity?.short;
+
+      if (calculatedMargin < 1) {
+        return "Minimum Margin: 1 USD";
+      }
+      
+      if (availableLiquidity !== undefined && calculatedSize > availableLiquidity) {
+        return "Not Enough Liquidity";
+      }
+
+      return `Place Limit ${formState.isLong ? "Long" : "Short"}`;
+    }
+
+    // Existing market order validation...
     const selectedRoute = routingInfo.routes[routingInfo.selectedRoute];
     if (calculatedMargin < selectedRoute.minMargin) {
       return `Minimum Margin: ${selectedRoute.minMargin} USD`;
     }
 
-    // Check liquidity based on the selected route
-    if (routingInfo.selectedRoute === 'unidexv4') {
-      const availableLiquidity = formState.isLong
-        ? market?.availableLiquidity?.long
-        : market?.availableLiquidity?.short;
-
-      if (availableLiquidity !== undefined && calculatedSize > availableLiquidity) {
-        // If UniDex doesn't have liquidity but gTrade is available, show gTrade message
-        if (routingInfo.routes.gtrade.available) {
-          return `Place ${activeTab === "market" ? "Market" : "Limit"} ${
-            formState.isLong ? "Long" : "Short"
-          } on gTrade`;
-        }
-        return "Not Enough Liquidity";
-      }
-    }
-
+    // Rest of the existing market order checks...
     return `Place ${activeTab === "market" ? "Market" : "Limit"} ${
       formState.isLong ? "Long" : "Short"
     }`;
@@ -464,6 +466,7 @@ const totalRequired = calculatedMargin + tradingFee;
   referrerSection={referrerSection}
   routingInfo={routingInfo}
   splitOrderInfo={splitOrderInfo}
+  isLimitOrder={activeTab === "limit"}
 />
 
           {!isConnected ? (

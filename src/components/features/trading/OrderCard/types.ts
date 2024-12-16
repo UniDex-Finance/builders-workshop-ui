@@ -101,6 +101,7 @@ export interface TradeDetailsProps {
     unidex: { size: number; margin: number; } | null;
     gtrade: { size: number; margin: number; } | null;
   };
+  isLimitOrder?: boolean;
 }
 
 export interface RoutingInfo {
