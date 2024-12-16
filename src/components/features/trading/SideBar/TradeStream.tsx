@@ -7,6 +7,13 @@ interface TradeStreamProps {
   isExpanded: boolean;
 }
 
+const getTradeBarWidth = (sizeUSD: number) => {
+  const maxSize = 500_000; // 1M USD
+  const percentage = Math.min((sizeUSD / maxSize) * 100, 100);
+  console.log(`Trade size: ${sizeUSD}, Width: ${percentage}%`); // Debug log
+  return `${percentage}%`;
+};
+
 export function TradeStream({ isExpanded }: TradeStreamProps) {
   const { trades } = useTradeStream();
 
@@ -49,22 +56,34 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
       {trades.map((trade) => (
         <HoverCard.Root key={trade.id} openDelay={0} closeDelay={0}>
           <HoverCard.Trigger asChild>
-            <div className="group px-2 py-1.5 transition-colors border-b border-border hover:bg-accent/50">
+            <div className="group relative px-2 py-1.5 transition-colors border-b border-border hover:bg-accent/50">
               {isExpanded ? (
-                <div className="grid items-center grid-cols-[1fr_70px_50px] gap-1 text-xs">
-                  <div className="flex items-center gap-1">
-                    {getSourceIcon(trade.id)}
-                    <span className="text-muted-foreground group-hover:text-foreground">
-                      {formatUSD(trade.sizeUSD)}
+                <>
+                  <div 
+                    className={`
+                      absolute top-0 right-0 h-full 
+                      ${trade.side === 'LONG' ? 'bg-green-500/10' : 'bg-red-500/10'}
+                    `}
+                    style={{ 
+                      width: getTradeBarWidth(trade.sizeUSD),
+                    }}
+                  />
+                  
+                  <div className="relative grid items-center grid-cols-[1fr_70px_50px] gap-1 text-xs">
+                    <div className="flex items-center gap-1">
+                      {getSourceIcon(trade.id)}
+                      <span className="text-muted-foreground group-hover:text-foreground">
+                        {formatUSD(trade.sizeUSD)}
+                      </span>
+                    </div>
+                    <span className={`text-right ${trade.side === 'LONG' ? 'text-green-500' : 'text-red-500'}`}>
+                      {formatUSD(trade.price)}
+                    </span>
+                    <span className="text-right text-muted-foreground group-hover:text-foreground">
+                      {formatTime(trade.timestamp)}
                     </span>
                   </div>
-                  <span className={`text-right ${trade.side === 'LONG' ? 'text-green-500' : 'text-red-500'}`}>
-                    {formatUSD(trade.price)}
-                  </span>
-                  <span className="text-right text-muted-foreground group-hover:text-foreground">
-                    {formatTime(trade.timestamp)}
-                  </span>
-                </div>
+                </>
               ) : (
                 <div className="flex justify-center">
                   {getSourceIcon(trade.id)}
