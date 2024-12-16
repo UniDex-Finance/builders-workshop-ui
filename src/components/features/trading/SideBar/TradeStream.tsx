@@ -11,7 +11,6 @@ interface TradeStreamProps {
 const getTradeBarWidth = (sizeUSD: number) => {
   const maxSize = 500_000; // 1M USD
   const percentage = Math.min((sizeUSD / maxSize) * 100, 100);
-  console.log(`Trade size: ${sizeUSD}, Width: ${percentage}%`); // Debug log
   return `${percentage}%`;
 };
 

@@ -10,7 +10,8 @@ export function TradeDetails({
   totalRequired, 
   referrerSection,
   routingInfo,
-  splitOrderInfo 
+  splitOrderInfo,
+  isLimitOrder = false 
 }: TradeDetailsProps) {
   const { entryPrice, notionalSize, liquidationPrice, fees } = details;
 
@@ -66,7 +67,7 @@ export function TradeDetails({
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex items-center gap-2">
-                {splitOrderInfo?.unidex && splitOrderInfo?.gtrade ? (
+                {!isLimitOrder && splitOrderInfo?.unidex && splitOrderInfo?.gtrade ? (
                   // Split order - show both logos with names
                   <>
                     <div className="flex items-center gap-1">
@@ -90,23 +91,23 @@ export function TradeDetails({
                     </div>
                   </>
                 ) : (
-                  // Single route - show one logo with name
+                  // Single route - show UniDex for limit orders
                   <div className="flex items-center gap-1">
                     <Image 
-                      src={getRouteLogo(routingInfo.selectedRoute)}
-                      alt={routingInfo.routeNames[routingInfo.selectedRoute]}
+                      src="/static/images/logo-small.png"
+                      alt="UniDex"
                       width={16}
                       height={16}
                     />
                     <span className="text-sm text-primary">
-                      {routingInfo.routeNames[routingInfo.selectedRoute]}
+                      UniDex
                     </span>
                   </div>
                 )}
               </div>
             </TooltipTrigger>
             <TooltipContent className="p-2">
-              {splitOrderInfo?.unidex && splitOrderInfo?.gtrade ? (
+              {!isLimitOrder && splitOrderInfo?.unidex && splitOrderInfo?.gtrade ? (
                 <div className="space-y-1">
                   <div className="flex items-center justify-between gap-4">
                     <span>UniDex:</span>
@@ -118,7 +119,7 @@ export function TradeDetails({
                   </div>
                 </div>
               ) : (
-                <span>{routingInfo.routeNames[routingInfo.selectedRoute]}</span>
+                <span>UniDex</span>
               )}
             </TooltipContent>
           </Tooltip>

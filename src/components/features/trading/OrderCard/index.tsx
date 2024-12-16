@@ -18,6 +18,7 @@ import { useBalances } from "../../../../hooks/use-balances";
 import { useReferralContract } from "../../../../hooks/use-referral-contract";
 import { useRouting, RouteId } from '../../../../hooks/trading-hooks/use-routing';
 import { toast } from "@/hooks/use-toast";
+import { useLimitRouting } from '../../../../hooks/trading-hooks/use-limit-routing';
 
 
 const DEFAULT_REFERRER = "0x0000000000000000000000000000000000000000";
@@ -69,6 +70,8 @@ export function OrderCard({
     leverage,
     formState.isLong
   );
+
+  const { executeLimitOrder } = useLimitRouting();
 
   const isValidRoutes = (routes: any): routes is Record<RouteId, { tradingFee: number; available: boolean; reason?: string; }> => {
     return routes !== undefined && routes !== null;
@@ -255,33 +258,37 @@ const totalRequired = calculatedMargin + tradingFee;
       // Round down the size to 2 decimal places
       const roundedSize = Math.floor(calculatedSize * 100) / 100;
       
-      console.log('Placing order with params:', {  // Debug log
-        pair: parseInt(assetId, 10),
-        isLong: formState.isLong,
-        price: tradeDetails.entryPrice!,
-        slippagePercent: 100,
-        margin: calculatedMargin,
-        size: roundedSize, // Use rounded size
-        orderType: activeTab,
-        takeProfit: formState.tpslEnabled ? formState.takeProfit : undefined,
-        stopLoss: formState.tpslEnabled ? formState.stopLoss : undefined,
-        referrer: resolvedReferrer
-      });
-  
-      const orderParams = {
-        pair: parseInt(assetId, 10),
-        isLong: formState.isLong,
-        price: tradeDetails.entryPrice!,
-        slippagePercent: 100,
-        margin: calculatedMargin,
-        size: roundedSize, // Use rounded size
-        orderType: activeTab as "market" | "limit",
-        takeProfit: formState.tpslEnabled ? formState.takeProfit : undefined,
-        stopLoss: formState.tpslEnabled ? formState.stopLoss : undefined,
-        referrer: resolvedReferrer
-      };
-  
-      await executeOrder(orderParams);
+      if (activeTab === "limit") {
+        // Handle limit order
+        const limitOrderParams = {
+          pair: parseInt(assetId, 10),
+          isLong: formState.isLong,
+          price: Number(formState.limitPrice),
+          margin: calculatedMargin,
+          size: roundedSize,
+          takeProfit: formState.tpslEnabled ? formState.takeProfit : "",
+          stopLoss: formState.tpslEnabled ? formState.stopLoss : "",
+          referrer: resolvedReferrer
+        };
+
+        await executeLimitOrder(limitOrderParams);
+      } else {
+        // Handle market order using existing routing logic
+        const orderParams = {
+          pair: parseInt(assetId, 10),
+          isLong: formState.isLong,
+          price: tradeDetails.entryPrice!,
+          slippagePercent: 100,
+          margin: calculatedMargin,
+          size: roundedSize,
+          orderType: activeTab as "market" | "limit",
+          takeProfit: formState.tpslEnabled ? formState.takeProfit : undefined,
+          stopLoss: formState.tpslEnabled ? formState.stopLoss : undefined,
+          referrer: resolvedReferrer
+        };
+    
+        await executeOrder(orderParams);
+      }
   
     } catch (error) {
       console.error('Error placing order:', error);
@@ -305,29 +312,31 @@ const totalRequired = calculatedMargin + tradingFee;
     if (placingOrders) return "Placing Order...";
     if (hasInsufficientBalance) return "Insufficient Balance";
     
-    // Add minimum margin check based on selected route
+    // Add specific validation for limit orders
+    if (activeTab === "limit") {
+      const market = allMarkets.find((m) => m.assetId === assetId);
+      const availableLiquidity = formState.isLong
+        ? market?.availableLiquidity?.long
+        : market?.availableLiquidity?.short;
+
+      if (calculatedMargin < 1) {
+        return "Minimum Margin: 1 USD";
+      }
+      
+      if (availableLiquidity !== undefined && calculatedSize > availableLiquidity) {
+        return "Not Enough Liquidity";
+      }
+
+      return `Place Limit ${formState.isLong ? "Long" : "Short"}`;
+    }
+
+    // Existing market order validation...
     const selectedRoute = routingInfo.routes[routingInfo.selectedRoute];
     if (calculatedMargin < selectedRoute.minMargin) {
       return `Minimum Margin: ${selectedRoute.minMargin} USD`;
     }
 
-    // Check liquidity based on the selected route
-    if (routingInfo.selectedRoute === 'unidexv4') {
-      const availableLiquidity = formState.isLong
-        ? market?.availableLiquidity?.long
-        : market?.availableLiquidity?.short;
-
-      if (availableLiquidity !== undefined && calculatedSize > availableLiquidity) {
-        // If UniDex doesn't have liquidity but gTrade is available, show gTrade message
-        if (routingInfo.routes.gtrade.available) {
-          return `Place ${activeTab === "market" ? "Market" : "Limit"} ${
-            formState.isLong ? "Long" : "Short"
-          } on gTrade`;
-        }
-        return "Not Enough Liquidity";
-      }
-    }
-
+    // Rest of the existing market order checks...
     return `Place ${activeTab === "market" ? "Market" : "Limit"} ${
       formState.isLong ? "Long" : "Short"
     }`;
@@ -457,6 +466,7 @@ const totalRequired = calculatedMargin + tradingFee;
   referrerSection={referrerSection}
   routingInfo={routingInfo}
   splitOrderInfo={splitOrderInfo}
+  isLimitOrder={activeTab === "limit"}
 />
 
           {!isConnected ? (
