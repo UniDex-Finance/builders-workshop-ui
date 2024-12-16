@@ -1,7 +1,7 @@
 // src/components/features/trading/SideBar/SideBar.tsx
 import { useState } from 'react';
 import { TradeStream } from './TradeStream';
-import { ChevronLeft, ChevronRight, LineChart } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Nfc } from 'lucide-react';
 
 const SIDEBAR_MODES = {
   TRADE_STREAM: 'TRADE_STREAM',
@@ -43,14 +43,14 @@ export function SideBar() {
           <button
             onClick={() => handleModeClick('TRADE_STREAM')}
             className={`
-              p-2 transition-colors
+              p-2 transition-colors mt-2
               ${activeMode === 'TRADE_STREAM' && isExpanded 
                 ? 'text-foreground' 
                 : 'text-muted-foreground hover:text-foreground'
               }
             `}
           >
-            <LineChart className="w-4 h-4 mx-auto" />
+            <Nfc className="w-4 h-4 mx-auto" />
           </button>
 
           {/* Toggle Button */}
