@@ -106,20 +106,18 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
       const message = JSON.parse(event.data);
       
       if (message.channel === 'trades' && Array.isArray(message.data)) {
-        const newTrades: Trade[] = message.data.flatMap((trade: RawTrade) => {
-          return trade.users.map(user => ({
-            id: `hl-${trade.tid}-${user}`,
-            pair,
-            side: trade.side === 'B' ? 'LONG' : 'SHORT',
-            price: parseFloat(trade.px),
-            sizeUSD: parseFloat(trade.sz) * parseFloat(trade.px),
-            timestamp: trade.time,
-            txHash: trade.hash === '0x0000000000000000000000000000000000000000000000000000000000000000' ? undefined : trade.hash,
-            isPnL: false,
-            isLiquidated: false,
-            user: shortenAddress(user)
-          }));
-        });
+        const newTrades: Trade[] = message.data.map((trade: RawTrade) => ({
+          id: `hl-${trade.tid}`,
+          pair,
+          side: trade.side === 'B' ? 'LONG' : 'SHORT',
+          price: parseFloat(trade.px),
+          sizeUSD: parseFloat(trade.sz) * parseFloat(trade.px),
+          timestamp: trade.time,
+          txHash: trade.hash === '0x0000000000000000000000000000000000000000000000000000000000000000' ? undefined : trade.hash,
+          isPnL: false,
+          isLiquidated: false,
+          user: trade.users[0] ? shortenAddress(trade.users[0]) : undefined
+        }));
 
         setTrades(current => [...newTrades, ...current].slice(0, MAX_TRADES));
       }
