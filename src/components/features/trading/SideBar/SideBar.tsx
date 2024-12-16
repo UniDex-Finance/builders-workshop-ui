@@ -1,7 +1,7 @@
 // src/components/features/trading/SideBar/SideBar.tsx
 import { useState } from 'react';
 import { TradeStream } from './TradeStream';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LineChart } from 'lucide-react';
 
 const SIDEBAR_MODES = {
   TRADE_STREAM: 'TRADE_STREAM',
@@ -13,59 +13,60 @@ export function SideBar() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeMode, setActiveMode] = useState<SidebarMode>('TRADE_STREAM');
 
-  const toggleSidebar = () => setIsExpanded(!isExpanded);
+  const handleModeClick = (mode: SidebarMode) => {
+    if (activeMode === mode && isExpanded) {
+      setIsExpanded(false);
+    } else {
+      setActiveMode(mode);
+      setIsExpanded(true);
+    }
+  };
 
   return (
-    <div className="relative hidden md:block">
-      <div
-        className={`
-          h-full bg-card border-l border-border
-          transition-all duration-300 ease-in-out
-          ${isExpanded ? 'w-80' : 'w-12'}
-        `}
-      >
-        {/* Toggle Button */}
-        <button
-          onClick={toggleSidebar}
-          className="absolute p-1 transition-colors transform -translate-y-1/2 border rounded-full -left-3 top-1/2 bg-card border-border hover:bg-accent"
-        >
-          {isExpanded ? (
-            <ChevronRight className="w-4 h-4" />
-          ) : (
-            <ChevronLeft className="w-4 h-4" />
-          )}
-        </button>
-
-        {/* Content */}
-        <div className="flex flex-col h-full">
-          {/* Mode Selector */}
-          <div className="p-2 border-b border-border">
-            {isExpanded ? (
-              <div className="flex items-center justify-center">
-                <button
-                  className={`px-4 py-2 rounded-md ${
-                    activeMode === 'TRADE_STREAM'
-                      ? 'bg-accent text-accent-foreground'
-                      : 'hover:bg-accent/50'
-                  }`}
-                  onClick={() => setActiveMode('TRADE_STREAM')}
-                >
-                  Trade Stream
-                </button>
-              </div>
-            ) : (
-              <div className="flex justify-center">
-                <span className="text-xs">TS</span>
-              </div>
-            )}
-          </div>
-
-          {/* Content Area */}
-          <div className="flex-1 overflow-hidden">
+    <div className="relative hidden ml-2 md:block">
+      <div className="flex h-full">
+        {/* Expandable Content Panel */}
+        {isExpanded && (
+          <div className="h-full overflow-hidden border border-r-0 rounded-l-lg w-80 bg-card border-border">
             {activeMode === 'TRADE_STREAM' && (
-              <TradeStream isExpanded={isExpanded} />
+              <TradeStream isExpanded={true} />
             )}
           </div>
+        )}
+
+        {/* Main Sidebar */}
+        <div className={`
+          flex flex-col justify-between w-12 h-full border bg-card border-border
+          ${isExpanded ? 'rounded-r-lg' : 'rounded-lg'}
+        `}>
+          {/* Modes */}
+          <button
+            onClick={() => handleModeClick('TRADE_STREAM')}
+            className={`
+              p-2 transition-colors
+              ${activeMode === 'TRADE_STREAM' && isExpanded 
+                ? 'text-foreground' 
+                : 'text-muted-foreground hover:text-foreground'
+              }
+            `}
+          >
+            <LineChart className="w-4 h-4 mx-auto" />
+          </button>
+
+          {/* Toggle Button */}
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className={`
+              p-2 transition-colors hover:bg-accent
+              ${isExpanded ? 'rounded-br-lg' : 'rounded-b-lg'}
+            `}
+          >
+            {isExpanded ? (
+              <ChevronRight className="w-4 h-4 mx-auto" />
+            ) : (
+              <ChevronLeft className="w-4 h-4 mx-auto" />
+            )}
+          </button>
         </div>
       </div>
     </div>
