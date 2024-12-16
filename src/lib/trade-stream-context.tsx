@@ -26,6 +26,22 @@ interface RawTrade {
   users: string[];
 }
 
+// Add dYdX specific interfaces
+interface DydxTrade {
+  id: string;
+  size: string;
+  price: string;
+  side: string;
+  createdAt: string;
+  type: string;
+}
+
+interface DydxTradeMessage {
+  type: 'trades';
+  market: string;
+  trades: DydxTrade[];
+}
+
 interface TradeStreamContextType {
   trades: Trade[];
 }
@@ -41,56 +57,98 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
   const MAX_TRADES = 40;
 
   useEffect(() => {
-    const ws = new WebSocket('wss://api.hyperliquid.xyz/ws');
+    const connections = {
+      hyperliquid: new WebSocket('wss://api.hyperliquid.xyz/ws'),
+      dydx: new WebSocket('wss://dydx-ws-wrapper-production.up.railway.app')
+    };
 
+    // Heartbeat for Hyperliquid
     const heartbeatInterval = setInterval(() => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ method: 'ping' }));
+      if (connections.hyperliquid.readyState === WebSocket.OPEN) {
+        connections.hyperliquid.send(JSON.stringify({ method: 'ping' }));
       }
     }, 30000);
 
-    ws.onopen = () => {
-      console.log('Connected to Hyperliquid WebSocket');
-      const coin = pair.split('/')[0];
-      ws.send(JSON.stringify({
-        method: 'subscribe',
-        subscription: { type: 'trades', coin }
-      }));
+    // Subscribe to both streams
+    const subscribeToStreams = () => {
+      // Hyperliquid subscription
+      if (connections.hyperliquid.readyState === WebSocket.OPEN) {
+        const coin = pair.split('/')[0];
+        connections.hyperliquid.send(JSON.stringify({
+          method: 'subscribe',
+          subscription: { type: 'trades', coin }
+        }));
+      }
+
+      // dYdX subscription
+      if (connections.dydx.readyState === WebSocket.OPEN) {
+        const dydxMarket = `${pair.split('/')[0]}-${pair.split('/')[1]}`;
+        connections.dydx.send(JSON.stringify({
+          type: 'subscribe',
+          market: dydxMarket
+        }));
+      }
     };
 
-    ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      console.log('Raw WS message:', message);
+    // Set up connection handlers
+    connections.hyperliquid.onopen = () => {
+      console.log('Connected to Hyperliquid WebSocket');
+      subscribeToStreams();
+    };
 
+    connections.dydx.onopen = () => {
+      console.log('Connected to dYdX WebSocket');
+      subscribeToStreams();
+    };
+
+    // Handle messages from both sources
+    connections.hyperliquid.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      
       if (message.channel === 'trades' && Array.isArray(message.data)) {
         const newTrades: Trade[] = message.data.flatMap((trade: RawTrade) => {
-          console.log('Trade users:', trade.users); // Debug users array
-          
-          return trade.users.map(user => {
-            const shortenedAddress = shortenAddress(user);
-            console.log('Original:', user, 'Shortened:', shortenedAddress); // Debug shortening
-            
-            return {
-              id: `${trade.tid}-${user}`,
-              side: trade.side === 'B' ? 'LONG' as const : 'SHORT' as const,
-              price: parseFloat(trade.px),
-              sizeUSD: parseFloat(trade.sz) * parseFloat(trade.px),
-              timestamp: trade.time,
-              txHash: trade.hash === '0x0000000000000000000000000000000000000000000000000000000000000000' ? undefined : trade.hash,
-              isPnL: false,
-              isLiquidated: false,
-              user: shortenedAddress
-            };
-          });
+          return trade.users.map(user => ({
+            id: `hl-${trade.tid}-${user}`,
+            pair,
+            side: trade.side === 'B' ? 'LONG' : 'SHORT',
+            price: parseFloat(trade.px),
+            sizeUSD: parseFloat(trade.sz) * parseFloat(trade.px),
+            timestamp: trade.time,
+            txHash: trade.hash === '0x0000000000000000000000000000000000000000000000000000000000000000' ? undefined : trade.hash,
+            isPnL: false,
+            isLiquidated: false,
+            user: shortenAddress(user)
+          }));
         });
 
         setTrades(current => [...newTrades, ...current].slice(0, MAX_TRADES));
       }
     };
 
+    connections.dydx.onmessage = (event) => {
+      const message: DydxTradeMessage = JSON.parse(event.data);
+      
+      if (message.type === 'trades') {
+        const newTrades: Trade[] = message.trades.map(trade => ({
+          id: `dydx-${trade.id}`,
+          pair,
+          side: trade.side === 'BUY' ? 'LONG' : 'SHORT',
+          price: parseFloat(trade.price),
+          sizeUSD: parseFloat(trade.size) * parseFloat(trade.price),
+          timestamp: new Date(trade.createdAt).getTime(),
+          isPnL: false,
+          isLiquidated: trade.type === 'LIQUIDATED',
+        }));
+
+        setTrades(current => [...newTrades, ...current].slice(0, MAX_TRADES));
+      }
+    };
+
+    // Cleanup
     return () => {
       clearInterval(heartbeatInterval);
-      ws.close();
+      connections.hyperliquid.close();
+      connections.dydx.close();
     };
   }, [pair]);
 

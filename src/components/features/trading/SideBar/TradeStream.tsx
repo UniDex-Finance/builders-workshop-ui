@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import * as HoverCard from '@radix-ui/react-hover-card';
 import { useTradeStream } from '@/lib/trade-stream-context';
+import Image from 'next/image';
 
 interface TradeStreamProps {
   isExpanded: boolean;
@@ -33,6 +34,16 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
     })}`;
   };
 
+  const getSourceIcon = (tradeId: string) => {
+    if (tradeId.startsWith('hl-')) {
+      return <Image src="/static/images/hyperliquid.svg" alt="Hyperliquid" width={12} height={12} />;
+    }
+    if (tradeId.startsWith('dydx-')) {
+      return <Image src="/static/images/dydx.svg" alt="dYdX" width={12} height={12} />;
+    }
+    return null;
+  };
+
   return (
     <div className="absolute inset-0 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
       {trades.map((trade) => (
@@ -42,6 +53,7 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
               {isExpanded ? (
                 <div className="grid items-center grid-cols-[1fr_70px_50px] gap-1 text-xs">
                   <div className="flex items-center gap-1">
+                    {getSourceIcon(trade.id)}
                     <span className="text-muted-foreground group-hover:text-foreground">
                       {formatUSD(trade.sizeUSD)}
                     </span>
@@ -55,9 +67,7 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
                 </div>
               ) : (
                 <div className="flex justify-center">
-                  <span className={trade.side === 'LONG' ? 'text-green-500' : 'text-red-500'}>
-                    •
-                  </span>
+                  {getSourceIcon(trade.id)}
                 </div>
               )}
             </div>
@@ -72,9 +82,12 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
             >
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className={`font-medium ${trade.side === 'LONG' ? 'text-green-500' : 'text-red-500'}`}>
-                    {trade.pair} {trade.side}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {getSourceIcon(trade.id)}
+                    <span className={`font-medium ${trade.side === 'LONG' ? 'text-green-500' : 'text-red-500'}`}>
+                      {trade.side}
+                    </span>
+                  </div>
                   <span className="text-[11px] text-muted-foreground">
                     {formatFullTime(trade.timestamp)}
                   </span>
@@ -82,8 +95,14 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
                 
                 <div className="space-y-0.5 text-[12px]">
                   <div className="flex justify-between">
+                    <span className="text-muted-foreground">Source</span>
+                    <span>{trade.id.startsWith('hl-') ? 'Hyperliquid' : 'dYdX'}</span>
+                  </div>
+                  <div className="flex justify-between">
                     <span className="text-muted-foreground">Size</span>
-                    <span>{formatUSD(trade.sizeUSD)} USDC</span>
+                    <div className="flex items-center gap-1">
+                      <span>{formatUSD(trade.sizeUSD)} USDC</span>
+                    </div>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Price</span>
