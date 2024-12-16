@@ -18,6 +18,7 @@ import { useBalances } from "../../../../hooks/use-balances";
 import { useReferralContract } from "../../../../hooks/use-referral-contract";
 import { useRouting, RouteId } from '../../../../hooks/trading-hooks/use-routing';
 import { toast } from "@/hooks/use-toast";
+import { useLimitRouting } from '../../../../hooks/trading-hooks/use-limit-routing';
 
 
 const DEFAULT_REFERRER = "0x0000000000000000000000000000000000000000";
@@ -69,6 +70,8 @@ export function OrderCard({
     leverage,
     formState.isLong
   );
+
+  const { executeLimitOrder } = useLimitRouting();
 
   const isValidRoutes = (routes: any): routes is Record<RouteId, { tradingFee: number; available: boolean; reason?: string; }> => {
     return routes !== undefined && routes !== null;
@@ -255,33 +258,37 @@ const totalRequired = calculatedMargin + tradingFee;
       // Round down the size to 2 decimal places
       const roundedSize = Math.floor(calculatedSize * 100) / 100;
       
-      console.log('Placing order with params:', {  // Debug log
-        pair: parseInt(assetId, 10),
-        isLong: formState.isLong,
-        price: tradeDetails.entryPrice!,
-        slippagePercent: 100,
-        margin: calculatedMargin,
-        size: roundedSize, // Use rounded size
-        orderType: activeTab,
-        takeProfit: formState.tpslEnabled ? formState.takeProfit : undefined,
-        stopLoss: formState.tpslEnabled ? formState.stopLoss : undefined,
-        referrer: resolvedReferrer
-      });
-  
-      const orderParams = {
-        pair: parseInt(assetId, 10),
-        isLong: formState.isLong,
-        price: tradeDetails.entryPrice!,
-        slippagePercent: 100,
-        margin: calculatedMargin,
-        size: roundedSize, // Use rounded size
-        orderType: activeTab as "market" | "limit",
-        takeProfit: formState.tpslEnabled ? formState.takeProfit : undefined,
-        stopLoss: formState.tpslEnabled ? formState.stopLoss : undefined,
-        referrer: resolvedReferrer
-      };
-  
-      await executeOrder(orderParams);
+      if (activeTab === "limit") {
+        // Handle limit order
+        const limitOrderParams = {
+          pair: parseInt(assetId, 10),
+          isLong: formState.isLong,
+          price: Number(formState.limitPrice),
+          margin: calculatedMargin,
+          size: roundedSize,
+          takeProfit: formState.tpslEnabled ? formState.takeProfit : "",
+          stopLoss: formState.tpslEnabled ? formState.stopLoss : "",
+          referrer: resolvedReferrer
+        };
+
+        await executeLimitOrder(limitOrderParams);
+      } else {
+        // Handle market order using existing routing logic
+        const orderParams = {
+          pair: parseInt(assetId, 10),
+          isLong: formState.isLong,
+          price: tradeDetails.entryPrice!,
+          slippagePercent: 100,
+          margin: calculatedMargin,
+          size: roundedSize,
+          orderType: activeTab as "market" | "limit",
+          takeProfit: formState.tpslEnabled ? formState.takeProfit : undefined,
+          stopLoss: formState.tpslEnabled ? formState.stopLoss : undefined,
+          referrer: resolvedReferrer
+        };
+    
+        await executeOrder(orderParams);
+      }
   
     } catch (error) {
       console.error('Error placing order:', error);
