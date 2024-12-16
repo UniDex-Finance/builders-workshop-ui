@@ -340,7 +340,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                       </div>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent className="bg-[#2b2b36] border-none w-[300px] p-4">
+                  <TooltipContent className="z-50 p-4 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md">
                     <p className="mb-4 text-sm font-medium text-white">Open Interest Distribution</p>
                     {unidexMarketData && (
                       <ProgressBar 
@@ -375,7 +375,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                       </div>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent className="bg-[#2b2b36] border-none w-[300px] p-4">
+                  <TooltipContent className="z-50 p-4 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md">
                     <p className="mb-4 text-sm font-medium text-white">Open Interest Distribution</p>
                     {unidexMarketData && (
                       <ProgressBar 
@@ -428,11 +428,19 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                       </div>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent className="bg-[#2b2b36] border-none">
-                    <p className="text-sm text-white whitespace-pre-line">
+                  <TooltipContent className="z-50 p-4 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md">
+                    <p className="text-xs text-white whitespace-pre-line">
                       {getAnnualizedRate(combinedData.fundingRate) >= 0 
-                        ? `Long positions are paying a rate of ${getAnnualizedRate(combinedData.fundingRate).toFixed(4)}% to short positions every ${rateTimeframe}.\n\nTherefore, short positions are being paid a rate of ${getAnnualizedRate(combinedData.fundingRate).toFixed(4)}% every ${rateTimeframe}.`
-                        : `Short positions are paying a rate of ${Math.abs(getAnnualizedRate(combinedData.fundingRate)).toFixed(4)}% to long positions every ${rateTimeframe}.\n\nTherefore, long positions are being paid a rate of ${Math.abs(getAnnualizedRate(combinedData.fundingRate)).toFixed(4)}% every ${rateTimeframe}.`
+                        ? <>
+                            Long positions are paying a rate of {'\n'}<span className="text-red-500">{getAnnualizedRate(combinedData.fundingRate).toFixed(4)}%</span> to short positions every {rateTimeframe}.
+                            {'\n\n'}
+                            Short positions are being paid {'\n'}<span className="text-green-500">{getAnnualizedRate(combinedData.fundingRate).toFixed(4)}%</span> every {rateTimeframe} from longs.
+                          </>
+                        : <>
+                            Short positions are paying a rate of {'\n'}<span className="text-red-500">{Math.abs(getAnnualizedRate(combinedData.fundingRate)).toFixed(4)}%</span> to long positions every {rateTimeframe}.
+                            {'\n\n'}
+                            Long positions are being paid {'\n'}<span className="text-green-500">{Math.abs(getAnnualizedRate(combinedData.fundingRate)).toFixed(4)}%</span> every {rateTimeframe} from shorts.
+                          </>
                       }
                     </p>
                   </TooltipContent>
@@ -453,20 +461,20 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                         </div>
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent className="bg-[#2b2b36] border-none w-[300px] p-4">
-                      <p className="mb-4 text-sm text-white">
+                    <TooltipContent className="z-50 w-[300px] p-4 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md">
+                      <p className="mb-4 text-xs text-white">
                         Borrow rate is a fee paid to keep your position open, regardless of market direction.
                       </p>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">UniDex:</span>
-                          <span className="text-white">
+                          <span className="text-red-500">
                             {unidexMarketData ? getAnnualizedRate(unidexMarketData.borrowRateForLong).toFixed(4) : '0.0000'}%
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">GTrade:</span>
-                          <span className="text-white">
+                          <span className="text-red-500">
                             {gtradeMarket ? getAnnualizedRate(gtradeMarket.borrowingFees.borrowRateForLong).toFixed(4) : '0.0000'}%
                           </span>
                         </div>
@@ -484,20 +492,20 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                         </div>
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent className="bg-[#2b2b36] border-none w-[300px] p-4">
-                      <p className="mb-4 text-sm text-white">
+                    <TooltipContent className="z-50 w-[300px] p-4 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md">
+                      <p className="mb-4 text-xs text-white">
                         Borrow rate is a fee paid to keep your position open, regardless of market direction.
                       </p>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">UniDex:</span>
-                          <span className="text-white">
+                          <span className="text-red-500">
                             {unidexMarketData ? getAnnualizedRate(unidexMarketData.borrowRateForShort).toFixed(4) : '0.0000'}%
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">GTrade:</span>
-                          <span className="text-white">
+                          <span className="text-red-500">
                             {gtradeMarket ? getAnnualizedRate(gtradeMarket.borrowingFees.borrowRateForShort).toFixed(4) : '0.0000'}%
                           </span>
                         </div>
