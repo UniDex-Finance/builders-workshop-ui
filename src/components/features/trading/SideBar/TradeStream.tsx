@@ -28,6 +28,7 @@ const mockTrades = [
     timestamp: new Date().getTime(),
     isPnL: true,
     pnlPercentage: 132.43,
+    isLiquidated: false,
     txHash: '0x75...0f98',
   },
   {
@@ -38,6 +39,21 @@ const mockTrades = [
     sizeUSD: 21061.72,
     timestamp: new Date().getTime() - 1000,
     isPnL: false,
+    isLiquidated: false,
+  },
+  // Example of a liquidated trade
+  {
+    id: 3,
+    pair: 'ETH/USD',
+    side: 'LONG',
+    price: 2345.67,
+    sizeUSD: 5000.00,
+    collateral: 100,
+    timestamp: new Date().getTime() - 2000,
+    isPnL: true,
+    pnlPercentage: -100,
+    isLiquidated: true,
+    txHash: '0x82...1a23',
   },
   // Add more mock trades as needed
 ];
@@ -77,14 +93,25 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
                     {trade.pair}
                   </span>
                   <div className="flex items-center gap-1">
-                    <span className="text-muted-foreground group-hover:text-foreground">{formatUSD(trade.sizeUSD)}</span>
-                    {trade.isPnL && trade.pnlPercentage !== undefined && (
-                      <span className={trade.pnlPercentage >= 0 ? 'text-green-500' : 'text-red-500'}>
-                        ({trade.pnlPercentage > 0 ? '+' : ''}{trade.pnlPercentage}%)
-                      </span>
+                    <span className="text-muted-foreground group-hover:text-foreground">
+                      {formatUSD(trade.sizeUSD)}
+                    </span>
+                    {trade.isPnL && (
+                      <>
+                        {trade.pnlPercentage !== undefined && (
+                          <span className={`${
+                            trade.pnlPercentage >= 0 ? 'text-green-500' : 'text-red-500'
+                          }`}>
+                            |
+                          </span>
+                        )}
+                        {trade.isLiquidated && <span title="Liquidated">🔥</span>}
+                      </>
                     )}
                   </div>
-                  <span className="text-right text-muted-foreground group-hover:text-foreground">{formatUSD(trade.price)}</span>
+                  <span className="text-right text-muted-foreground group-hover:text-foreground">
+                    {formatUSD(trade.price)}
+                  </span>
                 </div>
               ) : (
                 <div className="flex justify-center">
@@ -101,19 +128,19 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
               side="left"
               align="center"
               sideOffset={5}
-              className="z-50 w-64 p-4 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md"
+              className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md text-[13px]"
             >
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <span className={`font-medium ${trade.side === 'LONG' ? 'text-green-500' : 'text-red-500'}`}>
                     {trade.pair} {trade.side}
                   </span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-[11px] text-muted-foreground">
                     {formatTime(trade.timestamp)}
                   </span>
                 </div>
                 
-                <div className="space-y-1 text-sm">
+                <div className="space-y-0.5 text-[12px]">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Size</span>
                     <span>{formatUSD(trade.sizeUSD)} USDC</span>
@@ -137,7 +164,7 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
                 </div>
 
                 {trade.txHash && (
-                  <div className="pt-2 mt-2 text-xs border-t text-muted-foreground border-border/40">
+                  <div className="pt-1.5 mt-1.5 text-[11px] border-t text-muted-foreground border-border/40">
                     <span className="font-mono">{trade.txHash}</span>
                   </div>
                 )}
