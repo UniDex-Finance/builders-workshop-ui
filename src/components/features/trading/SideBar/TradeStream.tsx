@@ -53,6 +53,18 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
 
   return (
     <div className="absolute inset-0 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+      {isExpanded && (
+        <div className="group relative px-2 py-1.5 border-b border-border">
+          <div className="relative grid items-center grid-cols-[1fr_70px_50px] gap-1 text-xs">
+            <div className="flex items-center gap-1">
+              <span className="text-muted-foreground">Size</span>
+            </div>
+            <span className="text-right text-muted-foreground">Price</span>
+            <span className="text-right text-muted-foreground">Time</span>
+          </div>
+        </div>
+      )}
+      
       {trades.map((trade) => (
         <HoverCard.Root key={trade.id} openDelay={0} closeDelay={0}>
           <HoverCard.Trigger asChild>
