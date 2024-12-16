@@ -17,6 +17,15 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
     });
   };
 
+  const formatFullTime = (timestamp: number) => {
+    return new Date(timestamp).toLocaleTimeString([], { 
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    });
+  };
+
   const formatUSD = (amount: number) => {
     return `$${amount.toLocaleString('en-US', { 
       minimumFractionDigits: 0,
@@ -67,7 +76,7 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
                     {trade.pair} {trade.side}
                   </span>
                   <span className="text-[11px] text-muted-foreground">
-                    {formatTime(trade.timestamp)}
+                    {formatFullTime(trade.timestamp)}
                   </span>
                 </div>
                 
