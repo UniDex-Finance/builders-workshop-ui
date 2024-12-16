@@ -27,7 +27,7 @@ export function SideBar() {
       <div className="flex h-full">
         {/* Expandable Content Panel */}
         {isExpanded && (
-          <div className="h-full overflow-hidden border border-r-0 rounded-l-lg w-80 bg-card border-border">
+          <div className="relative h-full overflow-hidden border border-r-0 rounded-l-lg w-80 bg-card border-border">
             {activeMode === 'TRADE_STREAM' && (
               <TradeStream isExpanded={true} />
             )}
