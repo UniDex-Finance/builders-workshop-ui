@@ -358,7 +358,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                     )}
                     {combinedData && (
                       <div className="mt-2 text-xs text-muted-foreground/80">
-                        <span className="text-white">${formatCompactNumber(combinedData.longOpenInterest)}</span> amount of long positions are open with <span className="text-white">${formatCompactNumber(combinedData.maxLongOpenInterest - combinedData.longOpenInterest)}</span> available
+                        There is <span className="text-white">${formatCompactNumber(combinedData.longOpenInterest)}</span> long positions <br /> open with <span className="text-white">${formatCompactNumber(combinedData.maxLongOpenInterest - combinedData.longOpenInterest)}</span> available.
                       </div>
                     )}
                   </TooltipContent>
@@ -393,7 +393,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                     )}
                     {combinedData && (
                       <div className="mt-2 text-xs text-muted-foreground/80">
-                        <span className="text-white">${formatCompactNumber(combinedData.shortOpenInterest)}</span> amount of short positions are open with <span className="text-white">${formatCompactNumber(combinedData.maxShortOpenInterest - combinedData.shortOpenInterest)}</span> available
+                        There is <span className="text-white">${formatCompactNumber(combinedData.shortOpenInterest)}</span> short positions <br /> open with <span className="text-white">${formatCompactNumber(combinedData.maxShortOpenInterest - combinedData.shortOpenInterest)}</span> available.
                       </div>
                     )}
                   </TooltipContent>
