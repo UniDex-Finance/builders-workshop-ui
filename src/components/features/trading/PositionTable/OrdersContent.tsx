@@ -6,6 +6,9 @@ import {
   TableRow,
 } from "../../../ui/table";
 import { Order, TriggerOrder } from "../../../../hooks/use-orders";
+import { X } from "lucide-react";
+import { Button } from "../../../ui/button";
+import { useCancelOrderActions } from "../../../../hooks/trading-hooks/unidex-hooks/use-cancel-order-actions";
 
 interface OrdersContentProps {
   orders: Order[];
@@ -20,6 +23,8 @@ export function OrdersContent({
   loading,
   error,
 }: OrdersContentProps) {
+  const { cancelOrder, cancellingOrders } = useCancelOrderActions();
+
   return (
     <>
       <TableHeader>
@@ -33,6 +38,7 @@ export function OrdersContent({
           <TableHead>Stop Loss</TableHead>
           <TableHead>Take Profit</TableHead>
           <TableHead>Created</TableHead>
+          <TableHead></TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -77,6 +83,16 @@ export function OrdersContent({
                 <TableCell className="text-red-500">-</TableCell>
                 <TableCell className="text-green-500">-</TableCell>
                 <TableCell>{order.timestamp}</TableCell>
+                <TableCell>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={cancellingOrders[order.orderId]}
+                    onClick={() => cancelOrder(order.orderId)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
 
@@ -100,6 +116,16 @@ export function OrdersContent({
                     : "-"}
                 </TableCell>
                 <TableCell>{order.timestamp}</TableCell>
+                <TableCell>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={cancellingOrders[order.positionId]}
+                    onClick={() => cancelOrder(order.positionId)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
           </>
