@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSmartAccount } from '../../use-smart-account';
-import { useToast } from '../../use-toast';
+import { useToast } from '@/components/ui/use-toast';
+import type { ToastProps } from '@/components/ui/use-toast';
 
 interface CancelOrderResponse {
   calldata: string;
@@ -25,6 +26,13 @@ export function useCancelOrderActions() {
     try {
       setCancellingOrders(prev => ({ ...prev, [positionId]: true }));
 
+      // Initial toast for request submission
+      toast({
+        title: "Broadcasting",
+        description: "Cancelling order...",
+        variant: "default",
+      });
+
       const response = await fetch('https://unidexv4-api-production.up.railway.app/api/position/cancel-pending', {
         method: 'POST',
         headers: {
@@ -47,9 +55,11 @@ export function useCancelOrderActions() {
         data: data.calldata,
       });
 
+      // Dismiss previous toast and show success
       toast({
         title: "Success",
         description: "Order cancelled successfully",
+        variant: "default",
       });
 
     } catch (err) {
