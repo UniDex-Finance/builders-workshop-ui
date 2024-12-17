@@ -88,7 +88,7 @@ export function OrdersContent({
                     variant="ghost"
                     size="sm"
                     disabled={cancellingOrders[order.orderId]}
-                    onClick={() => cancelOrder(order.orderId)}
+                    onClick={() => cancelOrder(order.orderId, order)}
                   >
                     <X className="w-4 h-4" />
                   </Button>
@@ -121,7 +121,7 @@ export function OrdersContent({
                     variant="ghost"
                     size="sm"
                     disabled={cancellingOrders[order.positionId]}
-                    onClick={() => cancelOrder(order.positionId)}
+                    onClick={() => cancelOrder(order.positionId, order)}
                   >
                     <X className="w-4 h-4" />
                   </Button>
