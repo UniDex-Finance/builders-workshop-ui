@@ -164,6 +164,51 @@ function calculateGTradeLiquidationPrice(
   }
 }
 
+function calculateGTradePnL(
+  position: {
+    side: number;
+    notionalValue: number;
+    avgEntryPrice: number;
+  },
+  currentPrice: number | undefined
+): { pnl: string; fees: { positionFee: string; borrowFee: string; fundingFee: string; } } {
+  // Guard against undefined price
+  if (!currentPrice) {
+    return {
+      pnl: 'Loading...',
+      fees: { positionFee: '0', borrowFee: '0', fundingFee: '0' }
+    };
+  }
+
+  const entryPrice = position.avgEntryPrice;
+  const size = position.notionalValue;
+  
+  // Calculate price difference based on position side (0 = long, 1 = short)
+  const priceDiff = position.side === 0 ? 
+    (currentPrice - entryPrice) :
+    (entryPrice - currentPrice);
+
+  // Calculate raw PnL
+  const rawPnL = (priceDiff * size / entryPrice);
+  
+  // Calculate position fee (0.06% of size)
+  const positionFee = size * 0.0006;
+  
+  // Calculate final PnL
+  const finalPnL = rawPnL - positionFee;
+
+  return {
+    pnl: finalPnL >= 0 ? 
+      `+$${finalPnL.toFixed(2)}` : 
+      `-$${Math.abs(finalPnL).toFixed(2)}`,
+    fees: {
+      positionFee: positionFee.toFixed(2),
+      borrowFee: '0',  // No borrow fees for gTrade
+      fundingFee: '0'  // No funding fees for gTrade
+    }
+  };
+}
+
 export function usePositions() {
   const [positions, setPositions] = useState<Position[]>([]);
   const { prices } = usePrices();
@@ -242,9 +287,9 @@ export function usePositions() {
               }
             }),
             fees: {
-              positionFee: (pos.totalFees * 0.1).toFixed(2),
-              borrowFee: pos.owedInterest.toString(),
-              fundingFee: ((pos.totalFees * 0.9) - pos.owedInterest).toFixed(2)
+              positionFee: (pos.notionalValue * 0.0006).toFixed(2),  // 0.06% of size
+              borrowFee: '0',
+              fundingFee: '0'
             }
           };
 
