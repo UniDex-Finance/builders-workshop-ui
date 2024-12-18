@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from 'react';
 
 interface Trade {
   id: string;
@@ -62,17 +62,30 @@ interface TradeStreamContextType {
 
 const TradeStreamContext = createContext<TradeStreamContextType>({ trades: [] });
 
+const MAX_TRADES_PER_SOURCE = 100;
+
 function shortenAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
 export function TradeStreamProvider({ children, pair }: { children: ReactNode, pair: string }) {
-  const [trades, setTrades] = useState<Trade[]>([]);
-  const MAX_TRADES = 40;
+  const [tradesBySource, setTradesBySource] = useState<{
+    hyperliquid: Trade[];
+    dydx: Trade[];
+    orderly: Trade[];
+  }>({
+    hyperliquid: [],
+    dydx: [],
+    orderly: []
+  });
 
   useEffect(() => {
     // Clear existing trades when pair changes
-    setTrades([]);
+    setTradesBySource({
+      hyperliquid: [],
+      dydx: [],
+      orderly: []
+    });
 
     const connections = {
       hyperliquid: new WebSocket('wss://api.hyperliquid.xyz/ws'),
@@ -168,7 +181,10 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
           user: trade.users[0] ? shortenAddress(trade.users[0]) : undefined
         }));
 
-        setTrades(current => [...newTrades, ...current].slice(0, MAX_TRADES));
+        setTradesBySource(current => ({
+          ...current,
+          hyperliquid: [...newTrades, ...current.hyperliquid].slice(0, MAX_TRADES_PER_SOURCE)
+        }));
       }
     };
 
@@ -187,7 +203,10 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
           isLiquidated: trade.type === 'LIQUIDATED',
         }));
 
-        setTrades(current => [...newTrades, ...current].slice(0, MAX_TRADES));
+        setTradesBySource(current => ({
+          ...current,
+          dydx: [...newTrades, ...current.dydx].slice(0, MAX_TRADES_PER_SOURCE)
+        }));
       }
     };
 
@@ -211,7 +230,10 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
         };
 
         console.log('New Orderly trade:', newTrade); // Debug log
-        setTrades(current => [newTrade, ...current].slice(0, MAX_TRADES));
+        setTradesBySource(current => ({
+          ...current,
+          orderly: [newTrade, ...current.orderly].slice(0, MAX_TRADES_PER_SOURCE)
+        }));
       }
     };
 
@@ -223,8 +245,18 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
     };
   }, [pair]);
 
+  // Combine and sort all trades for the context value
+  const allTrades = useMemo(() => {
+    const combined = [
+      ...tradesBySource.hyperliquid,
+      ...tradesBySource.dydx,
+      ...tradesBySource.orderly
+    ];
+    return combined.sort((a, b) => b.timestamp - a.timestamp);
+  }, [tradesBySource]);
+
   return (
-    <TradeStreamContext.Provider value={{ trades }}>
+    <TradeStreamContext.Provider value={{ trades: allTrades }}>
       {children}
     </TradeStreamContext.Provider>
   );
