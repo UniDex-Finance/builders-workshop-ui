@@ -163,7 +163,7 @@ export function PositionSizeDialog({
         <Card className="border-0 shadow-lg bg-[#17161d]">
           <CardContent className="p-6 space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white">Edit Position Size</h2>
+              <h2 className="text-base font-semibold text-white">Edit Position Size</h2>
               <button className="text-zinc-400 hover:text-white" onClick={onClose}>
                 <X size={20} />
               </button>
@@ -189,7 +189,7 @@ export function PositionSizeDialog({
             </div>
 
             <div>
-              <div className="flex justify-between mb-2 text-sm">
+              <div className="flex justify-between mb-2 text-xs">
                 <span className="text-white">{isIncrease ? 'Collateral' : 'Size'}</span>
                 <span className="text-zinc-400">
                   {isIncrease 
@@ -202,13 +202,13 @@ export function PositionSizeDialog({
                   type="number"
                   value={collateralAmount}
                   onChange={(e) => setCollateralAmount(e.target.value)}
-                  className="w-full p-2 text-2xl font-bold text-white bg-transparent border-none focus:ring-0"
+                  className="w-full p-2 text-xl font-bold text-white bg-transparent border-none focus:ring-0"
                   max={isIncrease ? totalAvailableBalance : currentSize}
                   min={0}
                 />
                 <Button
                   variant="ghost"
-                  className="h-8 px-3 mr-2 text-sm text-[#7142cf] hover:text-[#7142cf]/80"
+                  className="h-8 px-3 mr-2 text-xs text-[#7142cf] hover:text-[#7142cf]/80"
                   onClick={handleMaxClick}
                 >
                   MAX
@@ -239,7 +239,7 @@ export function PositionSizeDialog({
 
             <Separator className="bg-[#272734]" />
 
-            <div className="space-y-1 text-sm">
+            <div className="space-y-2 text-xs">
               <div className="flex justify-between">
                 <span className="text-zinc-400">Leverage</span>
                 <span className="text-white">{currentLeverage}x → {newEffectiveLeverage}x</span>
@@ -266,7 +266,7 @@ export function PositionSizeDialog({
 
             <Separator className="bg-[#272734]" />
 
-            <div className="space-y-1 text-sm">
+            <div className="space-y-2 text-xs">
               <div className="flex justify-between">
                 <span className="text-zinc-400">Entry Price</span>
                 <span className="text-white">
@@ -284,7 +284,7 @@ export function PositionSizeDialog({
 
           <CardFooter className="p-6 bg-[#17161d]">
             <Button 
-              className="w-full font-semibold text-white bg-[#7142cf] hover:bg-[#7142cf]/80 py-4 text-base"
+              className="w-full font-semibold text-white bg-[#7142cf] hover:bg-[#7142cf]/80 py-4 text-sm"
               disabled={!isValid || isLoading || !collateralAmount}
               onClick={handleSubmit}
             >
