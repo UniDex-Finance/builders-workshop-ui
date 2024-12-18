@@ -6,8 +6,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { useDuneData } from "@/hooks/use-dune-data"
 import { type Balances } from "@/hooks/use-balances"
+import { useMediaQuery } from "../../../hooks/use-media-query"
 
 interface Props {
   balances: Balances | null
@@ -31,6 +37,8 @@ export function StatsActions({ balances, isLoading }: Props) {
   const [totalApr, setTotalApr] = useState<number>(0)
   const [esMoltenApr, setEsMoltenApr] = useState<number>(0)
   const { vaultApr } = useDuneData(usdmData?.formattedVaultBalance || '0')
+  const isMobile = useMediaQuery("(max-width: 768px)")
+  const [isTooltipOpen, setIsTooltipOpen] = useState(false)
 
   useEffect(() => {
     const fetchMoltenPrice = async () => {
@@ -63,53 +71,62 @@ export function StatsActions({ balances, isLoading }: Props) {
     fetchMoltenPrice()
   }, [vaultApr, usdmData?.formattedVaultBalance])
   
+  const aprContent = (
+    <div className="space-y-2">
+      {/* Vault APR Section */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-[#A0AEC0] font-medium">Vault APR</span>
+          <span className="font-medium text-white">{vaultApr.toFixed(2)}%</span>
+        </div>
+        <p className="text-sm text-[#A0AEC0]">
+          Earn yield from trading fees, funding rates, and traders Pnl collected by the protocol. 
+          APR is calculated based on the last 7 days of activity.
+        </p>
+      </div>
+
+      {/* Divider */}
+      <div className="my-3 border-t border-[#404040]" />
+
+      {/* esMOLTEN APR Section */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-[#A0AEC0] font-medium">Staking APR (esMOLTEN)</span>
+          <span className="font-medium text-white">{esMoltenApr.toFixed(2)}%</span>
+        </div>
+        <p className="text-sm text-[#A0AEC0]">
+          Earn 20,000 esMOLTEN tokens monthly when you stake USD.m on the staking page. 
+          esMOLTEN can be vested to MOLTEN tokens over 12 months.
+        </p>
+      </div>
+
+      {/* Total Section */}
+      <div className="mt-3 pt-3 border-t border-[#404040]">
+        <div className="flex items-center justify-between">
+          <span className="font-medium text-white">Total APR</span>
+          <span className="font-medium text-white">{totalApr.toFixed(2)}%</span>
+        </div>
+      </div>
+    </div>
+  )
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-wrap gap-8">
         <div className="space-y-1">
           <div className="text-sm text-[#A0AEC0]">Total APR</div>
           <TooltipProvider>
-            <Tooltip>
+            <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
               <TooltipTrigger asChild>
-                <div className="text-xl text-white cursor-help">
+                <div 
+                  className="inline-block text-xl text-white border-b border-dashed cursor-pointer border-white/50"
+                  onClick={() => setIsTooltipOpen(!isTooltipOpen)}
+                >
                   {totalApr === 0 ? "Loading..." : `${totalApr.toFixed(2)}%`}
                 </div>
               </TooltipTrigger>
               <TooltipContent className="w-80 p-4 bg-[#2b2b36] border-none">
-                {/* Vault APR Section */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[#A0AEC0] font-medium">Vault APR</span>
-                    <span className="font-medium text-white">{vaultApr.toFixed(2)}%</span>
-                  </div>
-                  <p className="text-sm text-[#A0AEC0]">
-                    Earn yield from trading fees, funding rates, and traders Pnl collected by the protocol. 
-                    APR is calculated based on the last 7 days of activity.
-                  </p>
-                </div>
-
-                {/* Divider */}
-                <div className="my-3 border-t border-[#404040]" />
-
-                {/* esMOLTEN APR Section */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[#A0AEC0] font-medium">Staking APR (esMOLTEN)</span>
-                    <span className="font-medium text-white">{esMoltenApr.toFixed(2)}%</span>
-                  </div>
-                  <p className="text-sm text-[#A0AEC0]">
-                    Earn 20,000 esMOLTEN tokens monthly when you stake USD.m on the staking page. 
-                    esMOLTEN can be vested to MOLTEN tokens over 12 months.
-                  </p>
-                </div>
-
-                {/* Total Section */}
-                <div className="mt-3 pt-3 border-t border-[#404040]">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-white">Total APR</span>
-                    <span className="font-medium text-white">{totalApr.toFixed(2)}%</span>
-                  </div>
-                </div>
+                {aprContent}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
