@@ -142,6 +142,14 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
       subscribeToStreams();
     };
 
+    connections.orderly.onerror = (error) => {
+      console.error('Orderly WebSocket error:', error);
+    };
+
+    connections.orderly.onclose = () => {
+      console.log('Orderly WebSocket closed');
+    };
+
     // Handle messages from both sources
     connections.hyperliquid.onmessage = (event) => {
       const message = JSON.parse(event.data);
@@ -186,20 +194,23 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
     // Add Orderly message handler after the dYdX handler
     connections.orderly.onmessage = (event) => {
       const message: OrderlyTradeMessage = JSON.parse(event.data);
+      console.log('Orderly message:', message); // Debug log
       
       if (message.topic?.endsWith('@trade') && message.data) {
         const trade = message.data;
+        const sizeUSD = Number((trade.size * trade.price).toFixed(4));
         const newTrade: Trade = {
           id: `orderly-${message.ts}`,
           pair,
           side: trade.side === 'BUY' ? 'LONG' : 'SHORT',
           price: trade.price,
-          sizeUSD: trade.size,
+          sizeUSD,
           timestamp: message.ts,
           isPnL: false,
           isLiquidated: false,
         };
 
+        console.log('New Orderly trade:', newTrade); // Debug log
         setTrades(current => [newTrade, ...current].slice(0, MAX_TRADES));
       }
     };

@@ -1,11 +1,104 @@
 import { useMemo, useState } from 'react';
 import * as HoverCard from '@radix-ui/react-hover-card';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useTradeStream } from '@/lib/trade-stream-context';
 import Image from 'next/image';
-import { Pencil } from 'lucide-react';
+import { Pencil, Filter } from 'lucide-react';
 
 interface TradeStreamProps {
   isExpanded: boolean;
+}
+
+interface Source {
+  id: 'all' | 'hyperliquid' | 'dydx' | 'orderly';
+  name: string;
+  icon: string;
+}
+
+const SOURCES: Source[] = [
+  { id: 'all', name: 'All Sources', icon: '' },
+  { id: 'hyperliquid', name: 'Hyperliquid', icon: '/static/images/hyperliquid.svg' },
+  { id: 'dydx', name: 'dYdX', icon: '/static/images/dydx.svg' },
+  { id: 'orderly', name: 'Orderly', icon: '/static/images/orderly.webp' },
+];
+
+function SourceFilter({ selectedSources, onSourceChange }: { 
+  selectedSources: Source['id'][], 
+  onSourceChange: (sources: Source['id'][]) => void 
+}) {
+  const handleSourceClick = (sourceId: Source['id']) => {
+    if (sourceId === 'all') {
+      // If "All Sources" is clicked, clear other selections
+      onSourceChange(['all']);
+    } else {
+      // Remove 'all' if it exists and toggle the clicked source
+      const newSources = selectedSources.filter(id => id !== 'all');
+      const sourceExists = newSources.includes(sourceId);
+      
+      if (sourceExists) {
+        // Remove the source if it exists
+        const filtered = newSources.filter(id => id !== sourceId);
+        // If no sources left, default to 'all'
+        onSourceChange(filtered.length === 0 ? ['all'] : filtered);
+      } else {
+        // Add the new source
+        onSourceChange([...newSources, sourceId]);
+      }
+    }
+  };
+
+  return (
+    <DropdownMenu.Root modal={false}>
+      <DropdownMenu.Trigger asChild>
+        <button 
+          className="p-0.5 hover:bg-accent rounded"
+          onClick={(e) => e.preventDefault()}
+        >
+          <Filter size={12} className={`
+            ${selectedSources.length === 1 && selectedSources[0] === 'all' 
+              ? 'text-muted-foreground' 
+              : 'text-foreground'
+            }
+          `} />
+        </button>
+      </DropdownMenu.Trigger>
+
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          className="z-50 min-w-[140px] bg-popover rounded-md p-1 shadow-md border border-border"
+          sideOffset={5}
+          forceMount
+        >
+          {SOURCES.map((source) => (
+            <DropdownMenu.CheckboxItem
+              key={source.id}
+              className={`
+                text-xs px-2 py-1.5 outline-none cursor-default
+                flex items-center gap-2 rounded-sm
+                ${selectedSources.includes(source.id) ? 'bg-accent' : 'hover:bg-accent'}
+              `}
+              checked={selectedSources.includes(source.id)}
+              onSelect={(e) => {
+                e.preventDefault();
+                handleSourceClick(source.id);
+              }}
+            >
+              {source.icon ? (
+                <Image
+                  src={source.icon}
+                  alt={source.name}
+                  width={12}
+                  height={12}
+                  className="shrink-0"
+                />
+              ) : null}
+              <span>{source.name}</span>
+            </DropdownMenu.CheckboxItem>
+          ))}
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  );
 }
 
 const getTradeBarWidth = (sizeUSD: number) => {
@@ -17,12 +110,19 @@ const getTradeBarWidth = (sizeUSD: number) => {
 export function TradeStream({ isExpanded }: TradeStreamProps) {
   const [minSize, setMinSize] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
+  const [selectedSources, setSelectedSources] = useState<Source['id'][]>(['all']);
   const { trades } = useTradeStream();
 
-  // Filter trades based on minimum size
   const filteredTrades = useMemo(() => {
-    return trades.filter(trade => trade.sizeUSD >= minSize);
-  }, [trades, minSize]);
+    return trades.filter(trade => {
+      const meetsMinSize = trade.sizeUSD >= minSize;
+      const meetsSource = selectedSources.includes('all') || 
+        (selectedSources.includes('hyperliquid') && trade.id.startsWith('hl-')) ||
+        (selectedSources.includes('dydx') && trade.id.startsWith('dydx-')) ||
+        (selectedSources.includes('orderly') && trade.id.startsWith('orderly-'));
+      return meetsMinSize && meetsSource;
+    });
+  }, [trades, minSize, selectedSources]);
 
   const formatTime = (timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString([], { 
@@ -80,6 +180,10 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
               >
                 <Pencil size={12} className="text-muted-foreground" />
               </button>
+              <SourceFilter 
+                selectedSources={selectedSources} 
+                onSourceChange={setSelectedSources}
+              />
               {isEditing && (
                 <input
                   type="number"
