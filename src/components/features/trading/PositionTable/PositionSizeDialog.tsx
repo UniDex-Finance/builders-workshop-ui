@@ -242,24 +242,30 @@ export function PositionSizeDialog({
             <div className="space-y-2 text-xs">
               <div className="flex justify-between">
                 <span className="text-zinc-400">Leverage</span>
-                <span className="text-white">{currentLeverage}x → {newEffectiveLeverage}x</span>
+                <span>
+                  <span className="text-zinc-400">{currentLeverage}x</span>
+                  <span className="text-white"> → {newEffectiveLeverage}x</span>
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-zinc-400">Collateral</span>
-                <span className="text-white">
-                  {currentMargin.toFixed(2)} → {newMargin.toFixed(2)} USDC
+                <span>
+                  <span className="text-zinc-400">{currentMargin.toFixed(2)}</span>
+                  <span className="text-white"> → {newMargin.toFixed(2)} USD</span>
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-zinc-400">Position Size</span>
-                <span className="text-white">
-                  {currentSize.toFixed(2)} → {newTotalSize.toFixed(2)} USDC
+                <span>
+                  <span className="text-zinc-400">{currentSize.toFixed(2)}</span>
+                  <span className="text-white"> → {newTotalSize.toFixed(2)} USD</span>
                 </span>
               </div>
               <div className="flex justify-between">
                 <span></span>
-                <span className="text-zinc-400">
-                  {(currentSize / currentPrice).toFixed(6)} → {(newTotalSize / currentPrice).toFixed(6)} {basePair.toUpperCase()}
+                <span>
+                  <span className="text-zinc-400">{(currentSize / currentPrice).toFixed(6)}</span>
+                  <span className="text-zinc-400"> → {(newTotalSize / currentPrice).toFixed(6)} {basePair.toUpperCase()}</span>
                 </span>
               </div>
             </div>
@@ -269,14 +275,16 @@ export function PositionSizeDialog({
             <div className="space-y-2 text-xs">
               <div className="flex justify-between">
                 <span className="text-zinc-400">Entry Price</span>
-                <span className="text-white">
-                  {parseFloat(position.entryPrice).toFixed(1)} → {newAverageEntry.toFixed(1)}
+                <span>
+                  <span className="text-zinc-400">{parseFloat(position.entryPrice).toFixed(1)}</span>
+                  <span className="text-white"> → {newAverageEntry.toFixed(1)}</span>
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-zinc-400">Liq. Price</span>
-                <span className="text-white">
-                  {parseFloat(position.liquidationPrice).toFixed(1)} → {newLiquidationPrice.toFixed(1)}
+                <span>
+                  <span className="text-zinc-400">{parseFloat(position.liquidationPrice).toFixed(1)}</span>
+                  <span className="text-white"> → {newLiquidationPrice.toFixed(1)}</span>
                 </span>
               </div>
             </div>
@@ -290,7 +298,7 @@ export function PositionSizeDialog({
             >
               {isLoading 
                 ? "Processing..." 
-                : `${isIncrease ? 'Increase' : 'Decrease'} by ${Math.abs(sizeDelta).toFixed(2)} USDC`
+                : `${isIncrease ? 'Increase' : 'Decrease'} by ${Math.abs(sizeDelta).toFixed(2)} USD`
               }
             </Button>
           </CardFooter>
