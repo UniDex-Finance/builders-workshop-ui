@@ -159,8 +159,8 @@ export function PositionSizeDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="p-0 border-0 sm:max-w-[360px] bg-[#17161d]">
-        <Card className="border-0 shadow-lg bg-[#17161d]">
+      <DialogContent className="p-0 border-0 sm:max-w-[360px] bg-[#17161d]" hideClose>
+        <Card className="border-0 shadow-lg bg-[#17161d] rounded-xl overflow-hidden">
           <CardContent className="p-6 space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-base font-semibold text-white">Edit Position Size</h2>
