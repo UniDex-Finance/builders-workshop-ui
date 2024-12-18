@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownSection, DropdownItem, Modal, ModalContent, useDisclosure } from "@nextui-org/react";
-import { Menu, ChevronDown, Wallet, Coins, DollarSign, PiggyBank, Users2, MessageCircle, Send, Twitter, X } from "lucide-react";
+import { Menu, ChevronDown, Wallet, Coins, DollarSign, PiggyBank, Users2, MessageCircle, Send, Twitter, X, Settings } from "lucide-react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faQuestionCircle, 
@@ -465,6 +465,15 @@ export function Header() {
             );
           }}
         </ConnectButton.Custom>
+
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-9 w-9 bg-[#1f1f29] hover:bg-[#1f1f29]/90 [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
+          onClick={() => {}}
+        >
+          <Settings className="w-5 h-5 text-white" />
+        </Button>
       </div>
     </header>
   );

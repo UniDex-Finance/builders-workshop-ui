@@ -42,6 +42,20 @@ interface DydxTradeMessage {
   trades: DydxTrade[];
 }
 
+// Add Orderly interface after the DydxTradeMessage interface
+interface OrderlyTrade {
+  symbol: string;
+  price: number;
+  size: number;
+  side: 'BUY' | 'SELL';
+}
+
+interface OrderlyTradeMessage {
+  topic: string;
+  ts: number;
+  data: OrderlyTrade;
+}
+
 interface TradeStreamContextType {
   trades: Trade[];
 }
@@ -62,7 +76,8 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
 
     const connections = {
       hyperliquid: new WebSocket('wss://api.hyperliquid.xyz/ws'),
-      dydx: new WebSocket('wss://dydx-ws-wrapper-production.up.railway.app')
+      dydx: new WebSocket('wss://dydx-ws-wrapper-production.up.railway.app'),
+      orderly: new WebSocket('wss://ws-evm.orderly.org/ws/stream/0xfad2932d33abbebcd9d10a5997693cece568f6bd35466ffce1dbe3ef5833f5dd')
     };
 
     // Heartbeat for Hyperliquid
@@ -71,6 +86,13 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
         connections.hyperliquid.send(JSON.stringify({ method: 'ping' }));
       }
     }, 30000);
+
+    // Add Orderly heartbeat
+    const orderlyHeartbeat = setInterval(() => {
+      if (connections.orderly.readyState === WebSocket.OPEN) {
+        connections.orderly.send(JSON.stringify({ op: 'ping' }));
+      }
+    }, 10000);
 
     // Subscribe to both streams
     const subscribeToStreams = () => {
@@ -91,6 +113,16 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
           market: dydxMarket
         }));
       }
+
+      // Orderly subscription
+      if (connections.orderly.readyState === WebSocket.OPEN) {
+        const orderlySymbol = `PERP_${pair.replace('/', '_')}C`;
+        connections.orderly.send(JSON.stringify({
+          id: `orderly-${Date.now()}`,
+          topic: `${orderlySymbol}@trade`,
+          event: 'subscribe'
+        }));
+      }
     };
 
     // Set up connection handlers
@@ -101,6 +133,12 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
 
     connections.dydx.onopen = () => {
       console.log('Connected to dYdX WebSocket');
+      subscribeToStreams();
+    };
+
+    // Add Orderly connection handler
+    connections.orderly.onopen = () => {
+      console.log('Connected to Orderly WebSocket');
       subscribeToStreams();
     };
 
@@ -145,11 +183,32 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
       }
     };
 
+    // Add Orderly message handler after the dYdX handler
+    connections.orderly.onmessage = (event) => {
+      const message: OrderlyTradeMessage = JSON.parse(event.data);
+      
+      if (message.topic?.endsWith('@trade') && message.data) {
+        const trade = message.data;
+        const newTrade: Trade = {
+          id: `orderly-${message.ts}`,
+          pair,
+          side: trade.side === 'BUY' ? 'LONG' : 'SHORT',
+          price: trade.price,
+          sizeUSD: trade.size,
+          timestamp: message.ts,
+          isPnL: false,
+          isLiquidated: false,
+        };
+
+        setTrades(current => [newTrade, ...current].slice(0, MAX_TRADES));
+      }
+    };
+
     // Cleanup
     return () => {
       clearInterval(heartbeatInterval);
-      connections.hyperliquid.close();
-      connections.dydx.close();
+      clearInterval(orderlyHeartbeat);
+      Object.values(connections).forEach(connection => connection.close());
     };
   }, [pair]);
 

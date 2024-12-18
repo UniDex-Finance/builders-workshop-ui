@@ -61,6 +61,9 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
     if (tradeId.startsWith('dydx-')) {
       return <Image src="/static/images/dydx.svg" alt="dYdX" width={12} height={12} />;
     }
+    if (tradeId.startsWith('orderly-')) {
+      return <Image src="/static/images/orderly.webp" alt="Orderly" width={12} height={12} />;
+    }
     return null;
   };
 
@@ -162,7 +165,11 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
                 <div className="space-y-0.5 text-[12px]">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Source</span>
-                    <span>{trade.id.startsWith('hl-') ? 'Hyperliquid' : 'dYdX'}</span>
+                    <span>
+                      {trade.id.startsWith('hl-') ? 'Hyperliquid' : 
+                       trade.id.startsWith('dydx-') ? 'dYdX' : 
+                       'Orderly'}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Size</span>
