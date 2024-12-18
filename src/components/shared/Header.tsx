@@ -1,17 +1,38 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import Image from 'next/image';
+import Image from "next/image";
 import { Button } from "../ui/button";
 import Link from "next/link";
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownSection, DropdownItem, Modal, ModalContent, useDisclosure } from "@nextui-org/react";
-import { Menu, ChevronDown, Wallet, Coins, DollarSign, PiggyBank, Users2, MessageCircle, Send, Twitter, X } from "lucide-react";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faQuestionCircle, 
-  faBook, 
-  faComments, 
-  faBug, 
-  faChartLine 
-} from '@fortawesome/free-solid-svg-icons';
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownSection,
+  DropdownItem,
+  Modal,
+  ModalContent,
+  useDisclosure,
+} from "@nextui-org/react";
+import {
+  Menu,
+  ChevronDown,
+  Wallet,
+  Coins,
+  DollarSign,
+  PiggyBank,
+  Users2,
+  MessageCircle,
+  Send,
+  Twitter,
+  X,
+} from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faQuestionCircle,
+  faBook,
+  faComments,
+  faBug,
+  faChartLine,
+} from "@fortawesome/free-solid-svg-icons";
 import { AccountSummary } from "../features/trading/account/AccountSummary";
 import { getUsersnapApi } from "../../lib/usersnap";
 import {
@@ -19,13 +40,13 @@ import {
   SheetContent,
   SheetHeader,
   SheetTrigger,
-} from "@/components/ui/sheet"
+} from "@/components/ui/sheet";
 
 export function Header() {
-  const {isOpen, onOpen, onClose} = useDisclosure();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
-    <header className="flex items-center px-4 h-14">
+    <header className="flex items-center px-4 md:px-6 h-14 pt-2 md:pt-3 mb-1">
       <div className="flex items-center space-x-4">
         <Link href="/" className="hover:opacity-80">
           {/* Desktop Logo */}
@@ -49,7 +70,7 @@ export function Header() {
             />
           </div>
         </Link>
-        
+
         {/* Desktop Navigation */}
         <nav className="items-center hidden space-x-4 md:flex">
           <Link href="/">
@@ -61,13 +82,13 @@ export function Header() {
                 Earn <ChevronDown size={16} />
               </Button>
             </DropdownTrigger>
-            <DropdownMenu 
+            <DropdownMenu
               aria-label="Earn options"
               className="w-[240px]"
               itemClasses={{
                 base: "gap-4",
                 title: "text-sm",
-                description: "text-xs text-default-400"
+                description: "text-xs text-default-400",
               }}
             >
               <DropdownSection title="Earn with MOLTEN" showDivider>
@@ -75,18 +96,18 @@ export function Header() {
                   key="molten-staking"
                   description="Stake MOLTEN for rewards"
                   startContent={<Coins className="w-4 h-4" />}
-                  onClick={() => window.location.href = "/staking"}
+                  onClick={() => (window.location.href = "/staking")}
                 >
                   Stake MOLTEN
                 </DropdownItem>
               </DropdownSection>
-              
+
               <DropdownSection title="Earn with USD.m" showDivider>
                 <DropdownItem
                   key="mint-usdm"
                   description="Market make for traders and earn yield"
                   startContent={<DollarSign className="w-4 h-4" />}
-                  onClick={() => window.location.href = "/usdm"}
+                  onClick={() => (window.location.href = "/usdm")}
                 >
                   Mint USD.m
                 </DropdownItem>
@@ -94,7 +115,7 @@ export function Header() {
                   key="usdm-staking"
                   description="Stake USD.m for rewards"
                   startContent={<PiggyBank className="w-4 h-4" />}
-                  onClick={() => window.location.href = "/usdm-staking"}
+                  onClick={() => (window.location.href = "/usdm-staking")}
                 >
                   Stake USD.m
                 </DropdownItem>
@@ -105,7 +126,7 @@ export function Header() {
                   key="referrals"
                   description="Onboard traders, earn in real-time"
                   startContent={<Users2 className="w-4 h-4" />}
-                  onClick={() => window.location.href = "/referrals"}
+                  onClick={() => (window.location.href = "/referrals")}
                 >
                   Refer Traders
                 </DropdownItem>
@@ -118,20 +139,22 @@ export function Header() {
                 Socials <ChevronDown size={16} />
               </Button>
             </DropdownTrigger>
-            <DropdownMenu 
+            <DropdownMenu
               aria-label="Social links"
               className="w-[240px]"
               itemClasses={{
                 base: "gap-4",
                 title: "text-sm",
-                description: "text-xs text-default-400"
+                description: "text-xs text-default-400",
               }}
             >
               <DropdownItem
                 key="discord"
                 description="DAO, traders, and memes"
                 startContent={<MessageCircle className="w-4 h-4" />}
-                onClick={() => window.open("https://discord.gg/W2TByeuD7R", "_blank")}
+                onClick={() =>
+                  window.open("https://discord.gg/W2TByeuD7R", "_blank")
+                }
               >
                 Discord
               </DropdownItem>
@@ -139,7 +162,9 @@ export function Header() {
                 key="telegram"
                 description="Chill & good vibes only"
                 startContent={<Send className="w-4 h-4" />}
-                onClick={() => window.open("https://t.me/unidexfinance", "_blank")}
+                onClick={() =>
+                  window.open("https://t.me/unidexfinance", "_blank")
+                }
               >
                 Telegram
               </DropdownItem>
@@ -147,7 +172,9 @@ export function Header() {
                 key="twitter"
                 description="Stay up to date on news"
                 startContent={<Twitter className="w-4 h-4" />}
-                onClick={() => window.open("https://x.com/UniDexFinance", "_blank")}
+                onClick={() =>
+                  window.open("https://x.com/UniDexFinance", "_blank")
+                }
               >
                 Twitter
               </DropdownItem>
@@ -159,20 +186,22 @@ export function Header() {
                 More <ChevronDown size={16} />
               </Button>
             </DropdownTrigger>
-            <DropdownMenu 
+            <DropdownMenu
               aria-label="More actions"
               className="w-[240px]"
               itemClasses={{
                 base: "gap-4",
                 title: "text-sm",
-                description: "text-xs text-default-400"
+                description: "text-xs text-default-400",
               }}
             >
               <DropdownItem
                 key="help"
                 description="Get help and support"
                 startContent={<FontAwesomeIcon icon={faQuestionCircle} />}
-                onClick={() => window.open("https://discord.gg/W2TByeuD7R", "_blank")}
+                onClick={() =>
+                  window.open("https://discord.gg/W2TByeuD7R", "_blank")
+                }
               >
                 Help & Support
               </DropdownItem>
@@ -180,7 +209,12 @@ export function Header() {
                 key="documentation"
                 description="Read the documentation"
                 startContent={<FontAwesomeIcon icon={faBook} />}
-                onClick={() => window.open("https://docs.unidex.exchange/introduction", "_blank")}
+                onClick={() =>
+                  window.open(
+                    "https://docs.unidex.exchange/introduction",
+                    "_blank"
+                  )
+                }
               >
                 Documentation
               </DropdownItem>
@@ -214,7 +248,12 @@ export function Header() {
                 key="stats"
                 description="View the latest stats"
                 startContent={<FontAwesomeIcon icon={faChartLine} />}
-                onClick={() => window.open("https://dune.com/supakawaiidesu/unidex-molten-stats", "_blank")}
+                onClick={() =>
+                  window.open(
+                    "https://dune.com/supakawaiidesu/unidex-molten-stats",
+                    "_blank"
+                  )
+                }
               >
                 Stats
               </DropdownItem>
@@ -249,10 +288,10 @@ export function Header() {
                 <div className="flex-1 p-2">
                   <div className="space-y-2">
                     {/* Trade */}
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start w-full" 
-                      onClick={() => window.location.href = "/"}
+                    <Button
+                      variant="ghost"
+                      className="justify-start w-full"
+                      onClick={() => (window.location.href = "/")}
                     >
                       Trade
                     </Button>
@@ -265,7 +304,7 @@ export function Header() {
                       <Button
                         variant="ghost"
                         className="justify-start w-full gap-2"
-                        onClick={() => window.location.href = "/staking"}
+                        onClick={() => (window.location.href = "/staking")}
                       >
                         <Coins className="w-4 h-4" />
                         Stake MOLTEN
@@ -279,7 +318,7 @@ export function Header() {
                       <Button
                         variant="ghost"
                         className="justify-start w-full gap-2"
-                        onClick={() => window.location.href = "/usdm"}
+                        onClick={() => (window.location.href = "/usdm")}
                       >
                         <DollarSign className="w-4 h-4" />
                         Mint USD.m
@@ -287,7 +326,7 @@ export function Header() {
                       <Button
                         variant="ghost"
                         className="justify-start w-full gap-2"
-                        onClick={() => window.location.href = "/usdm-staking"}
+                        onClick={() => (window.location.href = "/usdm-staking")}
                       >
                         <PiggyBank className="w-4 h-4" />
                         Stake USD.m
@@ -301,7 +340,7 @@ export function Header() {
                       <Button
                         variant="ghost"
                         className="justify-start w-full gap-2"
-                        onClick={() => window.location.href = "/referrals"}
+                        onClick={() => (window.location.href = "/referrals")}
                       >
                         <Users2 className="w-4 h-4" />
                         Refer Traders
@@ -316,7 +355,9 @@ export function Header() {
                       <Button
                         variant="ghost"
                         className="justify-start w-full gap-2"
-                        onClick={() => window.open("https://discord.gg/W2TByeuD7R", "_blank")}
+                        onClick={() =>
+                          window.open("https://discord.gg/W2TByeuD7R", "_blank")
+                        }
                       >
                         <MessageCircle className="w-4 h-4" />
                         Discord
@@ -324,7 +365,9 @@ export function Header() {
                       <Button
                         variant="ghost"
                         className="justify-start w-full gap-2"
-                        onClick={() => window.open("https://t.me/unidexfinance", "_blank")}
+                        onClick={() =>
+                          window.open("https://t.me/unidexfinance", "_blank")
+                        }
                       >
                         <Send className="w-4 h-4" />
                         Telegram
@@ -332,7 +375,9 @@ export function Header() {
                       <Button
                         variant="ghost"
                         className="justify-start w-full gap-2"
-                        onClick={() => window.open("https://x.com/UniDexFinance", "_blank")}
+                        onClick={() =>
+                          window.open("https://x.com/UniDexFinance", "_blank")
+                        }
                       >
                         <Twitter className="w-4 h-4" />
                         Twitter
@@ -347,15 +392,25 @@ export function Header() {
                       <Button
                         variant="ghost"
                         className="justify-start w-full gap-2"
-                        onClick={() => window.open("https://discord.gg/W2TByeuD7R", "_blank")}
+                        onClick={() =>
+                          window.open("https://discord.gg/W2TByeuD7R", "_blank")
+                        }
                       >
-                        <FontAwesomeIcon icon={faQuestionCircle} className="w-4 h-4" />
+                        <FontAwesomeIcon
+                          icon={faQuestionCircle}
+                          className="w-4 h-4"
+                        />
                         Help & Support
                       </Button>
                       <Button
                         variant="ghost"
                         className="justify-start w-full gap-2"
-                        onClick={() => window.open("https://docs.unidex.exchange/introduction", "_blank")}
+                        onClick={() =>
+                          window.open(
+                            "https://docs.unidex.exchange/introduction",
+                            "_blank"
+                          )
+                        }
                       >
                         <FontAwesomeIcon icon={faBook} className="w-4 h-4" />
                         Documentation
@@ -363,9 +418,17 @@ export function Header() {
                       <Button
                         variant="ghost"
                         className="justify-start w-full gap-2"
-                        onClick={() => window.open("https://dune.com/supakawaiidesu/unidex-molten-stats", "_blank")}
+                        onClick={() =>
+                          window.open(
+                            "https://dune.com/supakawaiidesu/unidex-molten-stats",
+                            "_blank"
+                          )
+                        }
                       >
-                        <FontAwesomeIcon icon={faChartLine} className="w-4 h-4" />
+                        <FontAwesomeIcon
+                          icon={faChartLine}
+                          className="w-4 h-4"
+                        />
                         Stats
                       </Button>
                     </div>
@@ -378,11 +441,8 @@ export function Header() {
       </div>
 
       <div className="flex items-center ml-auto space-x-2">
-        <AccountSummary 
-          buttonText="Deposit / Withdraw" 
-          className="h-9"
-        />
-        
+        <AccountSummary buttonText="Deposit / Withdraw" className="h-9" />
+
         <ConnectButton.Custom>
           {({
             account,
@@ -398,11 +458,11 @@ export function Header() {
             return (
               <div
                 {...(!ready && {
-                  'aria-hidden': true,
-                  'style': {
+                  "aria-hidden": true,
+                  style: {
                     opacity: 0,
-                    pointerEvents: 'none',
-                    userSelect: 'none',
+                    pointerEvents: "none",
+                    userSelect: "none",
                   },
                 })}
               >
@@ -410,15 +470,15 @@ export function Header() {
                   if (!connected) {
                     return (
                       <>
-                        <Button 
-                          onClick={openConnectModal} 
+                        <Button
+                          onClick={openConnectModal}
                           variant="outline"
                           className="hidden sm:inline-flex h-9 px-3 bg-[#1f1f29] hover:bg-[#1f1f29]/90 [&>*]:text-white [&>*]:font-normal [&>*]:!important"
                         >
                           Connect
                         </Button>
-                        <Button 
-                          onClick={openConnectModal} 
+                        <Button
+                          onClick={openConnectModal}
                           variant="outline"
                           size="icon"
                           className="sm:hidden h-9 w-9 bg-[#1f1f29] hover:bg-[#1f1f29]/90 [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
@@ -431,7 +491,7 @@ export function Header() {
 
                   if (chain.unsupported) {
                     return (
-                      <Button 
+                      <Button
                         onClick={openChainModal}
                         variant="destructive"
                         className="h-9 px-3 bg-[#1f1f29] hover:bg-[#1f1f29]/90 [&>*]:text-white [&>*]:font-normal [&>*]:!important"
