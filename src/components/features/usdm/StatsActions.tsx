@@ -38,6 +38,7 @@ export function StatsActions({ balances, isLoading }: Props) {
   const [esMoltenApr, setEsMoltenApr] = useState<number>(0)
   const { vaultApr } = useDuneData(usdmData?.formattedVaultBalance || '0')
   const isMobile = useMediaQuery("(max-width: 768px)")
+  const [isTooltipOpen, setIsTooltipOpen] = useState(false)
 
   useEffect(() => {
     const fetchMoltenPrice = async () => {
@@ -114,31 +115,21 @@ export function StatsActions({ balances, isLoading }: Props) {
       <div className="flex flex-wrap gap-8">
         <div className="space-y-1">
           <div className="text-sm text-[#A0AEC0]">Total APR</div>
-          {isMobile ? (
-            <Dialog>
-              <DialogTrigger asChild>
-                <div className="text-xl text-white">
+          <TooltipProvider>
+            <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
+              <TooltipTrigger asChild>
+                <div 
+                  className="inline-block text-xl text-white border-b border-dashed cursor-pointer border-white/50"
+                  onClick={() => setIsTooltipOpen(!isTooltipOpen)}
+                >
                   {totalApr === 0 ? "Loading..." : `${totalApr.toFixed(2)}%`}
                 </div>
-              </DialogTrigger>
-              <DialogContent className="bg-[#2b2b36] border-none">
+              </TooltipTrigger>
+              <TooltipContent className="w-80 p-4 bg-[#2b2b36] border-none">
                 {aprContent}
-              </DialogContent>
-            </Dialog>
-          ) : (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="text-xl text-white cursor-help">
-                    {totalApr === 0 ? "Loading..." : `${totalApr.toFixed(2)}%`}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent className="w-80 p-4 bg-[#2b2b36] border-none">
-                  {aprContent}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         <div className="space-y-1">
           <div className="text-sm text-[#A0AEC0]">Current Price</div>
