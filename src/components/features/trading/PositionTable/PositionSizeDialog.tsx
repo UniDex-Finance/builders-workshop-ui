@@ -11,6 +11,7 @@ import { usePrices } from "@/lib/websocket-price-context";
 import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { useBalances } from "@/hooks/use-balances";
+import { useMarketData } from "@/hooks/use-market-data";
 
 interface PositionSizeDialogProps {
   position: Position | null;
@@ -29,6 +30,7 @@ export function PositionSizeDialog({
   const { increasePosition, increasingPositions } = useModifyPositionActions();
   const { prices } = usePrices();
   const { balances } = useBalances("arbitrum");
+  const { allMarkets } = useMarketData();
   
   if (!position) return null;
   
@@ -92,7 +94,24 @@ export function PositionSizeDialog({
   const totalAvailableBalance = marginBalance + onectBalance;
   
   const handleMaxClick = () => {
-    setCollateralAmount(totalAvailableBalance.toString());
+    // Get trading fee rate for this pair and side
+    const market = allMarkets.find(m => m.pair === position.market);
+    const tradingFeeRate = market 
+      ? (position.isLong ? market.longTradingFee / 100 : market.shortTradingFee / 100)
+      : 0.001; // fallback to 0.1%
+
+    // Calculate max collateral considering fees
+    // If we use X collateral with leverage L, size will be X*L
+    // Fee will be X*L*feeRate
+    // So X + X*L*feeRate = totalAvailableBalance
+    // X * (1 + L*feeRate) = totalAvailableBalance
+    // X = totalAvailableBalance / (1 + L*feeRate)
+    const maxCollateral = totalAvailableBalance / (1 + leverage * tradingFeeRate);
+
+    // Round down to 2 decimal places
+    const roundedMaxCollateral = Math.floor(maxCollateral * 100) / 100;
+
+    setCollateralAmount(roundedMaxCollateral.toString());
   };
 
   const handleSubmit = async () => {

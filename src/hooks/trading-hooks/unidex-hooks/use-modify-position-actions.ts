@@ -46,30 +46,36 @@ export function useModifyPositionActions() {
     // Get trading fee rate for this pair and side
     const market = allMarkets.find(m => m.pair === pair);
     const tradingFeeRate = market 
-      ? (isLong ? market.longTradingFee : market.shortTradingFee)
+      ? (isLong ? market.longTradingFee / 100 : market.shortTradingFee / 100)
       : 0.001; // fallback to 0.1%
 
-    // Calculate trading fee (minimum 0.8 USDC)
-    const tradingFee = Math.max(sizeDelta * tradingFeeRate, 0.8);
+    // Calculate trading fee
+    const tradingFee = sizeDelta * tradingFeeRate;
     
     // Total amount needed is collateral plus trading fee
     const totalRequired = collateralDelta + tradingFee;
 
-    // If margin balance is sufficient, no deposit needed
-    if (marginBalance >= totalRequired) {
-      return { needsDeposit: false, depositAmount: 0 };
-    }
-
     // Calculate how much more we need including trading fee
     const neededAmount = totalRequired - marginBalance;
 
-    // Check if 1CT balance can cover the needed amount
-    if (onectBalance >= neededAmount) {
-      return { needsDeposit: true, depositAmount: neededAmount };
-    }
+    const result = {
+      needsDeposit: marginBalance < totalRequired && onectBalance >= neededAmount,
+      depositAmount: marginBalance < totalRequired ? neededAmount : 0
+    };
 
-    // If combined balances can't cover margin + fees, return false
-    return { needsDeposit: false, depositAmount: 0 };
+    console.log('Balance Check Details:', {
+      marginBalance,
+      onectBalance,
+      collateralDelta,
+      sizeDelta,
+      tradingFeeRate,
+      tradingFee,
+      totalRequired,
+      neededAmount,
+      ...result
+    });
+
+    return result;
   };
 
   const increasePosition = async (
@@ -93,25 +99,28 @@ export function useModifyPositionActions() {
       setIncreasingPositions(prev => ({ ...prev, [positionId]: true }));
 
       // Check if we need to deposit first
-      const { needsDeposit, depositAmount } = checkBalancesAndGetDepositAmount(
+      const depositCheck = checkBalancesAndGetDepositAmount(
         collateralDelta,
         sizeDelta,
         pair,
         isLong
       );
 
+      console.log('Deposit Check:', depositCheck);
+
+      // Calculate max acceptable price with 1% slippage
+      const maxAcceptablePrice = isLong 
+        ? currentPrice * 1.01
+        : currentPrice * 0.99;
+
       toast({
         title: "Modifying Position",
-        description: needsDeposit 
+        description: depositCheck.needsDeposit 
           ? "Preparing deposit and position transactions..." 
           : "Preparing transaction...",
       });
 
-      // Calculate max acceptable price with 1% slippage
-      const maxAcceptablePrice = isLong 
-        ? currentPrice * 1.01  // Long positions can accept up to 1% higher
-        : currentPrice * 0.99; // Short positions can accept up to 1% lower
-
+      // Get position modification calldata
       const positionResponse = await fetch('https://unidexv4-api-production.up.railway.app/api/position/increase', {
         method: 'POST',
         headers: {
@@ -123,8 +132,17 @@ export function useModifyPositionActions() {
           sizeDelta,
           maxAcceptablePrice,
           userAddress: smartAccount.address,
-          skipBalanceCheck: needsDeposit // Skip balance check if we're going to deposit
+          skipBalanceCheck: depositCheck.needsDeposit
         }),
+      });
+
+      console.log('API Request:', {
+        positionId,
+        collateralDelta,
+        sizeDelta,
+        maxAcceptablePrice,
+        userAddress: smartAccount.address,
+        skipBalanceCheck: depositCheck.needsDeposit
       });
 
       if (!positionResponse.ok) {
@@ -133,7 +151,7 @@ export function useModifyPositionActions() {
 
       const positionData: IncreasePositionResponse = await positionResponse.json();
 
-      if (needsDeposit) {
+      if (depositCheck.needsDeposit) {
         // Get deposit calldata
         const depositResponse = await fetch(
           "https://unidexv4-api-production.up.railway.app/api/wallet",
@@ -143,7 +161,7 @@ export function useModifyPositionActions() {
             body: JSON.stringify({
               type: "deposit",
               tokenAddress: USDC_TOKEN,
-              amount: depositAmount.toString(),
+              amount: depositCheck.depositAmount.toString(),
               smartAccountAddress: smartAccount.address,
             }),
           }
@@ -159,7 +177,7 @@ export function useModifyPositionActions() {
         const approveCalldata = encodeFunctionData({
           abi: ERC20_ABI,
           functionName: "approve",
-          args: [TRADING_CONTRACT, BigInt(Math.floor(depositAmount * 1e6))],
+          args: [TRADING_CONTRACT, BigInt(Math.floor(depositCheck.depositAmount * 1e6))],
         });
 
         toast({
