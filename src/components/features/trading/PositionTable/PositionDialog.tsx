@@ -7,6 +7,7 @@ import {
   DialogContent,
 } from "../../../ui/dialog";
 import { PositionDetails } from "./PositionDetails";
+import { PositionSizeDialog } from "./PositionSizeDialog";
 
 interface PositionDialogProps {
   position: Position | null;
@@ -30,8 +31,13 @@ export function PositionDialog({
   onOpenCollateral,
 }: PositionDialogProps) {
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isSizeDialogOpen, setIsSizeDialogOpen] = useState(false);
   
   if (!position) return null;
+
+  const handleOpenSize = () => {
+    setIsSizeDialogOpen(true);
+  };
 
   return (
     <>
@@ -46,6 +52,7 @@ export function PositionDialog({
             onOpenSLTP={onOpenSLTP}
             onOpenCollateral={onOpenCollateral}
             onShare={() => setIsShareOpen(true)}
+            onOpenSize={handleOpenSize}
           />
         </DialogContent>
       </Dialog>
@@ -54,6 +61,12 @@ export function PositionDialog({
         isOpen={isShareOpen}
         onClose={() => setIsShareOpen(false)}
         position={position}
+      />
+
+      <PositionSizeDialog
+        position={position}
+        isOpen={isSizeDialogOpen}
+        onClose={() => setIsSizeDialogOpen(false)}
       />
     </>
   );
