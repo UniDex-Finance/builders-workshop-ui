@@ -159,28 +159,28 @@ export function PositionSizeDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="p-0 border-0 sm:max-w-[320px] bg-[#17161d]">
+      <DialogContent className="p-0 border-0 sm:max-w-[360px] bg-[#17161d]">
         <Card className="border-0 shadow-lg bg-[#17161d]">
-          <CardContent className="p-4 space-y-4">
+          <CardContent className="p-6 space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-white">Edit Position Size</h2>
               <button className="text-zinc-400 hover:text-white" onClick={onClose}>
-                <X size={18} />
+                <X size={20} />
               </button>
             </div>
 
-            <div className="p-1 rounded bg-zinc-800">
+            <div className="p-1 rounded bg-[#272734]">
               <div className="grid grid-cols-2 gap-1">
                 <Button
                   variant="ghost"
-                  className={`w-full ${isIncrease ? 'bg-blue-900 text-white' : 'bg-transparent text-zinc-400'} hover:bg-blue-800`}
+                  className={`w-full h-8 ${isIncrease ? 'bg-[#7142cf] text-white' : 'bg-transparent text-zinc-400'} hover:bg-[#7142cf]/80`}
                   onClick={() => setIsIncrease(true)}
                 >
                   Increase
                 </Button>
                 <Button
                   variant="ghost"
-                  className={`w-full ${!isIncrease ? 'bg-blue-900 text-white' : 'bg-transparent text-zinc-400'} hover:bg-blue-800`}
+                  className={`w-full h-8 ${!isIncrease ? 'bg-[#7142cf] text-white' : 'bg-transparent text-zinc-400'} hover:bg-[#7142cf]/80`}
                   onClick={() => setIsIncrease(false)}
                 >
                   Decrease
@@ -189,7 +189,7 @@ export function PositionSizeDialog({
             </div>
 
             <div>
-              <div className="flex justify-between mb-1 text-xs">
+              <div className="flex justify-between mb-2 text-sm">
                 <span className="text-white">{isIncrease ? 'Collateral' : 'Size'}</span>
                 <span className="text-zinc-400">
                   {isIncrease 
@@ -197,18 +197,18 @@ export function PositionSizeDialog({
                     : `Max: ${currentSize.toFixed(2)}`}
                 </span>
               </div>
-              <div className="flex items-center rounded bg-zinc-800">
+              <div className="flex items-center rounded bg-[#272734] p-1">
                 <Input
                   type="number"
                   value={collateralAmount}
                   onChange={(e) => setCollateralAmount(e.target.value)}
-                  className="w-full text-2xl font-bold text-white bg-transparent border-none focus:ring-0"
+                  className="w-full p-2 text-2xl font-bold text-white bg-transparent border-none focus:ring-0"
                   max={isIncrease ? totalAvailableBalance : currentSize}
                   min={0}
                 />
                 <Button
                   variant="ghost"
-                  className="h-8 px-2 mr-2 text-xs text-blue-400 hover:text-blue-300"
+                  className="h-8 px-3 mr-2 text-sm text-[#7142cf] hover:text-[#7142cf]/80"
                   onClick={handleMaxClick}
                 >
                   MAX
@@ -237,7 +237,9 @@ export function PositionSizeDialog({
               </div>
             )}
 
-            <div className="space-y-1 text-xs">
+            <Separator className="bg-[#272734]" />
+
+            <div className="space-y-1 text-sm">
               <div className="flex justify-between">
                 <span className="text-zinc-400">Leverage</span>
                 <span className="text-white">{currentLeverage}x → {newEffectiveLeverage}x</span>
@@ -262,9 +264,9 @@ export function PositionSizeDialog({
               </div>
             </div>
 
-            <Separator className="bg-zinc-800" />
+            <Separator className="bg-[#272734]" />
 
-            <div className="space-y-1 text-xs">
+            <div className="space-y-1 text-sm">
               <div className="flex justify-between">
                 <span className="text-zinc-400">Entry Price</span>
                 <span className="text-white">
@@ -280,9 +282,9 @@ export function PositionSizeDialog({
             </div>
           </CardContent>
 
-          <CardFooter className="p-4 bg-[#17161d]">
+          <CardFooter className="p-6 bg-[#17161d]">
             <Button 
-              className="w-full font-semibold text-white bg-blue-600 hover:bg-blue-700"
+              className="w-full font-semibold text-white bg-[#7142cf] hover:bg-[#7142cf]/80 py-4 text-base"
               disabled={!isValid || isLoading || !collateralAmount}
               onClick={handleSubmit}
             >
