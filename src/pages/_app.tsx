@@ -19,13 +19,13 @@ import { arbitrum } from "viem/chains";
 import { PriceProvider } from "../lib/websocket-price-context";
 import { Footer } from "../components/shared/Footer";
 import { Toaster } from "../components/ui/toaster";
-import  NewVersionNotification from "../components/shared/NewVersionNotification";
+import NewVersionNotification from "../components/shared/NewVersionNotification";
 
 const client = new QueryClient();
 const Disclaimer: DisclaimerComponent = ({ Text, Link }) => (
   <Text>
     By connecting your wallet, you agree that you are not a US citizen or in any
-    resticted territory based the {" "}
+    resticted territory based the{" "}
     <Link href="https://termsofservice.xyz">Terms of Service</Link> and
     acknowledge you have read and understand the protocol{" "}
     <Link href="https://disclaimer.xyz">Disclaimer</Link>
@@ -44,6 +44,25 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="theme-color" content="#000000" />
+
+        <link rel="icon" href="/favicon.ico" />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/static/images/apple-touch-icon.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="/static/images/favicon-32x32.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="/static/images/favicon-16x16.png"
+        />
 
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/static/images/ios-icon.svg" />
