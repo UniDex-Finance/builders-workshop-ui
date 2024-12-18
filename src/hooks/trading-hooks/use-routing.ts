@@ -179,23 +179,6 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
     const gtradeSize = roundDownTo6Decimals(orderSize - unidexSize);
     const gtradeMargin = roundDownTo6Decimals(gtradeSize / parseFloat(leverage || '1'));
 
-    console.log('Order Split Details:', {
-      totalOrderSize: orderSize,
-      availableLiquidity: relevantLiquidity,
-      unidex: {
-        size: unidexSize,
-        margin: unidexMargin,
-        minMargin: MIN_MARGIN.unidexv4,
-        belowMinMargin: unidexMargin < MIN_MARGIN.unidexv4
-      },
-      gtrade: {
-        size: gtradeSize,
-        margin: gtradeMargin,
-        minMargin: MIN_MARGIN.gtrade,
-        belowMinMargin: gtradeMargin < MIN_MARGIN.gtrade,
-        supported: isGTradeSupported
-      }
-    });
 
     return {
       unidex: unidexSize > 0 ? { size: unidexSize, margin: unidexMargin } : null,
@@ -211,18 +194,6 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
     }
 
     const split = splitOrderInfo;
-    console.log('=== Order Split Details ===', {
-      totalOrderSize: parseFloat(params.size.toString()),
-      unidex: split.unidex ? {
-        size: roundDownTo6Decimals(split.unidex.size),
-        margin: roundDownTo6Decimals(split.unidex.margin),
-      } : null,
-      gtrade: split.gtrade ? {
-        size: roundDownTo6Decimals(split.gtrade.size),
-        margin: roundDownTo6Decimals(split.gtrade.margin),
-        tradingFee: roundDownTo6Decimals(split.gtrade.size * 0.0006)
-      } : null
-    });
 
     if (split.unidex && split.gtrade) {
       const marginWalletBalance = parseFloat(balances?.formattedMusdBalance || "0");

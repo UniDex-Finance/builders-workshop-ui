@@ -12,6 +12,7 @@ import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { useBalances } from "@/hooks/use-balances";
 import { useMarketData } from "@/hooks/use-market-data";
+import { usePositionActions } from "@/hooks/trading-hooks/unidex-hooks/use-position-actions";
 
 interface PositionSizeDialogProps {
   position: Position | null;
@@ -28,6 +29,7 @@ export function PositionSizeDialog({
   const [collateralAmount, setCollateralAmount] = useState<string>("");
   const [leverage, setLeverage] = useState<number>(1);
   const { increasePosition, increasingPositions } = useModifyPositionActions();
+  const { closePosition, closingPositions } = usePositionActions();
   const { prices } = usePrices();
   const { balances } = useBalances("arbitrum");
   const { allMarkets } = useMarketData();
@@ -46,20 +48,25 @@ export function PositionSizeDialog({
   const basePair = position.market.split("/")[0].toLowerCase();
   const currentPrice = prices[basePair]?.price || parseFloat(position.entryPrice);
   
-  // Calculate new values for increase
-  const collateralDelta = collateralAmount ? parseFloat(collateralAmount) : 0;
-  const newMargin = currentMargin + collateralDelta;
-  
-  // Calculate additional size based on new collateral and chosen leverage
-  const additionalSize = collateralDelta * leverage;
-  const newTotalSize = currentSize + additionalSize;
-  
+  // Calculate values based on whether increasing or decreasing
+  const sizeToModify = collateralAmount ? parseFloat(collateralAmount) : 0;
+  const collateralDelta = isIncrease ? sizeToModify : 0; // Only used for increase
+  const sizeDelta = isIncrease 
+    ? sizeToModify * leverage // For increase: collateral * leverage
+    : sizeToModify; // For decrease: directly use input as size
+
+  // New totals
+  const newMargin = isIncrease ? currentMargin + collateralDelta : currentMargin;
+  const newTotalSize = isIncrease 
+    ? currentSize + sizeDelta 
+    : currentSize - sizeDelta;
+
   // Calculate new effective leverage after increase
   const newEffectiveLeverage = parseFloat((newTotalSize / newMargin).toFixed(1));
 
   // Calculate new average entry price
   const currentNotional = currentSize;
-  const additionalNotional = additionalSize;
+  const additionalNotional = sizeDelta;
   const totalNotional = currentNotional + additionalNotional;
   
   const newAverageEntry = (
@@ -94,38 +101,45 @@ export function PositionSizeDialog({
   const totalAvailableBalance = marginBalance + onectBalance;
   
   const handleMaxClick = () => {
-    // Get trading fee rate for this pair and side
-    const market = allMarkets.find(m => m.pair === position.market);
-    const tradingFeeRate = market 
-      ? (position.isLong ? market.longTradingFee / 100 : market.shortTradingFee / 100)
-      : 0.001; // fallback to 0.1%
+    if (isIncrease) {
+      // Existing max logic for increasing position
+      const market = allMarkets.find(m => m.pair === position.market);
+      const tradingFeeRate = market 
+        ? (position.isLong ? market.longTradingFee / 100 : market.shortTradingFee / 100)
+        : 0.001;
 
-    // Calculate max collateral considering fees
-    // If we use X collateral with leverage L, size will be X*L
-    // Fee will be X*L*feeRate
-    // So X + X*L*feeRate = totalAvailableBalance
-    // X * (1 + L*feeRate) = totalAvailableBalance
-    // X = totalAvailableBalance / (1 + L*feeRate)
-    const maxCollateral = totalAvailableBalance / (1 + leverage * tradingFeeRate);
-
-    // Round down to 2 decimal places
-    const roundedMaxCollateral = Math.floor(maxCollateral * 100) / 100;
-
-    setCollateralAmount(roundedMaxCollateral.toString());
+      const maxCollateral = totalAvailableBalance / (1 + leverage * tradingFeeRate);
+      const roundedMaxCollateral = Math.floor(maxCollateral * 100) / 100;
+      setCollateralAmount(roundedMaxCollateral.toString());
+    } else {
+      // For decrease, max is current position size
+      setCollateralAmount(currentSize.toString());
+    }
   };
 
   const handleSubmit = async () => {
-    if (!position || !isValidCollateral || !isValidLeverage || !isValidSize) return;
+    if (!position || !collateralAmount) return;
     
     try {
-      await increasePosition(
-        parseInt(position.positionId),
-        isIncrease ? collateralDelta : -collateralDelta,
-        additionalSize,
-        position.isLong,
-        currentPrice,
-        position.market
-      );
+      if (isIncrease) {
+        // Existing increase logic
+        await increasePosition(
+          parseInt(position.positionId),
+          collateralDelta,
+          sizeDelta,
+          position.isLong,
+          currentPrice,
+          position.market
+        );
+      } else {
+        // Decrease logic using closePosition
+        await closePosition(
+          position.positionId,
+          position.isLong,
+          currentPrice,
+          sizeDelta
+        );
+      }
       onClose();
       setCollateralAmount("");
       setLeverage(1);
@@ -134,8 +148,14 @@ export function PositionSizeDialog({
     }
   };
 
-  const isLoading = increasingPositions[parseInt(position.positionId)];
-  const isValid = isValidCollateral && isValidLeverage && isValidSize;
+  const isLoading = isIncrease 
+    ? increasingPositions[parseInt(position.positionId)]
+    : closingPositions[position.positionId];
+
+  // Validation
+  const isValid = isIncrease
+    ? collateralDelta <= maxCollateral && leverage >= 1 && leverage <= 100
+    : sizeDelta > 0 && sizeDelta <= currentSize;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -170,8 +190,12 @@ export function PositionSizeDialog({
 
             <div>
               <div className="flex justify-between mb-1 text-xs">
-                <span className="text-white">Collateral</span>
-                <span className="text-zinc-400">Balance: {totalAvailableBalance.toFixed(2)}</span>
+                <span className="text-white">{isIncrease ? 'Collateral' : 'Size'}</span>
+                <span className="text-zinc-400">
+                  {isIncrease 
+                    ? `Balance: ${totalAvailableBalance.toFixed(2)}`
+                    : `Max: ${currentSize.toFixed(2)}`}
+                </span>
               </div>
               <div className="flex items-center rounded bg-zinc-800">
                 <Input
@@ -179,7 +203,7 @@ export function PositionSizeDialog({
                   value={collateralAmount}
                   onChange={(e) => setCollateralAmount(e.target.value)}
                   className="w-full text-2xl font-bold text-white bg-transparent border-none focus:ring-0"
-                  max={isIncrease ? totalAvailableBalance : currentMargin * 0.99}
+                  max={isIncrease ? totalAvailableBalance : currentSize}
                   min={0}
                 />
                 <Button
@@ -192,24 +216,26 @@ export function PositionSizeDialog({
               </div>
             </div>
 
-            <div>
-              <div className="flex justify-between mb-1 text-xs">
-                <span className="text-white">Leverage (1x-100x)</span>
-                <span>{leverage}x</span>
+            {isIncrease && (
+              <div>
+                <div className="flex justify-between mb-1 text-xs">
+                  <span className="text-white">Leverage (1x-100x)</span>
+                  <span>{leverage}x</span>
+                </div>
+                <Slider
+                  value={[leverage]}
+                  onValueChange={(value) => setLeverage(Math.round(value[0]))}
+                  max={100}
+                  min={1}
+                  step={1}
+                  className="w-full"
+                />
+                <div className="flex justify-between mt-1 text-xs text-zinc-400">
+                  <span>1x</span>
+                  <span>100x</span>
+                </div>
               </div>
-              <Slider
-                value={[leverage]}
-                onValueChange={(value) => setLeverage(Math.round(value[0]))}
-                max={100}
-                min={1}
-                step={1}
-                className="w-full"
-              />
-              <div className="flex justify-between mt-1 text-xs text-zinc-400">
-                <span>1x</span>
-                <span>100x</span>
-              </div>
-            </div>
+            )}
 
             <div className="space-y-1 text-xs">
               <div className="flex justify-between">
@@ -262,7 +288,7 @@ export function PositionSizeDialog({
             >
               {isLoading 
                 ? "Processing..." 
-                : `${isIncrease ? 'Increase' : 'Decrease'} by ${Math.abs(additionalSize).toFixed(2)} USDC`
+                : `${isIncrease ? 'Increase' : 'Decrease'} by ${Math.abs(sizeDelta).toFixed(2)} USDC`
               }
             </Button>
           </CardFooter>
