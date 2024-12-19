@@ -120,7 +120,7 @@ export function PositionsContent({
           </TableRow>
         ) : error ? (
           <TableRow>
-            <TableCell colSpan={8} className="text-center text-red-500">
+            <TableCell colSpan={8} className="text-center text-short">
               {error.message}
             </TableCell>
           </TableRow>
@@ -152,7 +152,7 @@ export function PositionsContent({
                   <div className="flex items-center justify-between">
                     <div>
                       <div>{position.market}</div>
-                      <div className={position.isLong ? "text-green-500" : "text-red-500"}>
+                      <div className={position.isLong ? "text-long" : "text-short"}>
                         {leverage}x {position.isLong ? "Long" : "Short"}
                       </div>
                     </div>
@@ -197,14 +197,14 @@ export function PositionsContent({
                   <span className="md:hidden">Market Price:</span>
                   <div>
                     <div>{currentPrice ? `$${formatNumber(currentPrice.toFixed(2))}` : "Loading..."}</div>
-                    <div className="hidden text-red-500 md:block">
+                    <div className="hidden text-short md:block">
                       ${formatNumber(position.liquidationPrice)}
                     </div>
                   </div>
                 </TableCell>
                 <TableCell className="flex justify-between md:hidden">
                   <span>Liquidation Price:</span>
-                  <div className="text-red-500">
+                  <div className="text-short">
                     ${formatNumber(position.liquidationPrice)}
                   </div>
                 </TableCell>
@@ -214,12 +214,12 @@ export function PositionsContent({
                 >
                   <span className="md:hidden">Stop Loss:</span>
                   <div>
-                    <div className="text-red-500">
+                    <div className="text-short">
                       {triggerOrder?.stopLoss
                         ? `$${formatNumber(triggerOrder.stopLoss.price)} (${triggerOrder.stopLoss.size}%)`
                         : "-"}
                     </div>
-                    <div className="hidden text-green-500 md:block">
+                    <div className="hidden text-long md:block">
                       {triggerOrder?.takeProfit
                         ? `$${formatNumber(triggerOrder.takeProfit.price)} (${triggerOrder.takeProfit.size}%)`
                         : "-"}
@@ -231,7 +231,7 @@ export function PositionsContent({
                   onClick={(e) => handleSLTPClick(position, e)}
                 >
                   <span>Take Profit:</span>
-                  <div className="text-green-500">
+                  <div className="text-long">
                     {triggerOrder?.takeProfit
                       ? `$${formatNumber(triggerOrder.takeProfit.price)} (${triggerOrder.takeProfit.size}%)`
                       : "-"}
@@ -239,7 +239,7 @@ export function PositionsContent({
                 </TableCell>
                 <TableCell
                   ref={setRef(position.positionId)}
-                  className={`md:table-cell flex justify-between ${pnlValue >= 0 ? "text-green-500" : "text-red-500"}`}
+                  className={`md:table-cell flex justify-between ${pnlValue >= 0 ? "text-long" : "text-short"}`}
                   onMouseEnter={() => handleMouseEnter(position.positionId)}
                   onMouseLeave={() => setHoveredPosition(null)}
                 >

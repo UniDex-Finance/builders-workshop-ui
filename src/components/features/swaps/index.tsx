@@ -209,7 +209,7 @@ export function Swaps() {
               </Button>
 
               {error && (
-                <div className="p-3 text-sm text-red-500 rounded-lg bg-red-500/10">
+                <div className="p-3 text-sm text-short rounded-lg bg-short/10">
                   {error}
                 </div>
               )}

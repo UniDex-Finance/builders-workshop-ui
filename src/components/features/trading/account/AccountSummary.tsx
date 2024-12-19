@@ -425,7 +425,7 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
                       balance={totalUnrealizedPnl?.toFixed(2) || "0.00"}
                       isLoading={positionsLoading}
                       suffix="USD"
-                      className={totalUnrealizedPnl && totalUnrealizedPnl >= 0 ? "text-green-400" : "text-red-400"}
+                      className={totalUnrealizedPnl && totalUnrealizedPnl >= 0 ? "text-long" : "text-short"}
                     />
                   </div>
 

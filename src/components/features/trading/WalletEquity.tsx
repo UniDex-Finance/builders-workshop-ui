@@ -138,7 +138,7 @@ export function WalletBox() {
           <span className="text-sm text-muted-foreground">Unrealized PnL</span>
           <span
             className={`text-sm ${
-              (totalUnrealizedPnl || 0) >= 0 ? "text-green-400" : "text-red-400"
+              (totalUnrealizedPnl || 0) >= 0 ? "text-long" : "text-short"
             }`}
           >
             {positionsLoading ? "Loading..." : !eoaAddress ? "0.00" : formatPnL(totalUnrealizedPnl)} USD

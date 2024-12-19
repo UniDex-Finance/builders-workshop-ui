@@ -123,7 +123,7 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
                         {formatUSD(trade.sizeUSD)}
                       </span>
                     </div>
-                    <span className={`text-right ${trade.side === 'LONG' ? 'text-green-500' : 'text-red-500'}`}>
+                    <span className={`text-right ${trade.side === 'LONG' ? 'text-long' : 'text-short'}`}>
                       {formatUSD(trade.price)}
                     </span>
                     <span className="text-right text-muted-foreground group-hover:text-foreground">
@@ -150,7 +150,7 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     {getSourceIcon(trade.id)}
-                    <span className={`font-medium ${trade.side === 'LONG' ? 'text-green-500' : 'text-red-500'}`}>
+                    <span className={`font-medium ${trade.side === 'LONG' ? 'text-long' : 'text-short'}`}>
                       {trade.side}
                     </span>
                   </div>

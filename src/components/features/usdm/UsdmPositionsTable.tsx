@@ -71,7 +71,7 @@ export function UsdmPositionsTable() {
     if (loss <= 50) return 'text-white'
     if (loss <= 66) return 'text-yellow-400'
     if (loss <= 75) return 'text-orange-400'
-    return 'text-red-500'
+    return 'text-short'
   }
 
   return (
@@ -119,7 +119,7 @@ export function UsdmPositionsTable() {
                   return (
                     <tr key={index} className="border-b border-[#272734] hover:bg-[#272734] transition-colors">
                       <td className={`px-3 py-2 ${
-                        position.isLong ? 'text-green-500' : 'text-red-500'
+                        position.isLong ? 'text-long' : 'text-short'
                       }`}>
                         {position.coin}
                       </td>
@@ -134,11 +134,11 @@ export function UsdmPositionsTable() {
                         ${formatPairPrice(position.pair, parseFloat(position.markPrice))}
                       </td>
                       <td className={`px-3 py-2 text-right ${
-                        position.pnl.value.startsWith('-') ? 'text-red-500' : 'text-green-500'
+                        position.pnl.value.startsWith('-') ? 'text-short' : 'text-long'
                       }`}>
                         {position.pnl.value} ({position.pnl.percentage})
                       </td>
-                      <td className="px-3 py-2 text-right">
+                      <td className="px-3 py-2 text-right"> 
                         <Tooltip>
                           <TooltipTrigger className={`${getLiquidationColor(currentPnlPct)}`}>
                             ${formatPairPrice(position.pair, liqPrice)}
@@ -149,7 +149,7 @@ export function UsdmPositionsTable() {
                         </Tooltip>
                       </td>
                       <td className={`px-3 py-2 text-right ${
-                        position.funding.isNegative ? 'text-red-500' : 'text-green-500'
+                        position.funding.isNegative ? 'text-short' : 'text-long'
                       }`}>
                         {position.funding.value}
                       </td>
