@@ -164,7 +164,7 @@ export function PositionCollateralDialog({
           <CardContent className="p-4 space-y-4">
             {validationMessage && (
               <Alert variant="destructive" className="py-2 border-red-900/20 bg-red-900/10">
-                <AlertDescription className="text-sm text-red-400">
+                <AlertDescription className="text-sm short">
                   {validationMessage}
                 </AlertDescription>
               </Alert>
@@ -197,8 +197,8 @@ export function PositionCollateralDialog({
                       <span className="text-zinc-600">→</span>
                       <span className={`${
                         parseFloat(newLeverage) > parseFloat(currentLeverage) 
-                          ? "text-red-400" 
-                          : "text-emerald-400"
+                          ? "text-short" 
+                          : "text-long"
                       } ${!isValid ? "opacity-50" : ""}`}>
                         {newLeverage}x
                       </span>
@@ -215,8 +215,8 @@ export function PositionCollateralDialog({
                       <span className="text-zinc-600">→</span>
                       <span className={`${
                         newMargin > currentMargin 
-                          ? "text-emerald-400" 
-                          : "text-red-400"
+                          ? "text-short" 
+                          : "text-long"
                       } ${!isValid ? "opacity-50" : ""}`}>
                         {newMargin.toFixed(2)} USD
                       </span>
@@ -237,14 +237,14 @@ export function PositionCollateralDialog({
               <div className="flex items-center justify-between">
                 <div className="text-zinc-400">Liq. Price</div>
                 <div className="flex items-center gap-2 text-zinc-300">
-                  <span className="text-red-400">{currentLiqPrice}</span>
+                  <span className="text-short">{currentLiqPrice}</span>
                   {collateralAmount && (
                     <>
                       <span className="text-zinc-600">→</span>
                       <span className={`${
                         newLiquidationPrice > currentLiqPrice 
-                          ? "text-red-400" 
-                          : "text-emerald-400"
+                          ? "text-short" 
+                          : "text-long"
                       } ${!isValid ? "opacity-50" : ""}`}>
                         {newLiquidationPrice.toFixed(2)}
                       </span>
