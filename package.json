@@ -36,7 +36,6 @@
     "@zerodev/permissions": "^5.4.10",
     "@zerodev/sdk": "^5.3.26",
     "@zerodev/session-key": "^5.4.4",
-    "@zerodev/webauthn-key": "^5.4.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dom-to-image": "^2.6.0",
