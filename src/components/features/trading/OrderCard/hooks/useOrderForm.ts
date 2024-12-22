@@ -100,7 +100,7 @@ export function useOrderForm({ leverage, assetId, isLong }: UseOrderFormProps): 
 
   // Update amount input change handler
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newAmount = e.target.value ? Math.floor(parseFloat(e.target.value)).toString() : "";
+    const newAmount = e.target.value;
     
     let newSliderValue = [0];
     if (maxLeveragedAmount > 0 && newAmount !== "") {
@@ -119,7 +119,7 @@ export function useOrderForm({ leverage, assetId, isLong }: UseOrderFormProps): 
   const handleMarginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newMargin = e.target.value;
     const leverageNum = parseFloat(leverage);
-    const newAmount = newMargin ? Math.floor(parseFloat(newMargin) * leverageNum).toString() : "";
+    const newAmount = newMargin ? (parseFloat(newMargin) * leverageNum).toString() : "";
 
     let newSliderValue = [0];
     if (maxLeveragedAmount > 0 && newAmount !== "") {
