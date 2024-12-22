@@ -85,7 +85,7 @@ export function CreateReferralCodeDialog({ isOpen, onClose }: CreateReferralCode
                   Codes are case-sensitive and assigned on a first-come, first-served basis. If you believe your desired code is already claimed, please contact our team.
                 </div>
               </div>
-              {error && <p className="text-sm text-red-500">{error}</p>}
+              {error && <p className="text-sm text-short">{error}</p>}
               <Button
                 className="bg-gradient-to-r from-[#8f42fd] to-[#5a57ff] w-full h-10 text-sm font-medium border-none focus:outline-none hover:outline-none ring-0 focus:ring-0 hover:opacity-90 transition-opacity"
                 disabled={!codeEntered || isSubmitting}

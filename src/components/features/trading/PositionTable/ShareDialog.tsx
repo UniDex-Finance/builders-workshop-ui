@@ -118,14 +118,14 @@ PnL: ${position.pnl}`
             <div className="flex items-end justify-between">
               <div className="space-y-10">
                 <div className="flex items-center space-x-4">
-                  <span className={`text-lg font-medium ${position.isLong ? 'text-green-500' : 'text-red-500'}`}>
+                  <span className={`text-lg font-medium ${position.isLong ? 'text-long' : 'text-short'}`}>
                     {position.isLong ? 'LONG' : 'SHORT'}
                   </span>
                   <span className="text-lg font-medium">{position.market}</span>
                   <span className="text-lg font-medium">{calculateLeverage()}X</span>
                 </div>
                 <div className="space-y-2">
-                  <div className={`text-3xl ${Number(calculateFinalPnl()) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  <div className={`text-3xl ${Number(calculateFinalPnl()) >= 0 ? 'text-long' : 'text-short'}`}>
                     {Number(calculateFinalPnl()) >= 0 ? '+' : ''}{calculateFinalPnl()}%
                   </div>
                   <div className="flex items-center space-x-4 text-base">

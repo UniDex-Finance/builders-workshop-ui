@@ -38,26 +38,26 @@ export function PnLTooltip({ position, rect }: PnLTooltipProps) {
         <h4 className="mb-2 font-semibold">PnL Breakdown</h4>
         <div className="flex justify-between">
           <span>Market PnL:</span>
-          <span className={marketPnl >= 0 ? "text-green-400" : "text-red-400"}>
+          <span className={marketPnl >= 0 ? "text-long" : "text-short"}>
             {formatPnL(marketPnl)}
           </span>
         </div>
         <div className="pt-2 mt-2 border-t border-gray-700">
           <div className="flex justify-between">
             <span>Position Fee:</span>
-            <span className="text-red-400">-${position.fees.positionFee}</span>
+            <span className="text-short">-${position.fees.positionFee}</span>
           </div>
           <div className="flex justify-between">
             <span>Borrow Fee:</span>
-            <span className="text-red-400">-${position.fees.borrowFee}</span>
+            <span className="text-short">-${position.fees.borrowFee}</span>
           </div>
           <div className="flex justify-between">
             <span>Funding Fee:</span>
             <span
               className={
                 position.fees.fundingFee.startsWith("-")
-                  ? "text-green-400"
-                  : "text-red-400"
+                  ? "text-long"
+                  : "text-short"
               }
             >
               {position.fees.fundingFee.startsWith("-")
@@ -71,7 +71,7 @@ export function PnLTooltip({ position, rect }: PnLTooltipProps) {
             <span>Final PnL:</span>
             <span
               className={
-                finalPnl >= 0 ? "text-green-400" : "text-red-400"
+                finalPnl >= 0 ? "text-long" : "text-short"
               }
             >
               {formatPnL(finalPnl)}

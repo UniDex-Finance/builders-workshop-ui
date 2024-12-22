@@ -174,7 +174,7 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
     
     if (isStopLossBelowLiquidation()) {
       return (
-        <div className="mb-4 text-sm text-red-500">
+        <div className="mb-4 text-sm text-short">
           Stop loss price can't be {position.isLong ? "lower" : "higher"} than liquidation price
         </div>
       );
@@ -188,7 +188,7 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
       <div className="mb-4 text-sm text-gray-400">
         If the price reaches {slPrice}, 
         a market order will trigger with an loss of{" "}
-        <span className="text-red-500">
+        <span className="text-short">
           ${Math.abs(pnl).toFixed(2)}
         </span>.
       </div>
@@ -211,7 +211,7 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
               <div className="flex items-center justify-center w-8 h-8 text-white bg-orange-500 rounded-full">₿</div>
               <div>
                 <div className="text-white">{position.symbol}</div>
-                <div className={position.isLong ? "text-emerald-500 text-sm" : "text-red-500 text-sm"}>
+                <div className={position.isLong ? "text-long text-sm" : "text-short text-sm"}>
                   {position.isLong ? "LONG" : "SHORT"}
                 </div>
               </div>
@@ -220,7 +220,7 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
             <div className="mb-6 space-y-4">
               <div className="flex justify-between text-gray-400">
                 <span>Est. Current PnL</span>
-                <span className={parseFloat(position.pnl) >= 0 ? "text-emerald-500" : "text-red-500"}>
+                <span className={parseFloat(position.pnl) >= 0 ? "text-long" : "text-short"}>
                   {position.pnl} ({position.pnlPercentage.toFixed(2)}%)
                 </span>
               </div>
@@ -240,7 +240,7 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
               </div>
               <div className="flex justify-between text-gray-400">
                 <span>Liquidation Price</span>
-                <span className="text-red-500">{position.liquidationPrice}</span>
+                <span className="text-short">{position.liquidationPrice}</span>
               </div>
               <div className="flex justify-between text-gray-400">
                 <span>Entry Price</span>

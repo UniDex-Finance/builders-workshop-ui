@@ -97,7 +97,7 @@ export function TradesContent() {
       <TableBody>
         {error ? (
           <TableRow>
-            <TableCell colSpan={7} className="text-center text-red-500">
+            <TableCell colSpan={7} className="text-center text-short">
               {error.message}
             </TableCell>
           </TableRow>
@@ -120,7 +120,7 @@ export function TradesContent() {
                 <TableCell>
                   <div>{trade.pair}</div>
                   <div
-                    className={trade.isLong ? "text-green-500" : "text-red-500"}
+                    className={trade.isLong ? "text-long" : "text-short"}
                   >
                     {(
                       parseFloat(trade.size) / parseFloat(trade.margin)
@@ -160,8 +160,8 @@ export function TradesContent() {
                     <span
                       className={
                         Number(trade.pnl) >= 0
-                          ? "text-emerald-500"
-                          : "text-red-500"
+                          ? "text-long"
+                          : "text-short"
                       }
                     >
                       {Number(trade.pnl) >= 0 ? "+$" : "-$"}
@@ -170,8 +170,8 @@ export function TradesContent() {
                     <span
                       className={`text-xs ${
                         Number(trade.pnl) >= 0
-                          ? "text-emerald-500"
-                          : "text-red-500"
+                          ? "text-long"
+                          : "text-short"
                       }`}
                     >
                       {Number(trade.pnl) >= 0 ? "+" : ""}

@@ -140,7 +140,7 @@ export function TradeDetails({
       
       <div className="flex justify-between">
         <span>Liquidation Price</span>
-        <span className="text-red-500">
+        <span className="text-short">
           ${liquidationPrice ? formatNumber(parseFloat(liquidationPrice.toFixed(6))) : "0.00"}
         </span>
       </div>
@@ -184,7 +184,7 @@ export function TradeDetails({
       
       <div className="flex justify-between">
         <span>Hourly Interest</span>
-        <span className={fees.hourlyInterest >= 0 ? "text-red-400" : "text-green-400"}>
+        <span className={fees.hourlyInterest >= 0 ? "text-short" : "text-long"}>
           {fees.hourlyInterest >= 0 ? "-" : "+"}$
           {formatNumber(Math.abs(parseFloat(fees.hourlyInterest.toFixed(2))))} (
           {Math.abs(fees.hourlyInterestPercent).toFixed(4)}%)

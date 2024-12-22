@@ -415,7 +415,7 @@ const handleClosePosition = async (position: Position) => {
 ```typescript
 {error ? (
   <TableRow>
-    <TableCell colSpan={8} className="text-center text-red-500">
+    <TableCell colSpan={8} className="text-center text-short">
       {error.message}
     </TableCell>
   </TableRow>
