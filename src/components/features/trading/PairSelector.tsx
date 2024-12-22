@@ -9,6 +9,7 @@ import {
 import { useMarketData } from "../../../hooks/use-market-data";
 import { usePrices } from "../../../lib/websocket-price-context";
 import { usePairPrecision } from "../../../hooks/use-pair-precision";
+import { use24hChange } from "../../../hooks/use-24h-change";
 import {
   Popover,
   PopoverContent,
@@ -21,6 +22,107 @@ interface PairSelectorProps {
   selectedPair: string;
   onPairChange: (value: string) => void;
 }
+
+interface MarketRowProps {
+  market: {
+    pair: string;
+    availableLiquidity: {
+      long: number;
+      short: number;
+    };
+    fundingRate: number;
+  };
+}
+
+const MarketRow: React.FC<MarketRowProps> = ({ market }) => {
+  const { formatPairPrice } = usePairPrecision();
+  const { prices } = usePrices();
+  const { percentageChange, error } = use24hChange(market.pair);
+
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat("en-US", {
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 2,
+    }).format(num);
+  };
+
+  const formatPrice = (pair: string) => {
+    const basePair = pair.split("/")[0].toLowerCase();
+    const price = prices[basePair]?.price;
+    return formatPairPrice(pair, price);
+  };
+
+  const formatFundingRate = (rate: number) => {
+    return `${rate.toFixed(4)}%`;
+  };
+
+  return (
+    <>
+      {/* Desktop layout */}
+      <div className="items-center hidden w-full grid-cols-6 text-xs md:grid">
+        <div className="w-[80px]">
+          <TokenPairDisplay pair={market.pair} />
+        </div>
+        <div className="w-[100px] text-right font-mono">
+          {formatPrice(market.pair)}
+        </div>
+        <div className="w-[100px] text-right">
+          {!error ? (
+            <span className={cn(
+              percentageChange >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"
+            )}>
+              {percentageChange >= 0 ? "+" : ""}
+               {percentageChange.toFixed(2)}%
+            </span>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          )}
+        </div>
+        <div className="w-[120px] text-right">
+          ${formatNumber(market.availableLiquidity.long)}
+        </div>
+        <div className="w-[120px] text-right">
+          ${formatNumber(market.availableLiquidity.short)}
+        </div>
+        <div className="w-[120px] text-right">
+          <span
+            className={cn(
+              market.fundingRate > 0
+                ? "text-[#22c55e]"
+                : market.fundingRate < 0
+                ? "text-[#ef4444]"
+                : "text-foreground"
+            )}
+          >
+            {formatFundingRate(market.fundingRate)}
+          </span>
+        </div>
+      </div>
+      {/* Mobile layout */}
+      <div className="grid w-full grid-cols-3 text-xs md:hidden">
+        <div className="flex items-center">
+          <TokenPairDisplay pair={market.pair} />
+        </div>
+        <div className="font-mono text-right">
+          {formatPrice(market.pair)}
+        </div>
+        <div className="text-right">
+          <span
+            className={cn(
+              market.fundingRate > 0
+                ? "text-[#22c55e]"
+                : market.fundingRate < 0
+                ? "text-[#ef4444]"
+                : "text-foreground"
+            )}
+          >
+            {formatFundingRate(market.fundingRate)}
+          </span>
+        </div>
+      </div>
+    </>
+  );
+};
 
 export const PairSelector: React.FC<PairSelectorProps> = ({
   selectedPair,
@@ -41,23 +143,6 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
   const filteredMarkets = allMarkets.filter((market) =>
     market.pair.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat("en-US", {
-      maximumFractionDigits: 2,
-      minimumFractionDigits: 2,
-    }).format(num);
-  };
-
-  const formatPrice = (pair: string) => {
-    const basePair = pair.split("/")[0].toLowerCase();
-    const price = prices[basePair]?.price;
-    return formatPairPrice(pair, price);
-  };
-
-  const formatFundingRate = (rate: number) => {
-    return `${rate.toFixed(4)}%`;
-  };
 
   const handlePairSelect = (pair: string) => {
     onPairChange(pair);
@@ -99,8 +184,7 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
         <PopoverContent 
           className={cn(
             "p-0 bg-[hsl(var(--component-background))] overflow-hidden",
-            // Mobile styles
-            "md:w-[900px] w-screen",
+            "md:w-[800px] w-screen",
             "md:h-[500px] h-[100dvh]",
             "md:border md:rounded-md border-0 rounded-none",
             "md:left-auto left-0",
@@ -113,7 +197,6 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
           <div className="flex flex-col h-full">
             <PrefetchTokenImages pairs={allMarkets.map((market) => market.pair)} />
             <div className="sticky top-0 z-20 bg-[hsl(var(--component-background))] shadow-sm">
-              {/* Mobile-only header */}
               <div className="flex items-center justify-between p-4 border-b md:hidden">
                 <div className="text-sm font-medium">Select Market</div>
                 <Button
@@ -140,17 +223,18 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
                 </div>
               </div>
               {/* Desktop columns */}
-              <div className="hidden grid-cols-5 px-4 py-2 text-xs font-medium border-b md:grid text-muted-foreground bg-muted/30">
-                <div className="w-[180px]">Market</div>
-                <div className="w-[140px] text-right">Price</div>
-                <div className="w-[140px] text-right">Long Liquidity</div>
-                <div className="w-[140px] text-right">Short Liquidity</div>
-                <div className="w-[140px] text-right">Funding Rate</div>
+              <div className="hidden grid-cols-6 px-4 py-2 text-xs font-medium border-b md:grid text-muted-foreground bg-muted/30">
+                <div className="w-[80px]">Market</div>
+                <div className="w-[100px] text-right">Oracle Price</div>
+                <div className="w-[100px] text-right">24h Change</div>
+                <div className="w-[120px] text-right">Long Liquidity</div>
+                <div className="w-[120px] text-right">Short Liquidity</div>
+                <div className="w-[120px] text-right">Funding Rate</div>
               </div>
               {/* Mobile columns */}
               <div className="grid grid-cols-3 px-4 py-2 text-xs font-medium border-b md:hidden text-muted-foreground bg-muted/30">
                 <div>Market</div>
-                <div className="text-right">Price</div>
+                <div className="text-right">Oracle Price</div>
                 <div className="text-right">Funding Rate</div>
               </div>
             </div>
@@ -162,56 +246,7 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
                   className="w-full h-auto px-4 py-3 hover:bg-muted/60"
                   onClick={() => handlePairSelect(market.pair)}
                 >
-                  {/* Desktop layout */}
-                  <div className="items-center hidden w-full grid-cols-5 text-xs md:grid">
-                    <div className="w-[180px]">
-                      <TokenPairDisplay pair={market.pair} />
-                    </div>
-                    <div className="w-[140px] text-right font-mono">
-                      {formatPrice(market.pair)}
-                    </div>
-                    <div className="w-[140px] text-right">
-                      ${formatNumber(market.availableLiquidity.long)}
-                    </div>
-                    <div className="w-[140px] text-right">
-                      ${formatNumber(market.availableLiquidity.short)}
-                    </div>
-                    <div className="w-[140px] text-right">
-                      <span
-                        className={cn(
-                          market.fundingRate > 0
-                            ? "text-[#22c55e]"
-                            : market.fundingRate < 0
-                            ? "text-[#ef4444]"
-                            : "text-foreground"
-                        )}
-                      >
-                        {formatFundingRate(market.fundingRate)}
-                      </span>
-                    </div>
-                  </div>
-                  {/* Mobile layout */}
-                  <div className="grid w-full grid-cols-3 text-xs md:hidden">
-                    <div className="flex items-center">
-                      <TokenPairDisplay pair={market.pair} />
-                    </div>
-                    <div className="font-mono text-right">
-                      {formatPrice(market.pair)}
-                    </div>
-                    <div className="text-right">
-                      <span
-                        className={cn(
-                          market.fundingRate > 0
-                            ? "text-[#22c55e]"
-                            : market.fundingRate < 0
-                            ? "text-[#ef4444]"
-                            : "text-foreground"
-                        )}
-                      >
-                        {formatFundingRate(market.fundingRate)}
-                      </span>
-                    </div>
-                  </div>
+                  <MarketRow market={market} />
                 </Button>
               ))}
             </div>
