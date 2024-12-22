@@ -137,24 +137,33 @@ export function LimitOrderForm({
             </div>
           </div>
           <div className="space-y-1">
-            <Slider
-              value={[Number(tempLeverage)]}
-              min={1}
-              max={100}
-              step={1}
-              onValueChange={(value) => {
-                setTempLeverage(value[0].toString());
-              }}
-              onValueCommit={(value) => {
-                onLeverageChange(value[0].toString());
-              }}
-            />
-            <div className="flex justify-between px-1 text-xs text-muted-foreground">
-              <span>1x</span>
-              <span>25x</span>
-              <span>50x</span>
-              <span>75x</span>
-              <span>100x</span>
+            <div className="relative w-full">
+              <div className="absolute w-full h-full">
+                <div className="absolute left-0 -translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
+                <div className="absolute left-[25%] -translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
+                <div className="absolute left-[50%] -translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
+                <div className="absolute left-[75%] -translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
+                <div className="absolute right-0 translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
+              </div>
+              <Slider
+                value={[Number(tempLeverage)]}
+                min={1}
+                max={100}
+                step={1}
+                onValueChange={(value) => {
+                  setTempLeverage(value[0].toString());
+                }}
+                onValueCommit={(value) => {
+                  onLeverageChange(value[0].toString());
+                }}
+              />
+            </div>
+            <div className="relative w-full h-4">
+              <div className="absolute left-0 text-xs -translate-x-1/2 text-muted-foreground">1x</div>
+              <div className="absolute left-[25%] -translate-x-1/2 text-xs text-muted-foreground">25x</div>
+              <div className="absolute left-[50%] -translate-x-1/2 text-xs text-muted-foreground">50x</div>
+              <div className="absolute left-[75%] -translate-x-1/2 text-xs text-muted-foreground">75x</div>
+              <div className="absolute right-0 text-xs translate-x-1/2 text-muted-foreground">100x</div>
             </div>
           </div>
         </div>

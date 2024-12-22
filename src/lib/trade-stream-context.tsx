@@ -213,27 +213,38 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
     // Add Orderly message handler after the dYdX handler
     connections.orderly.onmessage = (event) => {
       const message: OrderlyTradeMessage = JSON.parse(event.data);
-      console.log('Orderly message:', message); // Debug log
       
       if (message.topic?.endsWith('@trade') && message.data) {
         const trade = message.data;
         const sizeUSD = Number((trade.size * trade.price).toFixed(4));
+        const tradeId = `orderly-${message.ts}`;
         const newTrade: Trade = {
-          id: `orderly-${message.ts}`,
+          id: tradeId,
           pair,
           side: trade.side === 'BUY' ? 'LONG' : 'SHORT',
           price: trade.price,
           sizeUSD,
-          timestamp: message.ts,
+          // Add a small random offset to prevent timestamp collisions
+          timestamp: message.ts + Math.floor(Math.random() * 100),
           isPnL: false,
           isLiquidated: false,
         };
 
-        console.log('New Orderly trade:', newTrade); // Debug log
-        setTradesBySource(current => ({
-          ...current,
-          orderly: [newTrade, ...current.orderly].slice(0, MAX_TRADES_PER_SOURCE)
-        }));
+        setTradesBySource(current => {
+          // Check if this trade already exists
+          const exists = current.orderly.some(t => t.id === tradeId);
+          if (exists) {
+            return current;
+          }
+
+          return {
+            ...current,
+            orderly: [newTrade, ...current.orderly]
+              .slice(0, MAX_TRADES_PER_SOURCE)
+              // Sort by timestamp to ensure proper ordering
+              .sort((a, b) => b.timestamp - a.timestamp)
+          };
+        });
       }
     };
 
