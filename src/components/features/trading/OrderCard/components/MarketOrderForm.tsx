@@ -104,7 +104,7 @@ export function MarketOrderForm({
           </Button>
         </div>
 
-        <div className="pt-2 space-y-3">
+        <div className="pt-2 space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-[13px]">Leverage:</span>
             <div className="relative w-16">
@@ -123,12 +123,12 @@ export function MarketOrderForm({
           </div>
           <div className="space-y-1">
             <div className="relative w-full">
-              <div className="absolute flex justify-between w-full pointer-events-none -top-1 -bottom-1">
-                <div className="w-[3px] h-full rounded-full opacity-20 bg-primary"></div>
-                <div className="w-[3px] h-full rounded-full opacity-20 bg-primary"></div>
-                <div className="w-[3px] h-full rounded-full opacity-20 bg-primary"></div>
-                <div className="w-[3px] h-full rounded-full opacity-20 bg-primary"></div>
-                <div className="w-[3px] h-full rounded-full opacity-20 bg-primary"></div>
+              <div className="absolute w-full h-full">
+                <div className="absolute left-0 -translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
+                <div className="absolute left-[25%] -translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
+                <div className="absolute left-[50%] -translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
+                <div className="absolute left-[75%] -translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
+                <div className="absolute right-0 translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
               </div>
               <Slider
                 value={[Number(tempLeverage)]}

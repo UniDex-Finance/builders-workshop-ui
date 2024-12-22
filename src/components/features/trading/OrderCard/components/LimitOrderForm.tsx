@@ -138,12 +138,12 @@ export function LimitOrderForm({
           </div>
           <div className="space-y-1">
             <div className="relative w-full">
-              <div className="absolute w-full flex justify-between -top-1 -bottom-1 pointer-events-none">
-                <div className="w-[3px] h-full rounded-full bg-input"></div>
-                <div className="w-[3px] h-full rounded-full bg-input"></div>
-                <div className="w-[3px] h-full rounded-full bg-input"></div>
-                <div className="w-[3px] h-full rounded-full bg-input"></div>
-                <div className="w-[3px] h-full rounded-full bg-input"></div>
+              <div className="absolute w-full h-full">
+                <div className="absolute left-0 -translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
+                <div className="absolute left-[25%] -translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
+                <div className="absolute left-[50%] -translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
+                <div className="absolute left-[75%] -translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
+                <div className="absolute right-0 translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
               </div>
               <Slider
                 value={[Number(tempLeverage)]}
@@ -159,11 +159,11 @@ export function LimitOrderForm({
               />
             </div>
             <div className="relative w-full h-4">
-              <div className="absolute left-0 -translate-x-1/2 text-xs text-muted-foreground">1x</div>
+              <div className="absolute left-0 text-xs -translate-x-1/2 text-muted-foreground">1x</div>
               <div className="absolute left-[25%] -translate-x-1/2 text-xs text-muted-foreground">25x</div>
               <div className="absolute left-[50%] -translate-x-1/2 text-xs text-muted-foreground">50x</div>
               <div className="absolute left-[75%] -translate-x-1/2 text-xs text-muted-foreground">75x</div>
-              <div className="absolute right-0 translate-x-1/2 text-xs text-muted-foreground">100x</div>
+              <div className="absolute right-0 text-xs translate-x-1/2 text-muted-foreground">100x</div>
             </div>
           </div>
         </div>
