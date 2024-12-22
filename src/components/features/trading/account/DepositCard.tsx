@@ -133,7 +133,7 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
       <div className="flex items-center gap-1">
         <span>{currentBalance.toFixed(2)}</span>
         <ArrowRight 
-          className={`w-3 h-3 ${isIncrease ? 'text-green-400' : 'text-red-400'}`}
+          className={`w-3 h-3 ${isIncrease ? 'text-long' : 'text-short'}`}
         />
         <span>{newBalance.toFixed(2)}</span>
       </div>

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { usePositions } from "../../../hooks/use-positions";
 import { useBalances } from "../../../hooks/use-balances";
 import { useAccount } from "wagmi";
@@ -43,6 +44,7 @@ export function WalletBox() {
 
   // Calculate total balance across all accounts
   const calculateTotalBalance = () => {
+    if(!eoaAddress) return "0.00";
     if (balancesLoading) return "Loading...";
 
     const musdBalance = parseFloat(balances?.formattedMusdBalance || "0");
@@ -54,6 +56,7 @@ export function WalletBox() {
   };
 
   const calculateTradingAccountBalance = () => {
+    if(!eoaAddress) return "0.00";
     if (balancesLoading) return "Loading...";
     const musdBalance = parseFloat(balances?.formattedMusdBalance || "0");
     const usdcBalance = parseFloat(balances?.formattedUsdcBalance || "0");
@@ -61,6 +64,7 @@ export function WalletBox() {
   };
 
   const calculateTotalExposure = () => {
+    if(!eoaAddress) return "0.00";
     if (positionsLoading) return "Loading...";
     const totalSize = positions?.reduce((total, position) => {
       const size = parseFloat(position.size.replace(/[^0-9.-]/g, ""));
@@ -70,6 +74,7 @@ export function WalletBox() {
   };
 
   const calculateUsedMargin = () => {
+    if(!eoaAddress) return "0.00";
     if (positionsLoading) return "Loading...";
     const totalMargin = positions?.reduce((total, position) => {
       const margin = parseFloat(position.margin.replace(/[^0-9.-]/g, ""));
@@ -77,6 +82,13 @@ export function WalletBox() {
     }, 0);
     return totalMargin ? `$${totalMargin.toFixed(2)} USD` : "$0.00 USD";
   };
+
+  useEffect(() => {
+    calculateTotalBalance();
+    calculateTradingAccountBalance();
+    calculateTotalExposure();
+    calculateUsedMargin();
+  }, [eoaAddress]);
 
   return (
     <div>
@@ -126,10 +138,10 @@ export function WalletBox() {
           <span className="text-sm text-muted-foreground">Unrealized PnL</span>
           <span
             className={`text-sm ${
-              (totalUnrealizedPnl || 0) >= 0 ? "text-green-400" : "text-red-400"
+              (totalUnrealizedPnl || 0) >= 0 ? "text-long" : "text-short"
             }`}
           >
-            {positionsLoading ? "Loading..." : formatPnL(totalUnrealizedPnl)} USD
+            {positionsLoading ? "Loading..." : !eoaAddress ? "0.00" : formatPnL(totalUnrealizedPnl)} USD
           </span>
         </div>
 

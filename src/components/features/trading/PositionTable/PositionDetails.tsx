@@ -96,7 +96,7 @@ export function PositionDetails({
           <div className="flex items-center gap-1.5">
             <Bitcoin className="w-5 h-5 text-amber-500" />
             <span className="font-medium">{position.market}</span>
-            <span className={`text-xs px-1.5 py-0.5 rounded ${position.isLong ? "bg-emerald-500/20 text-emerald-500" : "bg-red-500/20 text-red-500"}`}>
+            <span className={`text-xs px-1.5 py-0.5 rounded ${position.isLong ? "bg-emerald-500/20 text-long" : "bg-red-500/20 text-short"}`}>
               {position.isLong ? "LONG" : "SHORT"}
             </span>
           </div>
@@ -146,12 +146,12 @@ export function PositionDetails({
 
           <div className="flex items-center justify-between">
             <span className="text-zinc-400">Liquidation Price</span>
-            <span className="text-red-500">{position.liquidationPrice}</span>
+            <span className="text-short">{position.liquidationPrice}</span>
           </div>
 
           <div className="flex items-center justify-between">
             <span className="text-zinc-400">Stop Loss</span>
-            <span className="text-red-500">
+            <span className="text-short">
               {triggerOrder?.stopLoss
                 ? `${triggerOrder.stopLoss.price} (${triggerOrder.stopLoss.size}%)`
                 : "-"}
@@ -160,7 +160,7 @@ export function PositionDetails({
 
           <div className="flex items-center justify-between">
             <span className="text-zinc-400">Take Profit</span>
-            <span className="text-emerald-500">
+            <span className="text-long">
               {triggerOrder?.takeProfit
                 ? `${triggerOrder.takeProfit.price} (${triggerOrder.takeProfit.size}%)`
                 : "-"}
@@ -170,7 +170,7 @@ export function PositionDetails({
           <div className="flex items-center justify-between">
             <span className="text-zinc-400">Position Fee</span>
             <div className="flex items-center gap-1">
-              <span className="text-red-500">-${position.fees.positionFee}</span>
+              <span className="text-short">-${position.fees.positionFee}</span>
               <span className="text-zinc-400">USDC</span>
             </div>
           </div>
@@ -178,7 +178,7 @@ export function PositionDetails({
           <div className="flex items-center justify-between">
             <span className="text-zinc-400">Borrow Fee</span>
             <div className="flex items-center gap-1">
-              <span className="text-red-500">-${position.fees.borrowFee}</span>
+              <span className="text-short">-${position.fees.borrowFee}</span>
               <span className="text-zinc-400">USDC</span>
             </div>
           </div>
@@ -186,7 +186,7 @@ export function PositionDetails({
           <div className="flex items-center justify-between">
             <span className="text-zinc-400">Funding Fee</span>
             <div className="flex items-center gap-1">
-              <span className={position.fees.fundingFee.startsWith("-") ? "text-emerald-500" : "text-red-500"}>
+              <span className={position.fees.fundingFee.startsWith("-") ? "text-long" : "text-short"}>
                 {position.fees.fundingFee.startsWith("-") ? "-$" : "$"}
                 {position.fees.fundingFee.replace(/[^0-9.-]/g, "")}
               </span>
@@ -197,7 +197,7 @@ export function PositionDetails({
           <div className="flex items-center justify-between pt-2 mt-2 border-t border-zinc-800">
             <span className="text-zinc-400">Unrealized PnL</span>
             <div className="flex items-center gap-1">
-              <span className={pnlValue >= 0 ? "text-emerald-500" : "text-red-500"}>
+              <span className={pnlValue >= 0 ? "text-long" : "text-short"}>
                 {formatPnL(pnlValue)}
               </span>
               <span className="text-zinc-400">USDC</span>

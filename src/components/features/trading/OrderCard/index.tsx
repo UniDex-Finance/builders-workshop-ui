@@ -379,7 +379,7 @@ const totalRequired = calculatedMargin + tradingFee;
     <Card className="w-full md:w-[350px]">
       <CardContent className="p-4">
         {error && (
-          <div className="mb-4 text-red-500">Error: {error.message}</div>
+          <div className="mb-4 text-short">Error: {error.message}</div>
         )}
 
         <Tabs defaultValue="market" onValueChange={setActiveTab}>
@@ -387,7 +387,7 @@ const totalRequired = calculatedMargin + tradingFee;
             <Button
               variant={formState.isLong ? "default" : "outline"}
               className={`w-full ${
-                formState.isLong ? "bg-green-600 hover:bg-green-700" : ""
+                formState.isLong ? "bg-long hover:bg-longDark" : ""
               }`}
               onClick={() => formState.isLong || toggleDirection()}
             >
@@ -396,7 +396,7 @@ const totalRequired = calculatedMargin + tradingFee;
             <Button
               variant={!formState.isLong ? "default" : "outline"}
               className={`w-full ${
-                !formState.isLong ? "bg-red-600 hover:bg-red-700" : ""
+                !formState.isLong ? "bg-short hover:bg-shortDark text-white" : ""
               }`}
               onClick={() => !formState.isLong || toggleDirection()}
             >

@@ -50,7 +50,7 @@ export function OrdersContent({
           </TableRow>
         ) : error ? (
           <TableRow>
-            <TableCell colSpan={9} className="text-center text-red-500">
+            <TableCell colSpan={9} className="text-center text-short">
               {error.message}
             </TableCell>
           </TableRow>
@@ -68,7 +68,7 @@ export function OrdersContent({
                 <TableCell>{order.market}</TableCell>
                 <TableCell>{order.type}</TableCell>
                 <TableCell
-                  className={order.isLong ? "text-green-500" : "text-red-500"}
+                  className={order.isLong ? "text-long" : "text-short"}
                 >
                   {order.isLong ? "+" : "-"}
                   {order.size}
@@ -80,8 +80,8 @@ export function OrdersContent({
                 <TableCell>
                   {order.stopPrice !== "0.00" ? order.stopPrice : "-"}
                 </TableCell>
-                <TableCell className="text-red-500">-</TableCell>
-                <TableCell className="text-green-500">-</TableCell>
+                <TableCell className="text-short">-</TableCell>
+                <TableCell className="text-long">-</TableCell>
                 <TableCell>{order.timestamp}</TableCell>
                 <TableCell>
                   <Button
@@ -105,12 +105,12 @@ export function OrdersContent({
                 <TableCell>-</TableCell>
                 <TableCell>-</TableCell>
                 <TableCell>-</TableCell>
-                <TableCell className="text-red-500">
+                <TableCell className="text-short">
                   {order.stopLoss
                     ? `${order.stopLoss.price} (${order.stopLoss.size}%)`
                     : "-"}
                 </TableCell>
-                <TableCell className="text-green-500">
+                <TableCell className="text-long">
                   {order.takeProfit
                     ? `${order.takeProfit.price} (${order.takeProfit.size}%)`
                     : "-"}

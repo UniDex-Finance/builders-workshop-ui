@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "../../../../ui/input";
 import { Button } from "../../../../ui/button";
 import { OrderFormState } from "../types";
@@ -30,13 +30,19 @@ export function MarketOrderForm({
   leverage,
   onLeverageChange,
 }: MarketOrderFormProps) {
+  const [tempLeverage, setTempLeverage] = useState(leverage);
+
+  useEffect(() => {
+    setTempLeverage(leverage);
+  }, [leverage]);
+
   return (
     <div className="space-y-4">
       <div className="space-y-1">
         <div className="relative">
           <Input
             type="number"
-            placeholder="0.00"
+            placeholder="0"
             value={formState.amount || ''}
             onChange={handleAmountChange}
             className="pr-10 text-right no-spinners"
@@ -50,8 +56,8 @@ export function MarketOrderForm({
         <div className="relative">
           <Input
             type="number"
-            placeholder="0.00"
-            value={calculatedMargin ? calculatedMargin.toFixed(2) : ''}
+            placeholder="0"
+            value={calculatedMargin ? Number(calculatedMargin.toFixed(2)).toString() : ''}
             onChange={handleMarginChange}
             className="pr-10 text-right no-spinners"
             label="Margin"
@@ -98,29 +104,35 @@ export function MarketOrderForm({
           </Button>
         </div>
 
-        <div className="pt-2 space-y-3"> {/* Changed from space-y-2 */}
+        <div className="pt-2 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-[13px]">Leverage:</span>
             <div className="relative w-16">
               <Input
                 type="number"
-                value={leverage || ''}
+                value={tempLeverage || ''}
                 onChange={(e) => {
                   const value = Math.min(Math.max(1, Number(e.target.value)), 100);
+                  setTempLeverage(value.toString());
                   onLeverageChange(value.toString());
                 }}
-                className="h-8 text-sm text-center no-spinners" // Changed text-right to text-center
+                className="h-8 text-sm text-center no-spinners"
                 suppressHydrationWarning
               />
             </div>
           </div>
           <div className="space-y-1">
             <Slider
-              value={[Number(leverage)]}
+              value={[Number(tempLeverage)]}
               min={1}
               max={100}
               step={1}
-              onValueChange={(value) => onLeverageChange(value[0].toString())}
+              onValueChange={(value) => {
+                setTempLeverage(value[0].toString());
+              }}
+              onValueCommit={(value) => {
+                onLeverageChange(value[0].toString());
+              }}
             />
             <div className="flex justify-between px-1 text-xs text-muted-foreground">
               <span>1x</span>
