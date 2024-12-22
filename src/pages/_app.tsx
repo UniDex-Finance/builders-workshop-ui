@@ -17,6 +17,7 @@ import { ThemeProvider } from "next-themes";
 import { config } from "../wagmi";
 import { arbitrum } from "viem/chains";
 import { PriceProvider } from "../lib/websocket-price-context";
+import { DailyBasePricesProvider } from "../lib/daily-base-prices-context";
 import { Footer } from "../components/shared/Footer";
 import { Toaster } from "../components/ui/toaster";
 import NewVersionNotification from "../components/shared/NewVersionNotification";
@@ -99,12 +100,14 @@ function MyApp({ Component, pageProps }: AppProps) {
               initialChain={arbitrum}
             >
               <PriceProvider>
-                <div className="pb-8">
-                  <Component {...pageProps} />
-                </div>
-                <Footer />
-                <Toaster />
-                <NewVersionNotification />
+                <DailyBasePricesProvider>
+                  <div className="pb-8">
+                    <Component {...pageProps} />
+                  </div>
+                  <Footer />
+                  <Toaster />
+                  <NewVersionNotification />
+                </DailyBasePricesProvider>
               </PriceProvider>
             </RainbowKitProvider>
           </QueryClientProvider>
