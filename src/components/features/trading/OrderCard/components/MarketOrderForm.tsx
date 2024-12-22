@@ -57,7 +57,7 @@ export function MarketOrderForm({
           <Input
             type="number"
             placeholder="0"
-            value={calculatedMargin ? Number(calculatedMargin).toString() : ''}
+            value={calculatedMargin ? Number(calculatedMargin.toFixed(2)).toString() : ''}
             onChange={handleMarginChange}
             className="pr-10 text-right no-spinners"
             label="Margin"

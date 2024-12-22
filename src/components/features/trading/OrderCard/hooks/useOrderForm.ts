@@ -77,7 +77,7 @@ export function useOrderForm({ leverage, assetId, isLong }: UseOrderFormProps): 
     const percentage = value[0];
     const market = allMarkets.find(m => m.assetId === assetId);
     const newAmount = Math.floor(maxLeveragedAmount * percentage / 100).toString();
-    const calculatedMargin = parseFloat(newAmount) / parseFloat(leverage);
+    const calculatedMargin = Number((parseFloat(newAmount) / parseFloat(leverage)).toFixed(2));
     
     console.log('Slider Calculations:', {
       percentage,
@@ -110,7 +110,7 @@ export function useOrderForm({ leverage, assetId, isLong }: UseOrderFormProps): 
 
     setFormState(prev => ({
       ...prev,
-      amount: newAmount,
+      amount: newAmount ? Number(newAmount).toString() : "",
       sliderValue: newSliderValue
     }));
   };
@@ -119,7 +119,8 @@ export function useOrderForm({ leverage, assetId, isLong }: UseOrderFormProps): 
   const handleMarginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newMargin = e.target.value;
     const leverageNum = parseFloat(leverage);
-    const newAmount = newMargin ? (parseFloat(newMargin) * leverageNum).toString() : "";
+    const newAmount = newMargin ? 
+      (Number((parseFloat(newMargin) * leverageNum).toFixed(2))).toString() : "";
 
     let newSliderValue = [0];
     if (maxLeveragedAmount > 0 && newAmount !== "") {
