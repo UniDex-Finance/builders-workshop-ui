@@ -5,7 +5,6 @@ import { Card, CardContent, CardFooter } from "../../../ui/card";
 import { Input } from "../../../ui/input";
 import { Dialog, DialogContent } from "../../../ui/dialog";
 import { Position } from "../../../../hooks/use-positions";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useModifyPositionActions } from "@/hooks/trading-hooks/unidex-hooks/use-modify-position-actions";
 import { usePrices } from "@/lib/websocket-price-context";
 import { Slider } from "@/components/ui/slider";

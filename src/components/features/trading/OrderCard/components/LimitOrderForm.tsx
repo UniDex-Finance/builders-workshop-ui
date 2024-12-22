@@ -38,7 +38,7 @@ export function LimitOrderForm({
         <div className="relative">
           <Input
             type="number"
-            placeholder="0.00"
+            placeholder="0"
             value={formState.amount || ''}
             onChange={handleAmountChange}
             className="pr-10 text-right no-spinners"
@@ -66,8 +66,8 @@ export function LimitOrderForm({
         <div className="relative">
           <Input
             type="number"
-            placeholder="0.00"
-            value={calculatedMargin ? calculatedMargin.toFixed(2) : ''}
+            placeholder="0"
+            value={calculatedMargin ? Math.floor(calculatedMargin) : ''}
             onChange={handleMarginChange}
             className="pr-10 text-right no-spinners"
             label="Margin"

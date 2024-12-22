@@ -31,7 +31,7 @@ export function useOrderForm({ leverage, assetId, isLong }: UseOrderFormProps): 
   const { allMarkets } = useMarketData();
   const [formState, setFormState] = useState<OrderFormState>({
     // Initialize with amount that corresponds to 1 USD margin
-    amount: (1 * parseFloat(leverage)).toString(),
+    amount: Math.floor(1 * parseFloat(leverage)).toString(),
     limitPrice: "",
     // Calculate initial slider value based on maxLeveragedAmount
     sliderValue: [0],
@@ -76,7 +76,7 @@ export function useOrderForm({ leverage, assetId, isLong }: UseOrderFormProps): 
   const handleSliderChange = (value: number[]) => {
     const percentage = value[0];
     const market = allMarkets.find(m => m.assetId === assetId);
-    const newAmount = (maxLeveragedAmount * percentage / 100).toFixed(2);
+    const newAmount = Math.floor(maxLeveragedAmount * percentage / 100).toString();
     const calculatedMargin = parseFloat(newAmount) / parseFloat(leverage);
     
     console.log('Slider Calculations:', {
@@ -100,7 +100,7 @@ export function useOrderForm({ leverage, assetId, isLong }: UseOrderFormProps): 
 
   // Update amount input change handler
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newAmount = e.target.value;
+    const newAmount = e.target.value ? Math.floor(parseFloat(e.target.value)).toString() : "";
     
     let newSliderValue = [0];
     if (maxLeveragedAmount > 0 && newAmount !== "") {
@@ -119,7 +119,7 @@ export function useOrderForm({ leverage, assetId, isLong }: UseOrderFormProps): 
   const handleMarginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newMargin = e.target.value;
     const leverageNum = parseFloat(leverage);
-    const newAmount = newMargin ? (parseFloat(newMargin) * leverageNum).toFixed(2) : "";
+    const newAmount = newMargin ? Math.floor(parseFloat(newMargin) * leverageNum).toString() : "";
 
     let newSliderValue = [0];
     if (maxLeveragedAmount > 0 && newAmount !== "") {
