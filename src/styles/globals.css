@@ -56,10 +56,13 @@ a {
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-    --color-long: #50e55a;
+    --color-long: #3df57b;
     --color-long-dark: #44c64d;
-  --color-short: #f13030;
-  --color-short-dark: #c72525;
+    --color-short: #ea435c;
+    --color-short-dark: #c72525;
+    --color-long-short-button: #7142cf;
+    --color-long-short-button-hover: #683ebe;
+
   }
   .dark {
     --background: 240 13% 5%;
@@ -87,10 +90,12 @@ a {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    --color-long: #50e55a;
+    --color-long: #3df57b;
     --color-long-dark: #44c64d;
-  --color-short: #f13030;
-  --color-short-dark: #c72525;
+    --color-short: #ea435c;
+    --color-short-dark: #c72525;
+    --color-long-short-button: #7142cf;
+    --color-long-short-button-hover: #683ebe;
 
     /* Add these NextUI specific variables */
     --nextui-dropdown-background: #0e0d12;
