@@ -1,16 +1,6 @@
 import { useState, useEffect } from 'react';
 import { usePrices } from '../lib/websocket-price-context';
 
-interface PriceData {
-  s: string;
-  t: number[];
-  o: number[];
-  h: number[];
-  l: number[];
-  c: number[];
-  v: number[];
-}
-
 interface Change24h {
   absoluteChange: number;
   percentageChange: number;
@@ -35,28 +25,22 @@ export function use24hChange(selectedPair: string): Change24h {
     const fetchInitialPrice = async () => {
       try {
         const symbol = selectedPair.split('/')[0].toLowerCase();
-        const now = Math.floor(Date.now() / 1000);
-        const twentyFourHoursAgo = now - (24 * 60 * 60);
-        
-        const response = await fetch(
-          `https://charting.molten.exchange/tradingview?symbol=${symbol}&resolution=1&from=${twentyFourHoursAgo}&to=${now}`
-        );
+        const response = await fetch('https://charting.molten.exchange/api/daily-base-prices');
         
         if (!response.ok) {
           throw new Error('Failed to fetch price data');
         }
         
-        const data: PriceData = await response.json();
+        const data = await response.json();
+        const basePrice = data.prices[symbol];
         
-        if (data.s !== 'ok' || !data.c || data.c.length === 0) {
-          throw new Error('Invalid price data received');
+        if (basePrice === undefined) {
+          throw new Error('Price not available for this pair');
         }
         
-        const previousPrice = data.c[0];
-        
         if (isMounted) {
-          setInitialPrice(previousPrice);
-          setChange((prev) => ({
+          setInitialPrice(basePrice);
+          setChange(prev => ({
             ...prev,
             loading: false,
             error: null,
