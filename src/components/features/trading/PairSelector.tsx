@@ -142,10 +142,10 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
               {/* Desktop columns */}
               <div className="hidden grid-cols-5 px-4 py-2 text-xs font-medium border-b md:grid text-muted-foreground bg-muted/30">
                 <div className="w-[180px]">Market</div>
-                <div className="w-[140px]">Price</div>
-                <div className="w-[140px]">Long Liquidity</div>
-                <div className="w-[140px]">Short Liquidity</div>
-                <div className="w-[140px]">Funding Rate</div>
+                <div className="w-[140px] text-right">Price</div>
+                <div className="w-[140px] text-right">Long Liquidity</div>
+                <div className="w-[140px] text-right">Short Liquidity</div>
+                <div className="w-[140px] text-right">Funding Rate</div>
               </div>
               {/* Mobile columns */}
               <div className="grid grid-cols-3 px-4 py-2 text-xs font-medium border-b md:hidden text-muted-foreground bg-muted/30">
@@ -167,16 +167,16 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
                     <div className="w-[180px]">
                       <TokenPairDisplay pair={market.pair} />
                     </div>
-                    <div className="w-[140px] font-mono">
+                    <div className="w-[140px] text-right font-mono">
                       {formatPrice(market.pair)}
                     </div>
-                    <div className="w-[140px]">
+                    <div className="w-[140px] text-right">
                       ${formatNumber(market.availableLiquidity.long)}
                     </div>
-                    <div className="w-[140px]">
+                    <div className="w-[140px] text-right">
                       ${formatNumber(market.availableLiquidity.short)}
                     </div>
-                    <div className="w-[140px]">
+                    <div className="w-[140px] text-right">
                       <span
                         className={cn(
                           market.fundingRate > 0
