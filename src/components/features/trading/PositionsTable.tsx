@@ -80,6 +80,7 @@ export function PositionsTable({ address }: PositionsTableProps) {
         >
           Positions
         </Button>
+        <span className="text-muted-foreground/30 mx-1">|</span>
         <Button
           variant="ghost"
           size="sm"
@@ -88,6 +89,7 @@ export function PositionsTable({ address }: PositionsTableProps) {
         >
           Orders
         </Button>
+        <span className="text-muted-foreground/30 mx-1">|</span>
         <Button
           variant="ghost"
           size="sm"
