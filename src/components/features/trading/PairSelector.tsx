@@ -97,36 +97,61 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
           </Button>
         </PopoverTrigger>
         <PopoverContent 
-          className="w-[900px] p-0 bg-[hsl(var(--component-background))] overflow-hidden"
+          className={cn(
+            "p-0 bg-[hsl(var(--component-background))] overflow-hidden",
+            // Mobile styles
+            "md:w-[900px] w-screen",
+            "md:h-[500px] h-[100dvh]",
+            "md:border md:rounded-md border-0 rounded-none",
+            "md:left-auto left-0",
+            "md:top-auto top-0"
+          )}
           align="start"
-          onOpenAutoFocus={(e) => {
-            e.preventDefault();
-            searchInputRef.current?.focus();
-          }}
+          side="bottom"
+          sideOffset={0}
         >
-          <div className="flex flex-col h-[500px]">
+          <div className="flex flex-col h-full">
             <PrefetchTokenImages pairs={allMarkets.map((market) => market.pair)} />
             <div className="sticky top-0 z-20 bg-[hsl(var(--component-background))] shadow-sm">
+              {/* Mobile-only header */}
+              <div className="flex items-center justify-between p-4 border-b md:hidden">
+                <div className="text-sm font-medium">Select Market</div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsOpen(false)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  Cancel
+                </Button>
+              </div>
               <div className="px-4 py-2 border-b">
                 <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-3 w-3 text-muted-foreground" />
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <input
                     ref={searchInputRef}
                     type="text"
-                    placeholder="Search pairs..."
+                    placeholder="Search markets..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={handleSearchKeyDown}
-                    className="w-full py-2 pl-8 pr-4 text-xs bg-transparent border rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-ring"
+                    className="w-full py-2 pr-4 text-sm bg-transparent border rounded-md pl-9 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-ring"
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-5 px-4 py-2 text-xs font-medium border-b text-muted-foreground bg-muted/30">
-                <div className="w-[180px]">Pair</div>
-                <div className="w-[140px]">Market Price</div>
+              {/* Desktop columns */}
+              <div className="hidden grid-cols-5 px-4 py-2 text-xs font-medium border-b md:grid text-muted-foreground bg-muted/30">
+                <div className="w-[180px]">Market</div>
+                <div className="w-[140px]">Price</div>
                 <div className="w-[140px]">Long Liquidity</div>
                 <div className="w-[140px]">Short Liquidity</div>
                 <div className="w-[140px]">Funding Rate</div>
+              </div>
+              {/* Mobile columns */}
+              <div className="grid grid-cols-3 px-4 py-2 text-xs font-medium border-b md:hidden text-muted-foreground bg-muted/30">
+                <div>Market</div>
+                <div className="text-right">Price</div>
+                <div className="text-right">Funding Rate</div>
               </div>
             </div>
             <div className="flex-1 overflow-y-auto">
@@ -134,17 +159,46 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
                 <Button
                   key={market.pair}
                   variant="ghost"
-                  className="w-full h-auto px-4 py-2 hover:bg-muted/60"
+                  className="w-full h-auto px-4 py-3 hover:bg-muted/60"
                   onClick={() => handlePairSelect(market.pair)}
                 >
-                  <div className="grid items-center w-full grid-cols-5 text-xs">
+                  {/* Desktop layout */}
+                  <div className="items-center hidden w-full grid-cols-5 text-xs md:grid">
                     <div className="w-[180px]">
                       <TokenPairDisplay pair={market.pair} />
                     </div>
-                    <div className="w-[140px]">{formatPrice(market.pair)}</div>
-                    <div className="w-[140px]">${formatNumber(market.availableLiquidity.long)}</div>
-                    <div className="w-[140px]">${formatNumber(market.availableLiquidity.short)}</div>
+                    <div className="w-[140px] font-mono">
+                      {formatPrice(market.pair)}
+                    </div>
                     <div className="w-[140px]">
+                      ${formatNumber(market.availableLiquidity.long)}
+                    </div>
+                    <div className="w-[140px]">
+                      ${formatNumber(market.availableLiquidity.short)}
+                    </div>
+                    <div className="w-[140px]">
+                      <span
+                        className={cn(
+                          market.fundingRate > 0
+                            ? "text-[#22c55e]"
+                            : market.fundingRate < 0
+                            ? "text-[#ef4444]"
+                            : "text-foreground"
+                        )}
+                      >
+                        {formatFundingRate(market.fundingRate)}
+                      </span>
+                    </div>
+                  </div>
+                  {/* Mobile layout */}
+                  <div className="grid w-full grid-cols-3 text-xs md:hidden">
+                    <div className="flex items-center">
+                      <TokenPairDisplay pair={market.pair} />
+                    </div>
+                    <div className="font-mono text-right">
+                      {formatPrice(market.pair)}
+                    </div>
+                    <div className="text-right">
                       <span
                         className={cn(
                           market.fundingRate > 0
