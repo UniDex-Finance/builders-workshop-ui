@@ -2,6 +2,7 @@ import React from "react";
 import Image from "next/image";
 import { TradeDetails as TradeDetailsType, RouteId, TradeDetailsProps } from "../types";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import * as HoverCard from '@radix-ui/react-hover-card';
 
 export function TradeDetails({ 
   details, 
@@ -62,7 +63,24 @@ export function TradeDetails({
   return (
     <div className="mt-4 space-y-2 text-[13px] text-muted-foreground">
       <div className="flex items-center justify-between">
-        <span>Route</span>
+        <HoverCard.Root openDelay={0} closeDelay={0}>
+          <HoverCard.Trigger asChild>
+            <span className="border-b border-dashed border-muted-foreground/50 cursor-help">
+              Route
+            </span>
+          </HoverCard.Trigger>
+          <HoverCard.Portal>
+            <HoverCard.Content
+              side="top"
+              align="center"
+              sideOffset={5}
+              className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md text-[13px]"
+            >
+              <p>We do perp aggregation, so the route shows whos DEX is used to place this trade</p>
+              <HoverCard.Arrow className="fill-[#17161d]/80" />
+            </HoverCard.Content>
+          </HoverCard.Portal>
+        </HoverCard.Root>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -127,12 +145,46 @@ export function TradeDetails({
       </div>
 
       <div className="flex justify-between">
-        <span>Entry Price</span>
+        <HoverCard.Root openDelay={0} closeDelay={0}>
+          <HoverCard.Trigger asChild>
+            <span className="border-b border-dashed border-muted-foreground/50 cursor-help">
+              Entry Price
+            </span>
+          </HoverCard.Trigger>
+          <HoverCard.Portal>
+            <HoverCard.Content
+              side="top"
+              align="center"
+              sideOffset={5}
+              className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md text-[13px]"
+            >
+              <p>The estimated aggregate entry price for the position</p>
+              <HoverCard.Arrow className="fill-[#17161d]/80" />
+            </HoverCard.Content>
+          </HoverCard.Portal>
+        </HoverCard.Root>
         <span>${entryPrice ? formatNumber(parseFloat(entryPrice.toFixed(6))) : "0.00"}</span>
       </div>
       
       <div className="flex justify-between">
-        <span>Notional Size</span>
+        <HoverCard.Root openDelay={0} closeDelay={0}>
+          <HoverCard.Trigger asChild>
+            <span className="border-b border-dashed border-muted-foreground/50 cursor-help">
+              Notional Size
+            </span>
+          </HoverCard.Trigger>
+          <HoverCard.Portal>
+            <HoverCard.Content
+              side="top"
+              align="center"
+              sideOffset={5}
+              className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md text-[13px]"
+            >
+              <p>The estimated size value in traded pairs units</p>
+              <HoverCard.Arrow className="fill-[#17161d]/80" />
+            </HoverCard.Content>
+          </HoverCard.Portal>
+        </HoverCard.Root>
         <span>
           {formatNumber(parseFloat(notionalSize.toFixed(4)))} {pair?.split("/")[0]}
         </span>
@@ -183,7 +235,24 @@ export function TradeDetails({
       </div>
       
       <div className="flex justify-between">
-        <span>Hourly Interest</span>
+        <HoverCard.Root openDelay={0} closeDelay={0}>
+          <HoverCard.Trigger asChild>
+            <span className="border-b border-dashed border-muted-foreground/50 cursor-help">
+              Hourly Interest
+            </span>
+          </HoverCard.Trigger>
+          <HoverCard.Portal>
+            <HoverCard.Content
+              side="top"
+              align="center"
+              sideOffset={5}
+              className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md text-[13px]"
+            >
+              <p>The estimated hourly payment for this position by combining the borrow fee and funding rate in USD</p>
+              <HoverCard.Arrow className="fill-[#17161d]/80" />
+            </HoverCard.Content>
+          </HoverCard.Portal>
+        </HoverCard.Root>
         <span className={fees.hourlyInterest >= 0 ? "text-short" : "text-long"}>
           {fees.hourlyInterest >= 0 ? "-" : "+"}$
           {formatNumber(Math.abs(parseFloat(fees.hourlyInterest.toFixed(2))))} (
@@ -192,7 +261,24 @@ export function TradeDetails({
       </div>
       
       <div className="flex justify-between">
-        <span>Total Required</span>
+        <HoverCard.Root openDelay={0} closeDelay={0}>
+          <HoverCard.Trigger asChild>
+            <span className="border-b border-dashed border-muted-foreground/50 cursor-help">
+              Total Required
+            </span>
+          </HoverCard.Trigger>
+          <HoverCard.Portal>
+            <HoverCard.Content
+              side="top"
+              align="center"
+              sideOffset={5}
+              className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md text-[13px]"
+            >
+              <p>The amount of balance needed to open this trade</p>
+              <HoverCard.Arrow className="fill-[#17161d]/80" />
+            </HoverCard.Content>
+          </HoverCard.Portal>
+        </HoverCard.Root>
         <span>{totalRequired.toFixed(2)} USDC</span>
       </div>
       
