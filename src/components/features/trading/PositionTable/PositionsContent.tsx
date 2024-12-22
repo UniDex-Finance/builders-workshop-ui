@@ -14,6 +14,7 @@ import { PositionDialog } from "./PositionDialog";
 import { PositionSLTPDialog } from "./PositionSLTPDialog";
 import { PositionCollateralDialog } from "./PositionCollateralDialog";
 import { PositionSizeDialog } from "./PositionSizeDialog";
+import * as HoverCard from '@radix-ui/react-hover-card';
 
 interface PositionsContentProps {
   positions: Position[];
@@ -116,12 +117,77 @@ export function PositionsContent({
       <TableHeader className="hidden md:table-header-group">
         <TableRow>
           <TableHead>Pair</TableHead>
-          <TableHead>Size</TableHead>
+          <TableHead>
+            <HoverCard.Root openDelay={0} closeDelay={0}>
+              <HoverCard.Trigger asChild>
+                <span className="border-b border-dashed border-muted-foreground/50 cursor-help">
+                  Size
+                </span>
+              </HoverCard.Trigger>
+              <HoverCard.Portal>
+                <HoverCard.Content
+                  side="top"
+                  align="center"
+                  sideOffset={5}
+                  className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md text-[13px]"
+                >
+                  <div className="space-y-2">
+                    <p>The top value represents the USD value of the position's exposure to the pair.</p>
+                    <p>While the bottom value represents the notional size in the pairs units based on the entry price.</p>
+                  </div>
+                  <HoverCard.Arrow className="fill-[#17161d]/80" />
+                </HoverCard.Content>
+              </HoverCard.Portal>
+            </HoverCard.Root>
+          </TableHead>
           <TableHead>Margin</TableHead>
           <TableHead>Entry Price</TableHead>
-          <TableHead>Market/Liq. Price</TableHead>
+          <TableHead>
+            <HoverCard.Root openDelay={0} closeDelay={0}>
+              <HoverCard.Trigger asChild>
+                <span className="border-b border-dashed border-muted-foreground/50 cursor-help">
+                  Market/Liq. Price
+                </span>
+              </HoverCard.Trigger>
+              <HoverCard.Portal>
+                <HoverCard.Content
+                  side="top"
+                  align="center"
+                  sideOffset={5}
+                  className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md text-[13px]"
+                >
+                  <div className="space-y-2">
+                    <p>The top value represents the current reported oracle price for this pair.</p>
+                    <p>While the bottom value shows the current latest liquidation price for the position.</p>
+                  </div>
+                  <HoverCard.Arrow className="fill-[#17161d]/80" />
+                </HoverCard.Content>
+              </HoverCard.Portal>
+            </HoverCard.Root>
+          </TableHead>
           <TableHead>SL/TP</TableHead>
-          <TableHead>uPnL</TableHead>
+          <TableHead>
+            <HoverCard.Root openDelay={0} closeDelay={0}>
+              <HoverCard.Trigger asChild>
+                <span className="border-b border-dashed border-muted-foreground/50 cursor-help">
+                  uPnL
+                </span>
+              </HoverCard.Trigger>
+              <HoverCard.Portal>
+                <HoverCard.Content
+                  side="top"
+                  align="center"
+                  sideOffset={5}
+                  className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md text-[13px]"
+                >
+                  <div className="space-y-2">
+                    <p>This value shows the current unrealized profit and loss after accounting for trade fees, funding fees, and borrow fees assume the aggregated dex has them</p>
+                  </div>
+                  <HoverCard.Arrow className="fill-[#17161d]/80" />
+                </HoverCard.Content>
+              </HoverCard.Portal>
+            </HoverCard.Root>
+          </TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
