@@ -33,7 +33,7 @@ function BalanceItem({ title, balance, isLoading, suffix = "USDC", className }: 
   const tooltipContent = {
     "Trading Account": "The trading account balance is the sum of the 1ct wallet and any margin account balances. This is the amount that you have which can be used to open trades.",
     "1CT Wallet Balance": "This is the main wallet address that is placing trades across various platforms. Only you have permission to manage this address",
-    "UniDex Margin Balance": "This is the margin balance of the aggregated source \"UniDex V4\". This balence can be used to place orders on other exchanges, but we show it so you can micro manage if you wanted"
+    "UniDex Margin Balance": "This is the margin balance of the aggregated source \"UniDex V4\". This balance can be used to place orders on other exchanges, but we show it so you can micro manage if you wanted"
   }[title];
 
   return (
