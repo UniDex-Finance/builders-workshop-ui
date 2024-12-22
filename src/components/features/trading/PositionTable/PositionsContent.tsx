@@ -13,6 +13,7 @@ import { useState } from "react";
 import { PositionDialog } from "./PositionDialog";
 import { PositionSLTPDialog } from "./PositionSLTPDialog";
 import { PositionCollateralDialog } from "./PositionCollateralDialog";
+import { PositionSizeDialog } from "./PositionSizeDialog";
 
 interface PositionsContentProps {
   positions: Position[];
@@ -44,6 +45,7 @@ export function PositionsContent({
   const [selectedSLTPPosition, setSelectedSLTPPosition] = useState<Position | null>(null);
   const [isCollateralDialogOpen, setIsCollateralDialogOpen] = useState(false);
   const [selectedCollateralPosition, setSelectedCollateralPosition] = useState<Position | null>(null);
+  const [isSizeDialogOpen, setIsSizeDialogOpen] = useState(false);
 
   const formatNumber = (value: string | number) => {
     const numValue = typeof value === "string" ? parseFloat(value) : value;
@@ -95,6 +97,18 @@ export function PositionsContent({
       setSelectedCollateralPosition(selectedPosition);
       setIsCollateralDialogOpen(true);
     }
+  };
+
+  const handleSizeClick = (position: Position, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedPosition(position);
+    setIsSizeDialogOpen(true);
+  };
+
+  const handleCollateralClick = (position: Position, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedCollateralPosition(position);
+    setIsCollateralDialogOpen(true);
   };
 
   return (
@@ -170,7 +184,10 @@ export function PositionsContent({
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="flex justify-between md:table-cell">
+                <TableCell 
+                  className="flex justify-between md:table-cell cursor-pointer hover:bg-[#272734]"
+                  onClick={(e) => handleSizeClick(position, e)}
+                >
                   <span className="md:hidden">Size:</span>
                   <div>
                     <div>${formatNumber(position.size)}</div>
@@ -185,7 +202,10 @@ export function PositionsContent({
                     {(parseFloat(position.size) / parseFloat(position.entryPrice)).toFixed(6)} {basePair.toUpperCase()}
                   </div>
                 </TableCell>
-                <TableCell className="flex justify-between md:table-cell">
+                <TableCell 
+                  className="flex justify-between md:table-cell cursor-pointer hover:bg-[#272734]"
+                  onClick={(e) => handleCollateralClick(position, e)}
+                >
                   <span className="md:hidden">Margin:</span>
                   <div>${formatNumber(position.margin)}</div>
                 </TableCell>
@@ -315,6 +335,15 @@ export function PositionsContent({
         onClose={() => {
           setIsCollateralDialogOpen(false);
           setSelectedCollateralPosition(null);
+        }}
+      />
+
+      <PositionSizeDialog
+        position={selectedPosition}
+        isOpen={isSizeDialogOpen}
+        onClose={() => {
+          setIsSizeDialogOpen(false);
+          setSelectedPosition(null);
         }}
       />
     </>

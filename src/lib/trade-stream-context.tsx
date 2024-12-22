@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from 'react';
 
 interface Trade {
   id: string;
@@ -42,27 +42,55 @@ interface DydxTradeMessage {
   trades: DydxTrade[];
 }
 
+// Add Orderly interface after the DydxTradeMessage interface
+interface OrderlyTrade {
+  symbol: string;
+  price: number;
+  size: number;
+  side: 'BUY' | 'SELL';
+}
+
+interface OrderlyTradeMessage {
+  topic: string;
+  ts: number;
+  data: OrderlyTrade;
+}
+
 interface TradeStreamContextType {
   trades: Trade[];
 }
 
 const TradeStreamContext = createContext<TradeStreamContextType>({ trades: [] });
 
+const MAX_TRADES_PER_SOURCE = 100;
+
 function shortenAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
 export function TradeStreamProvider({ children, pair }: { children: ReactNode, pair: string }) {
-  const [trades, setTrades] = useState<Trade[]>([]);
-  const MAX_TRADES = 40;
+  const [tradesBySource, setTradesBySource] = useState<{
+    hyperliquid: Trade[];
+    dydx: Trade[];
+    orderly: Trade[];
+  }>({
+    hyperliquid: [],
+    dydx: [],
+    orderly: []
+  });
 
   useEffect(() => {
     // Clear existing trades when pair changes
-    setTrades([]);
+    setTradesBySource({
+      hyperliquid: [],
+      dydx: [],
+      orderly: []
+    });
 
     const connections = {
       hyperliquid: new WebSocket('wss://api.hyperliquid.xyz/ws'),
-      dydx: new WebSocket('wss://dydx-ws-wrapper-production.up.railway.app')
+      dydx: new WebSocket('wss://dydx-ws-wrapper-production.up.railway.app'),
+      orderly: new WebSocket('wss://ws-evm.orderly.org/ws/stream/0xfad2932d33abbebcd9d10a5997693cece568f6bd35466ffce1dbe3ef5833f5dd')
     };
 
     // Heartbeat for Hyperliquid
@@ -71,6 +99,13 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
         connections.hyperliquid.send(JSON.stringify({ method: 'ping' }));
       }
     }, 30000);
+
+    // Add Orderly heartbeat
+    const orderlyHeartbeat = setInterval(() => {
+      if (connections.orderly.readyState === WebSocket.OPEN) {
+        connections.orderly.send(JSON.stringify({ op: 'ping' }));
+      }
+    }, 10000);
 
     // Subscribe to both streams
     const subscribeToStreams = () => {
@@ -91,6 +126,16 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
           market: dydxMarket
         }));
       }
+
+      // Orderly subscription
+      if (connections.orderly.readyState === WebSocket.OPEN) {
+        const orderlySymbol = `PERP_${pair.replace('/', '_')}C`;
+        connections.orderly.send(JSON.stringify({
+          id: `orderly-${Date.now()}`,
+          topic: `${orderlySymbol}@trade`,
+          event: 'subscribe'
+        }));
+      }
     };
 
     // Set up connection handlers
@@ -102,6 +147,20 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
     connections.dydx.onopen = () => {
       console.log('Connected to dYdX WebSocket');
       subscribeToStreams();
+    };
+
+    // Add Orderly connection handler
+    connections.orderly.onopen = () => {
+      console.log('Connected to Orderly WebSocket');
+      subscribeToStreams();
+    };
+
+    connections.orderly.onerror = (error) => {
+      console.error('Orderly WebSocket error:', error);
+    };
+
+    connections.orderly.onclose = () => {
+      console.log('Orderly WebSocket closed');
     };
 
     // Handle messages from both sources
@@ -122,7 +181,10 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
           user: trade.users[0] ? shortenAddress(trade.users[0]) : undefined
         }));
 
-        setTrades(current => [...newTrades, ...current].slice(0, MAX_TRADES));
+        setTradesBySource(current => ({
+          ...current,
+          hyperliquid: [...newTrades, ...current.hyperliquid].slice(0, MAX_TRADES_PER_SOURCE)
+        }));
       }
     };
 
@@ -141,20 +203,60 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
           isLiquidated: trade.type === 'LIQUIDATED',
         }));
 
-        setTrades(current => [...newTrades, ...current].slice(0, MAX_TRADES));
+        setTradesBySource(current => ({
+          ...current,
+          dydx: [...newTrades, ...current.dydx].slice(0, MAX_TRADES_PER_SOURCE)
+        }));
+      }
+    };
+
+    // Add Orderly message handler after the dYdX handler
+    connections.orderly.onmessage = (event) => {
+      const message: OrderlyTradeMessage = JSON.parse(event.data);
+      console.log('Orderly message:', message); // Debug log
+      
+      if (message.topic?.endsWith('@trade') && message.data) {
+        const trade = message.data;
+        const sizeUSD = Number((trade.size * trade.price).toFixed(4));
+        const newTrade: Trade = {
+          id: `orderly-${message.ts}`,
+          pair,
+          side: trade.side === 'BUY' ? 'LONG' : 'SHORT',
+          price: trade.price,
+          sizeUSD,
+          timestamp: message.ts,
+          isPnL: false,
+          isLiquidated: false,
+        };
+
+        console.log('New Orderly trade:', newTrade); // Debug log
+        setTradesBySource(current => ({
+          ...current,
+          orderly: [newTrade, ...current.orderly].slice(0, MAX_TRADES_PER_SOURCE)
+        }));
       }
     };
 
     // Cleanup
     return () => {
       clearInterval(heartbeatInterval);
-      connections.hyperliquid.close();
-      connections.dydx.close();
+      clearInterval(orderlyHeartbeat);
+      Object.values(connections).forEach(connection => connection.close());
     };
   }, [pair]);
 
+  // Combine and sort all trades for the context value
+  const allTrades = useMemo(() => {
+    const combined = [
+      ...tradesBySource.hyperliquid,
+      ...tradesBySource.dydx,
+      ...tradesBySource.orderly
+    ];
+    return combined.sort((a, b) => b.timestamp - a.timestamp);
+  }, [tradesBySource]);
+
   return (
-    <TradeStreamContext.Provider value={{ trades }}>
+    <TradeStreamContext.Provider value={{ trades: allTrades }}>
       {children}
     </TradeStreamContext.Provider>
   );

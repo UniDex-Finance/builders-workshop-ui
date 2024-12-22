@@ -19,7 +19,7 @@ import { arbitrum } from "viem/chains";
 import { PriceProvider } from "../lib/websocket-price-context";
 import { Footer } from "../components/shared/Footer";
 import { Toaster } from "../components/ui/toaster";
-import  NewVersionNotification from "../components/shared/NewVersionNotification";
+import NewVersionNotification from "../components/shared/NewVersionNotification";
 
 const client = new QueryClient();
 const Disclaimer: DisclaimerComponent = ({ Text, Link }) => (
@@ -27,7 +27,7 @@ const Disclaimer: DisclaimerComponent = ({ Text, Link }) => (
     By connecting your wallet, you agree that you are not a US citizen or in any
     resticted territory based the {" "}
     <Link href="https://termsofservice.xyz">Terms of Service</Link> and
-    acknowledge you have read and understand the protocol{" "}
+    acknowledge you have read and understand the protocol {" "}
     <Link href="https://disclaimer.xyz">Disclaimer</Link>
   </Text>
 );
@@ -46,8 +46,39 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta name="theme-color" content="#000000" />
 
         <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/static/images/ios-icon.svg" />
+        
+        {/* Standard favicons */}
+        <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon/favicon-16x16.png" />
+        
+        {/* Apple touch icons */}
+        <link rel="apple-touch-icon" sizes="180x180" href="/static/images/favicon/iOS180X180.png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="/static/images/favicon/apple-touch-icon-120x120.png" />
+        
+        {/* Android/PWA icons */}
+        <link rel="icon" type="image/png" sizes="192x192" href="/static/images/favicon/android-chrome-192x192.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/static/images/favicon/android-chrome-512x512.png" />
       </Head>
+      <Script
+        id="register-sw"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/service-worker.js').then(
+                  function(registration) {
+                    console.log('Service Worker registration successful');
+                  },
+                  function(err) {
+                    console.log('Service Worker registration failed: ', err);
+                  }
+                );
+              });
+            }
+          `,
+        }}
+      />
       <Script
         src="/static/charting_library/charting_library.standalone.js"
         strategy="beforeInteractive"
