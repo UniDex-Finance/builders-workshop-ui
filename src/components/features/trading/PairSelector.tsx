@@ -1,11 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Search } from "lucide-react";
 import { cn } from "../../../lib/utils";
-import {
-  TokenIcon,
-  TokenPairDisplay,
-  PrefetchTokenImages,
-} from "../../../hooks/use-token-icon";
+import { TokenIcon } from "../../../hooks/use-token-icon";
 import { useMarketData } from "../../../hooks/use-market-data";
 import { usePrices } from "../../../lib/websocket-price-context";
 import { usePairPrecision } from "../../../hooks/use-pair-precision";
@@ -59,9 +55,9 @@ const MarketRow: React.FC<MarketRowProps> = ({ market }) => {
   return (
     <>
       {/* Desktop layout */}
-      <div className="items-center hidden w-full grid-cols-6 text-xs md:grid">
+      <div className="items-center hidden w-full grid-cols-6 text-xs font-normal md:grid">
         <div className="w-[80px]">
-          <TokenPairDisplay pair={market.pair} />
+          <span>{market.pair}</span>
         </div>
         <div className="w-[100px] text-right font-mono">
           {formatPrice(market.pair)}
@@ -99,9 +95,9 @@ const MarketRow: React.FC<MarketRowProps> = ({ market }) => {
         </div>
       </div>
       {/* Mobile layout */}
-      <div className="grid w-full grid-cols-3 text-xs md:hidden">
+      <div className="grid w-full grid-cols-3 text-xs font-normal md:hidden">
         <div className="flex items-center">
-          <TokenPairDisplay pair={market.pair} />
+          <span>{market.pair}</span>
         </div>
         <div className="font-mono text-right">
           {formatPrice(market.pair)}
@@ -195,7 +191,6 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
           sideOffset={0}
         >
           <div className="flex flex-col h-full">
-            <PrefetchTokenImages pairs={allMarkets.map((market) => market.pair)} />
             <div className="sticky top-0 z-20 bg-[hsl(var(--component-background))] shadow-sm">
               <div className="flex items-center justify-between p-4 border-b md:hidden">
                 <div className="text-sm font-medium">Select Market</div>
@@ -243,7 +238,7 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
                 <Button
                   key={market.pair}
                   variant="ghost"
-                  className="w-full h-auto px-4 py-3 hover:bg-muted/60"
+                  className="w-full h-auto px-4 py-2 hover:bg-muted/60"
                   onClick={() => handlePairSelect(market.pair)}
                 >
                   <MarketRow market={market} />
