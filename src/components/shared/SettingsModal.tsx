@@ -20,6 +20,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     { label: "Dark", icon: MoonIcon },
   ];
 
+  const handleThemeChange = (index: number) => {
+    setSelected(index);
+    const newTheme = index === 0 ? 'light' : 'dark';
+    setTheme(newTheme);
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -78,8 +84,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   )}
                   key={item.label}
                   onClick={() => {
-                    setSelected(index);
-                    setTheme(index === 0 ? 'light' : 'dark');
+                    handleThemeChange(index);
                   }}
                   type="button"
                 >

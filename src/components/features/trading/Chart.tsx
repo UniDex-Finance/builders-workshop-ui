@@ -2,6 +2,7 @@ import { useEffect, useRef, useMemo } from "react";
 import type { ResolutionString } from "../../../../public/static/charting_library/charting_library";
 import datafeed from "../../../utils/datafeed.js";
 import { Position } from "../../../hooks/use-positions";
+import { useTheme } from "next-themes";
 
 declare global {
   interface Window {
@@ -47,6 +48,7 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
   const startHeight = useRef(0);
   const currentPositionIdsRef = useRef<Set<string>>(new Set());
   const isChartReadyRef = useRef(false);
+  const { theme } = useTheme();
 
   // Memoize positions based on their IDs and entry prices only
   const positionKey = useMemo(() => {
@@ -122,117 +124,128 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
     drawPositionLines(chart);
   }, [positionKey]);
 
-  // Main chart initialization effect
+  // Effect for theme changes - watch theme directly
   useEffect(() => {
-    const loadTradingView = async () => {
-      try {
-        if (typeof window === "undefined" || !window.TradingView) {
-          console.log("TradingView not loaded yet");
-          return;
-        }
+    if (widgetRef.current) {
+      // Force a complete cleanup and reload of the widget
+      widgetRef.current.remove();
+      widgetRef.current = null;
+      isChartReadyRef.current = false;
+      loadTradingView();
+    }
+  }, [theme]);
 
-        // Remove old widget if it exists
-        if (widgetRef.current) {
-          widgetRef.current.remove();
-          widgetRef.current = null;
-          isChartReadyRef.current = false;
-        }
-
-        console.log("Creating TradingView widget");
-        const widget = new window.TradingView.widget({
-          container: "tv_chart_container",
-          locale: "en",
-          library_path: chartingLibraryPath,
-          datafeed: datafeed,
-          symbol: getFormattedSymbol(selectedPair),
-          interval: "15" as ResolutionString,
-          autosize: true,
-          debug: true,
-          enabled_features: [
-            "show_exchange_logos",
-            "side_toolbar_in_fullscreen_mode",
-            "header_in_fullscreen_mode",
-            "hide_resolution_in_legend",
-            "items_favoriting",
-            "save_chart_properties_to_local_storage",
-            "iframe_loading_compatibility_mode",
-          ],
-          disabled_features: [
-            "volume_force_overlay",
-            "create_volume_indicator_by_default",
-            "header_compare",
-            "display_market_status",
-            "show_interval_dialog_on_key_press",
-            "header_symbol_search",
-            "popup_hints",
-            "header_in_fullscreen_mode",
-            "use_localstorage_for_settings",
-            "right_bar_stays_on_scroll",
-            "symbol_info",
-            "timeframes_toolbar",
-          ],
-          theme: "dark",
-          overrides: {
-            "paneProperties.background": "#17161d",
-            "scalesProperties.bgColor": "#17161d",
-            "paneProperties.backgroundType": "solid",
-            "paneProperties.legendProperties.showBackground": false,
-            "paneProperties.horzGridProperties.style": 2,
-            "paneProperties.vertGridProperties.style": 2,
-          },
-          load_last_chart: false,
-          saved_data: null,
-          auto_save_delay: 0,
-          max_bars: 300,
-          range: "1D",
-          custom_css_url: "../custom.css",
-          allow_symbol_change: false,
-          favorites: {
-            intervals: [
-              "1",
-              "5",
-              "15",
-              "30",
-              "60",
-              "240",
-              "1D",
-            ] as ResolutionString[],
-          },
-          loading_screen: { backgroundColor: "#17161d" },
-          visible_range: {
-            from: now - 24 * 60 * 60,
-            to: now,
-          },
-          auto_scale: true,
-          initial_data: {
-            resolution: "15" as ResolutionString,
-            from: now - 24 * 60 * 60,
-            to: now,
-          },
-        });
-
-        widgetRef.current = widget;
-
-        widget.onChartReady(() => {
-          isChartReadyRef.current = true;
-          const chart = widget.chart();
-          chart.getSeries().setChartStyleProperties(1, {
-            upColor: "#3df57b",
-            downColor: "#ea435c",
-            borderUpColor: "#3df57b",
-            borderDownColor: "#ea435c",
-            wickUpColor: "#3df57b",
-            wickDownColor: "#ea435c",
-          });
-          
-          // Draw position lines after chart is ready
-          drawPositionLines(chart);
-        });
-      } catch (error) {
-        console.error("Error initializing TradingView:", error);
+  // Main chart initialization effect
+  const loadTradingView = async () => {
+    try {
+      if (typeof window === "undefined" || !window.TradingView) {
+        console.log("TradingView not loaded yet");
+        return;
       }
-    };
 
+      // Remove old widget if it exists
+      if (widgetRef.current) {
+        widgetRef.current.remove();
+        widgetRef.current = null;
+        isChartReadyRef.current = false;
+      }
+
+      console.log("Creating TradingView widget");
+      const widget = new window.TradingView.widget({
+        container: "tv_chart_container",
+        locale: "en",
+        library_path: chartingLibraryPath,
+        datafeed: datafeed,
+        symbol: getFormattedSymbol(selectedPair),
+        interval: "15" as ResolutionString,
+        autosize: true,
+        debug: true,
+        enabled_features: [
+          "show_exchange_logos",
+          "side_toolbar_in_fullscreen_mode",
+          "header_in_fullscreen_mode",
+          "hide_resolution_in_legend",
+          "items_favoriting",
+          "save_chart_properties_to_local_storage",
+          "iframe_loading_compatibility_mode",
+        ],
+        disabled_features: [
+          "volume_force_overlay",
+          "create_volume_indicator_by_default",
+          "header_compare",
+          "display_market_status",
+          "show_interval_dialog_on_key_press",
+          "header_symbol_search",
+          "popup_hints",
+          "header_in_fullscreen_mode",
+          "use_localstorage_for_settings",
+          "right_bar_stays_on_scroll",
+          "symbol_info",
+          "timeframes_toolbar",
+        ],
+        theme: theme as "light" | "dark",
+        overrides: {
+          "paneProperties.background": theme === 'dark' ? "#17161d" : "#ffffff",
+          "scalesProperties.bgColor": theme === 'dark' ? "#17161d" : "#ffffff",
+          "paneProperties.backgroundType": "solid",
+          "paneProperties.legendProperties.showBackground": false,
+          "paneProperties.horzGridProperties.style": 2,
+          "paneProperties.vertGridProperties.style": 2,
+        },
+        load_last_chart: false,
+        saved_data: null,
+        auto_save_delay: 0,
+        max_bars: 300,
+        range: "1D",
+        custom_css_url: "../custom.css",
+        allow_symbol_change: false,
+        favorites: {
+          intervals: [
+            "1",
+            "5",
+            "15",
+            "30",
+            "60",
+            "240",
+            "1D",
+          ] as ResolutionString[],
+        },
+        loading_screen: { backgroundColor: theme === 'dark' ? "#17161d" : "#ffffff" },
+        visible_range: {
+          from: now - 24 * 60 * 60,
+          to: now,
+        },
+        auto_scale: true,
+        initial_data: {
+          resolution: "15" as ResolutionString,
+          from: now - 24 * 60 * 60,
+          to: now,
+        },
+      });
+
+      widgetRef.current = widget;
+
+      widget.onChartReady(() => {
+        isChartReadyRef.current = true;
+        const chart = widget.chart();
+        chart.getSeries().setChartStyleProperties(1, {
+          upColor: "#3df57b",
+          downColor: "#ea435c",
+          borderUpColor: "#3df57b",
+          borderDownColor: "#ea435c",
+          wickUpColor: "#3df57b",
+          wickDownColor: "#ea435c",
+        });
+        
+        // Draw position lines after chart is ready
+        drawPositionLines(chart);
+      });
+    } catch (error) {
+      console.error("Error initializing TradingView:", error);
+    }
+  };
+
+  useEffect(() => {
     loadTradingView();
 
     return () => {
@@ -275,14 +288,14 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
 
   return (
     <div 
-      className="relative rounded-xl"
+      className={`relative rounded-xl theme-${theme}`}
       style={{ 
         height: `${height}px`,
         resize: 'vertical',
         overflow: 'auto',
         border: '1px solid rgba(107, 114, 128, 0.3)',
         paddingBottom: '16px',
-        backgroundColor: '#17161d',
+        backgroundColor: theme === 'dark' ? '#17161d' : '#ffffff',
         minHeight: '300px',
         maxHeight: '800px',
         cursor: 'ns-resize',
