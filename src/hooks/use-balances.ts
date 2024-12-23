@@ -3,12 +3,13 @@ import { useSmartAccount } from './use-smart-account'
 import { formatUnits } from 'viem'
 import { useAccount } from 'wagmi'
 import { useEffect, useMemo } from 'react'
-import { optimism, arbitrum } from 'viem/chains'
+import { optimism, arbitrum, base } from 'viem/chains'
 import { useBalancesStore } from '../stores/balances'
 
 const BALANCES_CONTRACT = '0xeae57c7bce5caf160343a83440e98bc976ab7274'
 const USDC_TOKEN = '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
 const USDC_TOKEN_OPTIMISM = '0x0b2c639c533813f4aa9d7837caf62653d097ff85'
+const USDC_TOKEN_BASE = '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'
 
 const BALANCES_ABI = [
   {
@@ -46,8 +47,10 @@ export interface Balances {
   formattedMusdBalance: string
   eoaUsdcBalance: bigint
   eoaOptimismUsdcBalance: bigint
+  eoaBaseUsdcBalance: bigint
   formattedEoaUsdcBalance: string
   formattedEoaOptimismUsdcBalance: string
+  formattedEoaBaseUsdcBalance: string
 }
 
 function truncateToTwoDecimals(value: string): string {
@@ -58,7 +61,7 @@ function truncateToTwoDecimals(value: string): string {
   return value;
 }
 
-export function useBalances(selectedNetwork: 'arbitrum' | 'optimism' = 'arbitrum') {
+export function useBalances(selectedNetwork: 'arbitrum' | 'optimism' | 'base' = 'arbitrum') {
   const { address: eoaAddress } = useAccount()
   const { smartAccount, isInitialized } = useSmartAccount()
   const { balances, setBalances, setLoading, setError } = useBalancesStore()
@@ -142,6 +145,23 @@ export function useBalances(selectedNetwork: 'arbitrum' | 'optimism' = 'arbitrum
     }
   })
 
+  // Base USDC Balance
+  const { 
+    data: eoaBaseUsdcBalance,
+    refetch: refetchEoaBase
+  } = useContractRead({
+    address: USDC_TOKEN_BASE,
+    abi: ERC20_ABI,
+    functionName: 'balanceOf',
+    args: eoaArgs,
+    chainId: base.id,
+    query: {
+      enabled: !!eoaAddress,
+      staleTime: 4000,
+      refetchInterval: 5000,
+    }
+  })
+
   // Update store when data changes
   useEffect(() => {
     if (!smartAccountData) return;
@@ -150,10 +170,12 @@ export function useBalances(selectedNetwork: 'arbitrum' | 'optimism' = 'arbitrum
       ...smartAccountData,
       eoaUsdcBalance: eoaUsdcBalance || BigInt(0),
       eoaOptimismUsdcBalance: eoaOptimismUsdcBalance || BigInt(0),
+      eoaBaseUsdcBalance: eoaBaseUsdcBalance || BigInt(0),
       formattedEoaUsdcBalance: eoaUsdcBalance ? formatUnits(eoaUsdcBalance, 6) : '0',
-      formattedEoaOptimismUsdcBalance: eoaOptimismUsdcBalance ? formatUnits(eoaOptimismUsdcBalance, 6) : '0'
+      formattedEoaOptimismUsdcBalance: eoaOptimismUsdcBalance ? formatUnits(eoaOptimismUsdcBalance, 6) : '0',
+      formattedEoaBaseUsdcBalance: eoaBaseUsdcBalance ? formatUnits(eoaBaseUsdcBalance, 6) : '0'
     });
-  }, [smartAccountData, eoaUsdcBalance, eoaOptimismUsdcBalance]);
+  }, [smartAccountData, eoaUsdcBalance, eoaOptimismUsdcBalance, eoaBaseUsdcBalance]);
 
   // Update loading state
   useEffect(() => {
@@ -170,7 +192,8 @@ export function useBalances(selectedNetwork: 'arbitrum' | 'optimism' = 'arbitrum
       await Promise.all([
         smartAccountArgs ? refetchSmartAccount() : Promise.resolve(null),
         eoaArgs ? refetchEoaArbitrum() : Promise.resolve(null),
-        eoaArgs ? refetchEoaOptimism() : Promise.resolve(null)
+        eoaArgs ? refetchEoaOptimism() : Promise.resolve(null),
+        eoaArgs ? refetchEoaBase() : Promise.resolve(null)
       ]);
     } catch (error) {
       console.error('Error refetching balances:', error);
@@ -191,7 +214,9 @@ export function useBalances(selectedNetwork: 'arbitrum' | 'optimism' = 'arbitrum
           formattedUsdcAllowance: '0',
           formattedMusdBalance: '0',
           eoaOptimismUsdcBalance: BigInt(0),
-          formattedEoaOptimismUsdcBalance: '0'
+          eoaBaseUsdcBalance: BigInt(0),
+          formattedEoaOptimismUsdcBalance: '0',
+          formattedEoaBaseUsdcBalance: '0'
         },
         eoaUsdcBalance: eoaUsdcBalance,
         formattedEoaUsdcBalance: formatUnits(eoaUsdcBalance, 6)

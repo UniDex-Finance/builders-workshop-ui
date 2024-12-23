@@ -8,7 +8,7 @@ import {
   useSwitchChain,
 } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
-import { optimism } from "wagmi/chains";
+import { arbitrum, optimism, base } from "wagmi/chains";
 import { useSmartAccount } from "@/hooks/use-smart-account";
 import { useState, useEffect } from "react";
 
@@ -38,13 +38,39 @@ const ERC20_ABI = [
 
 // Constants
 const ACROSS_SPENDER = "0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE";
-const OPTIMISM_USDC = "0x0b2c639c533813f4aa9d7837caf62653d097ff85";
+const DESTINATION_CHAIN = arbitrum;
+
+// Chain-specific configurations
+const CHAIN_CONFIG = {
+  [arbitrum.id]: {
+    name: "Arbitrum",
+    chainId: arbitrum.id,
+    usdcAddress: "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+    needsApproval: false,
+  },
+  [optimism.id]: {
+    name: "Optimism",
+    chainId: optimism.id,
+    usdcAddress: "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
+    needsApproval: true,
+  },
+  [base.id]: {
+    name: "Base",
+    chainId: base.id,
+    usdcAddress: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    needsApproval: true,
+  },
+} as const;
+
+// Destination token (Arbitrum USDC)
+const DESTINATION_USDC = "0xaf88d065e77c8cc2239327c5edb3a432268e5831";
 
 createConfig({
   integrator: "unidex",
   rpcUrls: {
     [ChainId.ARB]: ["https://rpc.ankr.com/arbitrum"],
     [ChainId.OPT]: ["https://rpc.ankr.com/optimism"],
+    [ChainId.BSC]: ["https://rpc.ankr.com/base"],
   },
 });
 
@@ -66,7 +92,7 @@ export function CrossChainDepositCall({
   quoteData,
 }: CrossChainDepositCallProps) {
   const { toast } = useToast();
-  const { address } = useAccount();
+  const { address, chain: currentChain } = useAccount();
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
   const { switchChain } = useSwitchChain();
@@ -75,19 +101,21 @@ export function CrossChainDepositCall({
   const [isCheckingAllowance, setIsCheckingAllowance] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
 
-  const isOnOptimism = chain === optimism.id;
+  const sourceChainConfig = chain ? CHAIN_CONFIG[chain as keyof typeof CHAIN_CONFIG] : undefined;
+  const isSourceChainSupported = !!sourceChainConfig;
+  const isOnCorrectChain = currentChain?.id === chain;
   const amountInBaseUnits = amount ? parseUnits(amount, 6) : BigInt(0);
-  const needsApproval = isOnOptimism && amountInBaseUnits > allowance;
+  const needsApproval = isOnCorrectChain && sourceChainConfig?.needsApproval && amountInBaseUnits > allowance;
 
-  // Check allowance when on Optimism
+  // Check allowance when on supported source chain
   useEffect(() => {
     const checkAllowance = async () => {
-      if (!isOnOptimism || !address || !publicClient) return;
+      if (!isSourceChainSupported || !sourceChainConfig?.needsApproval || !address || !publicClient || !isOnCorrectChain) return;
 
       setIsCheckingAllowance(true);
       try {
         const currentAllowance = await publicClient.readContract({
-          address: OPTIMISM_USDC,
+          address: sourceChainConfig.usdcAddress,
           abi: ERC20_ABI,
           functionName: 'allowance',
           args: [address, ACROSS_SPENDER],
@@ -108,15 +136,15 @@ export function CrossChainDepositCall({
     };
 
     checkAllowance();
-  }, [isOnOptimism, address, publicClient, toast]);
+  }, [isSourceChainSupported, sourceChainConfig, address, publicClient, isOnCorrectChain, toast]);
 
   const handleApprove = async () => {
-    if (!address || !walletClient || !publicClient) return;
+    if (!address || !walletClient || !publicClient || !sourceChainConfig) return;
 
     setIsApproving(true);
     try {
       const hash = await walletClient.writeContract({
-        address: OPTIMISM_USDC,
+        address: sourceChainConfig.usdcAddress,
         abi: ERC20_ABI,
         functionName: 'approve',
         args: [ACROSS_SPENDER, amountInBaseUnits],
@@ -131,7 +159,7 @@ export function CrossChainDepositCall({
       
       // Refresh allowance after approval
       const newAllowance = await publicClient.readContract({
-        address: OPTIMISM_USDC,
+        address: sourceChainConfig.usdcAddress,
         abi: ERC20_ABI,
         functionName: 'allowance',
         args: [address, ACROSS_SPENDER],
@@ -156,8 +184,9 @@ export function CrossChainDepositCall({
   };
 
   const handleChainSwitch = () => {
-    console.log("Switching to Optimism...");
-    switchChain?.({ chainId: optimism.id });
+    if (!sourceChainConfig) return;
+    console.log(`Switching to ${sourceChainConfig.name}...`);
+    switchChain?.({ chainId: sourceChainConfig.chainId });
   };
 
   const handleDeposit = async () => {
@@ -165,10 +194,10 @@ export function CrossChainDepositCall({
     console.log("Amount:", amount);
     console.log("EOA Address:", address);
     console.log("Smart Account Address:", smartAccount?.address);
-    console.log("Wallet Client:", !!walletClient);
-    console.log("Public Client:", !!publicClient);
+    console.log("Source Chain:", sourceChainConfig?.name);
+    console.log("Destination Chain:", DESTINATION_CHAIN.name);
 
-    if (!address || !walletClient || !publicClient || !smartAccount?.address) {
+    if (!address || !walletClient || !publicClient || !smartAccount?.address || !sourceChainConfig) {
       toast({
         title: "Error",
         description:
@@ -219,10 +248,14 @@ export function CrossChainDepositCall({
   };
 
   const handleClick = async () => {
-    console.log("Button clicked");
-    console.log("Is on Optimism:", isOnOptimism);
+    if (!sourceChainConfig) return;
 
-    if (!isOnOptimism) {
+    console.log("Button clicked");
+    console.log("Source Chain:", sourceChainConfig.name);
+    console.log("Current Chain:", currentChain?.id);
+    console.log("Target Chain:", chain);
+
+    if (!isOnCorrectChain) {
       handleChainSwitch();
     } else if (needsApproval) {
       await handleApprove();
@@ -232,12 +265,24 @@ export function CrossChainDepositCall({
   };
 
   const getButtonText = () => {
-    if (!isOnOptimism) return "Switch to Optimism";
+    if (!sourceChainConfig) return "Unsupported Chain";
+    if (!isOnCorrectChain) return `Switch to ${sourceChainConfig.name}`;
     if (isLoading || isCheckingAllowance) return "Processing...";
     if (isApproving) return "Approving...";
     if (needsApproval) return "Approve USDC";
     return "Acknowledge terms and deposit";
   };
+
+  if (!sourceChainConfig) {
+    return (
+      <Button 
+        className="w-full h-[52px] bg-indigo-500 hover:bg-indigo-600 text-white opacity-50"
+        disabled={true}
+      >
+        Unsupported Chain
+      </Button>
+    );
+  }
 
   return (
     <Button 
