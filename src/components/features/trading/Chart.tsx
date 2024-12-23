@@ -288,14 +288,12 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
 
   return (
     <div 
-      className={`relative rounded-xl theme-${theme}`}
+      className={`relative rounded-xl border border-border bg-[var(--deposit-card-background)]`}
       style={{ 
         height: `${height}px`,
         resize: 'vertical',
         overflow: 'auto',
-        border: '1px solid rgba(107, 114, 128, 0.3)',
         paddingBottom: '16px',
-        backgroundColor: theme === 'dark' ? '#17161d' : '#ffffff',
         minHeight: '300px',
         maxHeight: '800px',
         cursor: 'ns-resize',
@@ -308,6 +306,9 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
         id="tv_chart_container"
         className="w-full h-full"
         style={{ pointerEvents: 'auto' }}
+      />
+      <div 
+        className="absolute bottom-0 left-0 right-0 h-4 cursor-ns-resize bg-[var(--deposit-card-background)]"
       />
     </div>
   );
