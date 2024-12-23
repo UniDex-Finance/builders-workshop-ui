@@ -116,7 +116,7 @@ const MarketRow: React.FC<MarketRowProps> = ({ market, isFavorite, onToggleFavor
         </div>
       </div>
       {/* Mobile layout */}
-      <div className="grid w-full grid-cols-3 text-xs font-normal md:hidden">
+      <div className="grid w-full grid-cols-4 text-xs font-normal md:hidden">
         <div className="flex items-center gap-1">
           <button
             onClick={handleFavoriteClick}
@@ -135,6 +135,18 @@ const MarketRow: React.FC<MarketRowProps> = ({ market, isFavorite, onToggleFavor
         </div>
         <div className="font-mono text-right">
           {formatPrice(market.pair)}
+        </div>
+        <div className="text-right">
+          {!error ? (
+            <span className={cn(
+              percentageChange >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"
+            )}>
+              {percentageChange >= 0 ? "+" : ""}
+               {percentageChange.toFixed(2)}%
+            </span>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          )}
         </div>
         <div className="text-right">
           <span
@@ -236,12 +248,13 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
             "md:w-[800px] w-screen",
             "md:h-[500px] h-[100dvh]",
             "md:border md:rounded-md border-0 rounded-none",
-            "md:left-auto left-0",
-            "md:top-auto top-0"
+            "md:left-0 left-0",
+            "md:top-2 top-0"
           )}
           align="start"
           side="bottom"
-          sideOffset={0}
+          sideOffset={8}
+          alignOffset={-8}
         >
           <div className="flex flex-col h-full">
             <div className="sticky top-0 z-20 bg-[hsl(var(--component-background))] shadow-sm">
@@ -299,9 +312,10 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
                   <div className="w-[120px] text-right">Funding Rate</div>
                 </div>
                 {/* Mobile columns */}
-                <div className="grid grid-cols-3 px-4 py-2 text-xs font-medium md:hidden text-muted-foreground">
+                <div className="grid grid-cols-4 px-4 py-2 text-xs font-medium md:hidden text-muted-foreground">
                   <div>Market</div>
                   <div className="text-right">Oracle Price</div>
+                  <div className="text-right">24h Change</div>
                   <div className="text-right">Funding Rate</div>
                 </div>
               </div>
