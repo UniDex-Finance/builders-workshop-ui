@@ -126,6 +126,7 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { formatPairPrice } = usePairPrecision();
   const { marketData: unidexMarketData, allMarkets } = useMarketData({
@@ -203,9 +204,9 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
                   Cancel
                 </Button>
               </div>
-              <div className="px-4 py-2 border-b">
+              <div className="px-3 py-2.5">
                 <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-foreground" />
                   <input
                     ref={searchInputRef}
                     type="text"
@@ -213,24 +214,44 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={handleSearchKeyDown}
-                    className="w-full py-2 pr-4 text-sm bg-transparent border rounded-md pl-9 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-ring"
+                    className="w-full py-1.5 pr-3 text-xs bg-transparent border rounded-md pl-8 focus:outline-none focus:ring-1 focus:ring-[hsl(var(--main-accent))] text-muted-foreground placeholder:text-muted-foreground"
                   />
                 </div>
               </div>
-              {/* Desktop columns */}
-              <div className="hidden grid-cols-6 px-4 py-2 text-xs font-medium border-b md:grid text-muted-foreground bg-muted/30">
-                <div className="w-[80px]">Market</div>
-                <div className="w-[100px] text-right">Oracle Price</div>
-                <div className="w-[100px] text-right">24h Change</div>
-                <div className="w-[120px] text-right">Long Liquidity</div>
-                <div className="w-[120px] text-right">Short Liquidity</div>
-                <div className="w-[120px] text-right">Funding Rate</div>
+              <div className="flex gap-1.5 px-3 py-2 overflow-x-auto scrollbar-none">
+                {["All", "Favorites", "New", "Majors", "Meme", "Trending", "DeFi"].map((category) => (
+                  <Button
+                    key={category}
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedCategory(category)}
+                    className={cn(
+                      "h-6 px-2 text-xs font-medium shrink-0",
+                      selectedCategory === category
+                        ? "text-[hsl(var(--main-accent))]"
+                        : "text-muted-foreground hover:text-[hsl(var(--main-accent))]"
+                    )}
+                  >
+                    {category}
+                  </Button>
+                ))}
               </div>
-              {/* Mobile columns */}
-              <div className="grid grid-cols-3 px-4 py-2 text-xs font-medium border-b md:hidden text-muted-foreground bg-muted/30">
-                <div>Market</div>
-                <div className="text-right">Oracle Price</div>
-                <div className="text-right">Funding Rate</div>
+              <div className="pt-2">
+                {/* Desktop columns */}
+                <div className="hidden grid-cols-6 px-3 py-1.5 text-xs font-medium md:grid text-muted-foreground">
+                  <div className="w-[80px]">Market</div>
+                  <div className="w-[100px] text-right">Oracle Price</div>
+                  <div className="w-[100px] text-right">24h Change</div>
+                  <div className="w-[120px] text-right">Long Liquidity</div>
+                  <div className="w-[120px] text-right">Short Liquidity</div>
+                  <div className="w-[120px] text-right">Funding Rate</div>
+                </div>
+                {/* Mobile columns */}
+                <div className="grid grid-cols-3 px-4 py-2 text-xs font-medium md:hidden text-muted-foreground">
+                  <div>Market</div>
+                  <div className="text-right">Oracle Price</div>
+                  <div className="text-right">Funding Rate</div>
+                </div>
               </div>
             </div>
             <div className="flex-1 overflow-y-auto scrollbar-custom">
