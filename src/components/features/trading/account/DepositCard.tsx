@@ -16,12 +16,15 @@ import { useAccount, useSwitchChain } from "wagmi"
 import { useSmartAccount } from "@/hooks/use-smart-account"
 import { useToast } from "@/hooks/use-toast"
 import { useTokenTransferActions } from "@/hooks/use-token-transfer-actions"
-import { arbitrum, optimism } from "wagmi/chains"
+import { arbitrum, optimism, base } from "wagmi/chains"
 import { CrossChainDepositCall } from "../deposit/CrossChainDepositCall"
 import { formatUnits } from "viem"
 import { parseUnits } from "viem"
 import Image from "next/image"
 import USDCIcon from "@/../../public/static/images/tokens/USDC.svg"
+import ArbLogo from "@/../../public/static/images/chain-logos/arb.svg"
+import OpLogo from "@/../../public/static/images/chain-logos/op.svg"
+import BaseLogo from "@/../../public/static/images/chain-logos/base.svg"
 
 interface DepositCardProps {
   onClose: () => void;
@@ -39,6 +42,31 @@ interface QuoteData {
   }>;
 }
 
+// Chain-specific configurations
+const CHAIN_CONFIG = {
+  arbitrum: {
+    name: "Arbitrum",
+    chainId: arbitrum.id,
+    usdcAddress: "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+    needsQuote: false,
+  },
+  optimism: {
+    name: "Optimism",
+    chainId: optimism.id,
+    usdcAddress: "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
+    needsQuote: true,
+  },
+  base: {
+    name: "Base",
+    chainId: base.id,
+    usdcAddress: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    needsQuote: true,
+  },
+} as const;
+
+// Constants
+const DESTINATION_CHAIN = CHAIN_CONFIG.arbitrum;
+
 export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) {
   const [amount, setAmount] = useState("")
   const [selectedChain, setSelectedChain] = useState("arbitrum")
@@ -50,11 +78,14 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
   const { switchChain } = useSwitchChain()
   const { transferToSmartAccount } = useTokenTransferActions()
 
-  // Only fetch quote if we're on Optimism
+  const getSourceChainConfig = () => CHAIN_CONFIG[selectedChain as keyof typeof CHAIN_CONFIG];
+  const sourceChainConfig = getSourceChainConfig();
+
+  // Only fetch quote if we're on a chain that needs it
   useEffect(() => {
     const fetchQuote = async () => {
       if (
-        selectedChain !== "optimism" || 
+        !sourceChainConfig?.needsQuote || 
         !amount || 
         parseFloat(amount) <= 0 || 
         !address || 
@@ -66,7 +97,7 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
 
       try {
         const amountInUsdcUnits = parseUnits(amount, 6).toString();
-        const quoteUrl = `https://li.quest/v1/quote?fromChain=10&toChain=42161&fromToken=0x0b2c639c533813f4aa9d7837caf62653d097ff85&toToken=0xaf88d065e77c8cc2239327c5edb3a432268e5831&fromAddress=${address}&toAddress=${smartAccount.address}&fromAmount=${amountInUsdcUnits}&integrator=unidex&allowBridges=across&skipSimulation=true`;
+        const quoteUrl = `https://li.quest/v1/quote?fromChain=${sourceChainConfig.chainId}&toChain=${DESTINATION_CHAIN.chainId}&fromToken=${sourceChainConfig.usdcAddress}&toToken=${DESTINATION_CHAIN.usdcAddress}&fromAddress=${address}&toAddress=${smartAccount.address}&fromAmount=${amountInUsdcUnits}&integrator=unidex&allowBridges=across&skipSimulation=true`;
         
         const response = await fetch(quoteUrl);
         if (!response.ok) return;
@@ -80,29 +111,30 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
 
     const timeoutId = setTimeout(fetchQuote, 500);
     return () => clearTimeout(timeoutId);
-  }, [amount, address, smartAccount?.address, selectedChain]);
+  }, [amount, address, smartAccount?.address, sourceChainConfig]);
 
   const isOnCorrectChain = () => {
-    if (selectedChain === "arbitrum") {
-      return chain?.id === arbitrum.id;
-    } else {
-      return chain?.id === optimism.id;
-    }
+    return chain?.id === sourceChainConfig?.chainId;
   };
 
   const handleSwitchNetwork = () => {
-    if (selectedChain === "arbitrum") {
-      switchChain?.({ chainId: arbitrum.id });
-    } else {
-      switchChain?.({ chainId: optimism.id });
+    if (sourceChainConfig) {
+      switchChain?.({ chainId: sourceChainConfig.chainId });
     }
   };
 
   const getAvailableBalance = () => {
     if (!balances) return "0.0000";
-    return selectedChain === "arbitrum" 
-      ? balances.formattedEoaUsdcBalance 
-      : balances.formattedEoaOptimismUsdcBalance;
+    switch (selectedChain) {
+      case "arbitrum":
+        return balances.formattedEoaUsdcBalance;
+      case "optimism":
+        return balances.formattedEoaOptimismUsdcBalance;
+      case "base":
+        return balances.formattedEoaBaseUsdcBalance;
+      default:
+        return "0.0000";
+    }
   };
 
   const isAmountExceedingBalance = () => {
@@ -111,7 +143,7 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
   };
 
   const getExpectedDepositAmount = () => {
-    if (selectedChain === "arbitrum") {
+    if (!sourceChainConfig?.needsQuote) {
       return amount || "0";
     }
     if (!quoteData?.estimate?.toAmount) return "—";
@@ -119,7 +151,7 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
   };
 
   const getRelayerFee = () => {
-    if (selectedChain === "arbitrum") {
+    if (!sourceChainConfig?.needsQuote) {
       return "0";
     }
     if (!quoteData?.feeCosts) return "—";
@@ -247,7 +279,12 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
                 <SelectTrigger className="bg-[#272734] border-zinc-800 h-[52px]">
                   <SelectValue>
                     <div className="flex items-center gap-2">
-                      <TokenIcon pair={selectedChain === "arbitrum" ? "ARB/USD" : "OP/USD"} size={24} />
+                      <Image 
+                        src={selectedChain === "arbitrum" ? ArbLogo : selectedChain === "optimism" ? OpLogo : BaseLogo} 
+                        alt={selectedChain} 
+                        width={24} 
+                        height={24} 
+                      />
                       <span className="capitalize">{selectedChain}</span>
                     </div>
                   </SelectValue>
@@ -255,14 +292,20 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
                 <SelectContent className="bg-[#272734] border-zinc-800">
                   <SelectItem value="arbitrum">
                     <div className="flex items-center gap-2">
-                      <TokenIcon pair="ARB/USD" size={24} />
+                      <Image src={ArbLogo} alt="Arbitrum" width={24} height={24} />
                       <span>Arbitrum</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="optimism">
                     <div className="flex items-center gap-2">
-                      <TokenIcon pair="OP/USD" size={24} />
+                      <Image src={OpLogo} alt="Optimism" width={24} height={24} />
                       <span>Optimism</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="base">
+                    <div className="flex items-center gap-2">
+                      <Image src={BaseLogo} alt="Base" width={24} height={24} />
+                      <span>Base</span>
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -343,7 +386,7 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
               <span className="text-sm text-zinc-500">Expected Deposit Amount</span>
               <span className="text-sm">{getExpectedDepositAmount()}</span>
             </div>
-            {selectedChain === "optimism" && (
+            {sourceChainConfig?.needsQuote && (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-zinc-500">Bridge Fee</span>
                 <span className="text-sm">{getRelayerFee()}</span>
@@ -355,7 +398,7 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
             </div>
           </div>
 
-          {selectedChain === "optimism" ? (
+          {sourceChainConfig?.needsQuote ? (
             <CrossChainDepositCall
               amount={amount}
               onSuccess={() => {
@@ -363,32 +406,31 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
                 onClose();
                 setAmount("");
               }}
-              chain={chain?.id}
+              chain={sourceChainConfig.chainId}
               isLoading={isLoading}
               disabled={
-                !amount || 
-                parseFloat(amount) <= 0 || 
+                !amount ||
+                parseFloat(amount) <= 0 ||
                 isAmountExceedingBalance()
               }
               quoteData={quoteData}
             />
           ) : (
-            <Button 
+            <Button
               className="w-full h-[52px] bg-[#7142cf] hover:bg-[#7142cf]/80 text-white"
               disabled={
-                !amount || 
-                parseFloat(amount) <= 0 || 
+                !amount ||
+                parseFloat(amount) <= 0 ||
                 isLoading ||
                 isAmountExceedingBalance()
               }
               onClick={handleDeposit}
             >
-              {!isOnCorrectChain() 
-                ? `Switch to ${selectedChain}` 
-                : isLoading 
-                  ? "Processing..." 
-                  : "Acknowledge terms and deposit"
-              }
+              {!isOnCorrectChain()
+                ? `Switch to ${selectedChain}`
+                : isLoading
+                ? "Processing..."
+                : "Acknowledge terms and deposit"}
             </Button>
           )}
 
