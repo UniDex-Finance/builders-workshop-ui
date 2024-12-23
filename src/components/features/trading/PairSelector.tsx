@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect } from "react";
-import { Search, Star } from "lucide-react";
+import React, { useRef, useState, useEffect, useMemo } from "react";
+import { Search, Star, ArrowUpDown } from "lucide-react";
 import { cn } from "../../../lib/utils";
 import { TokenIcon } from "../../../hooks/use-token-icon";
 import { useMarketData } from "../../../hooks/use-market-data";
@@ -31,12 +31,19 @@ interface MarketRowProps {
   };
   isFavorite: boolean;
   onToggleFavorite: (pair: string) => void;
+  onPercentageChange?: (value: number) => void;
 }
 
-const MarketRow: React.FC<MarketRowProps> = ({ market, isFavorite, onToggleFavorite }) => {
+const MarketRow: React.FC<MarketRowProps> = ({ market, isFavorite, onToggleFavorite, onPercentageChange }) => {
   const { formatPairPrice } = usePairPrecision();
   const { prices } = usePrices();
   const { percentageChange, error } = use24hChange(market.pair);
+
+  React.useEffect(() => {
+    if (onPercentageChange && !error) {
+      onPercentageChange(percentageChange);
+    }
+  }, [percentageChange, error, onPercentageChange]);
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -176,6 +183,9 @@ const MarketRow: React.FC<MarketRowProps> = ({ market, isFavorite, onToggleFavor
   );
 };
 
+type SortField = "24hChange" | "fundingRate" | null;
+type SortDirection = "asc" | "desc";
+
 export const PairSelector: React.FC<PairSelectorProps> = ({
   selectedPair,
   onPairChange,
@@ -183,6 +193,8 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<MarketCategory>("All");
+  const [sortField, setSortField] = useState<SortField>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [favorites, setFavorites] = useState<string[]>(() => {
     const saved = localStorage.getItem("favoriteMarkets");
     return saved ? JSON.parse(saved) : [];
@@ -209,11 +221,13 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
     );
   };
 
-  const filteredMarkets = allMarkets.filter((market) => {
-    const matchesSearch = market.pair.toLowerCase().includes(searchQuery.toLowerCase());
-    const categoryPairs = getPairsInCategory(selectedCategory, allMarkets.map(m => m.pair), favorites);
-    return matchesSearch && categoryPairs.includes(market.pair);
-  });
+  const filteredMarkets = useMemo(() => {
+    return allMarkets.filter((market) => {
+      const matchesSearch = market.pair.toLowerCase().includes(searchQuery.toLowerCase());
+      const categoryPairs = getPairsInCategory(selectedCategory, allMarkets.map(m => m.pair), favorites);
+      return matchesSearch && categoryPairs.includes(market.pair);
+    });
+  }, [allMarkets, searchQuery, selectedCategory, favorites]);
 
   const handlePairSelect = (pair: string) => {
     onPairChange(pair);
@@ -229,6 +243,41 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
       setIsOpen(false);
     }
   };
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("desc");
+    }
+  };
+
+  const changeRef = useRef(new Map<string, number>());
+
+  const handlePercentageChange = (pair: string) => (value: number) => {
+    changeRef.current.set(pair, value);
+  };
+
+  const sortedMarkets = useMemo(() => {
+    if (!sortField) return filteredMarkets;
+
+    return [...filteredMarkets].sort((a, b) => {
+      if (sortField === "24hChange") {
+        const changeA = changeRef.current.get(a.pair) || 0;
+        const changeB = changeRef.current.get(b.pair) || 0;
+        const diff = changeA - changeB;
+        return sortDirection === "asc" ? diff : -diff;
+      }
+
+      if (sortField === "fundingRate") {
+        const diff = a.fundingRate - b.fundingRate;
+        return sortDirection === "asc" ? diff : -diff;
+      }
+
+      return 0;
+    });
+  }, [filteredMarkets, sortField, sortDirection]);
 
   return (
     <div className="flex min-w-[130px] pr-2 border-r">
@@ -316,22 +365,62 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
                 <div className="hidden grid-cols-6 px-3 py-1.5 text-xs font-medium md:grid text-muted-foreground">
                   <div className="w-[80px]">Market</div>
                   <div className="w-[100px] text-right">Oracle Price</div>
-                  <div className="w-[100px] text-right">24h Change</div>
+                  <div 
+                    className="w-[100px] text-right flex items-center justify-end gap-1 cursor-pointer group"
+                    onClick={() => handleSort("24hChange")}
+                  >
+                    24h Change
+                    <ArrowUpDown className={cn(
+                      "h-3 w-3 transition-colors",
+                      sortField === "24hChange" ? "text-[var(--main-accent)]" : "text-muted-foreground group-hover:text-[var(--main-accent)]",
+                      sortField === "24hChange" && sortDirection === "asc" && "rotate-180"
+                    )} />
+                  </div>
                   <div className="w-[120px] text-right">Long Liquidity</div>
                   <div className="w-[120px] text-right">Short Liquidity</div>
-                  <div className="w-[120px] text-right">Funding Rate</div>
+                  <div 
+                    className="w-[120px] text-right flex items-center justify-end gap-1 cursor-pointer group"
+                    onClick={() => handleSort("fundingRate")}
+                  >
+                    Funding Rate
+                    <ArrowUpDown className={cn(
+                      "h-3 w-3 transition-colors",
+                      sortField === "fundingRate" ? "text-[var(--main-accent)]" : "text-muted-foreground group-hover:text-[var(--main-accent)]",
+                      sortField === "fundingRate" && sortDirection === "asc" && "rotate-180"
+                    )} />
+                  </div>
                 </div>
                 {/* Mobile columns */}
                 <div className="grid grid-cols-4 px-4 py-2 text-xs font-medium md:hidden text-muted-foreground">
                   <div>Market</div>
                   <div className="text-right">Oracle Price</div>
-                  <div className="text-right">24h Change</div>
-                  <div className="text-right">Funding Rate</div>
+                  <div 
+                    className="flex items-center justify-end gap-1 text-right cursor-pointer group"
+                    onClick={() => handleSort("24hChange")}
+                  >
+                    24h Change
+                    <ArrowUpDown className={cn(
+                      "h-3 w-3 transition-colors",
+                      sortField === "24hChange" ? "text-[var(--main-accent)]" : "text-muted-foreground group-hover:text-[var(--main-accent)]",
+                      sortField === "24hChange" && sortDirection === "asc" && "rotate-180"
+                    )} />
+                  </div>
+                  <div 
+                    className="flex items-center justify-end gap-1 text-right cursor-pointer group"
+                    onClick={() => handleSort("fundingRate")}
+                  >
+                    Funding Rate
+                    <ArrowUpDown className={cn(
+                      "h-3 w-3 transition-colors",
+                      sortField === "fundingRate" ? "text-[var(--main-accent)]" : "text-muted-foreground group-hover:text-[var(--main-accent)]",
+                      sortField === "fundingRate" && sortDirection === "asc" && "rotate-180"
+                    )} />
+                  </div>
                 </div>
               </div>
             </div>
             <div className="flex-1 overflow-y-auto scrollbar-custom">
-              {filteredMarkets.map((market) => (
+              {sortedMarkets.map((market) => (
                 <Button
                   key={market.pair}
                   variant="ghost"
@@ -342,6 +431,7 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
                     market={market}
                     isFavorite={favorites.includes(market.pair)}
                     onToggleFavorite={handleToggleFavorite}
+                    onPercentageChange={handlePercentageChange(market.pair)}
                   />
                 </Button>
               ))}
