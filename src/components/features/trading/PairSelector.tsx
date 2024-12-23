@@ -6,6 +6,7 @@ import { useMarketData } from "../../../hooks/use-market-data";
 import { usePrices } from "../../../lib/websocket-price-context";
 import { usePairPrecision } from "../../../hooks/use-pair-precision";
 import { use24hChange } from "../../../hooks/use-24h-change";
+import { MarketCategory, AVAILABLE_CATEGORIES, getPairsInCategory } from "../../../lib/market-categories";
 import {
   Popover,
   PopoverContent,
@@ -159,7 +160,7 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState<MarketCategory>("All");
   const [favorites, setFavorites] = useState<string[]>(() => {
     const saved = localStorage.getItem("favoriteMarkets");
     return saved ? JSON.parse(saved) : [];
@@ -188,10 +189,8 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
 
   const filteredMarkets = allMarkets.filter((market) => {
     const matchesSearch = market.pair.toLowerCase().includes(searchQuery.toLowerCase());
-    if (selectedCategory === "Favorites") {
-      return matchesSearch && favorites.includes(market.pair);
-    }
-    return matchesSearch;
+    const categoryPairs = getPairsInCategory(selectedCategory, allMarkets.map(m => m.pair), favorites);
+    return matchesSearch && categoryPairs.includes(market.pair);
   });
 
   const handlePairSelect = (pair: string) => {
@@ -272,7 +271,7 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
                 </div>
               </div>
               <div className="flex gap-1.5 px-3 py-2 overflow-x-auto scrollbar-none">
-                {["All", "Favorites", "New", "Majors", "Meme", "Trending", "DeFi"].map((category) => (
+                {AVAILABLE_CATEGORIES.map((category) => (
                   <Button
                     key={category}
                     variant="ghost"
@@ -312,7 +311,7 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
                 <Button
                   key={market.pair}
                   variant="ghost"
-                  className="w-full h-auto px-4 py-2 hover:bg-muted/60"
+                  className="w-full h-auto px-2 py-2 hover:bg-muted/60"
                   onClick={() => handlePairSelect(market.pair)}
                 >
                   <MarketRow
