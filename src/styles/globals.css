@@ -77,6 +77,8 @@ a {
     --textbox-border: #dbdbe7;
     --deposit-card-background: #f5f5fa;
     --deposit-card-border: #dbdbe7;
+    --header-button-background: #f5f5fa;
+    --header-button-hover: #dbdbe7;
   }
   .dark {
     --background: 240 13% 5%;
@@ -117,6 +119,8 @@ a {
     --textbox-border: #272734;
     --deposit-card-background: #17161d;
     --deposit-card-border: #17161d;
+    --header-button-background: #1f1f29;
+    --header-button-hover: #1d1d26;
 
     /* Add these NextUI specific variables */
     --nextui-dropdown-background: #0e0d12;

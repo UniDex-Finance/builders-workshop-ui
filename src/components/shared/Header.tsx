@@ -454,7 +454,7 @@ export function Header() {
                         <Button
                           onClick={openConnectModal}
                           variant="outline"
-                          className="hidden sm:inline-flex h-9 px-3 bg-[#1f1f29] hover:bg-[#1f1f29]/90 [&>*]:text-white [&>*]:font-normal [&>*]:!important"
+                          className="hidden sm:inline-flex h-9 px-3 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important"
                         >
                           Connect
                         </Button>
@@ -462,7 +462,7 @@ export function Header() {
                           onClick={openConnectModal}
                           variant="outline"
                           size="icon"
-                          className="sm:hidden h-9 w-9 bg-[#1f1f29] hover:bg-[#1f1f29]/90 [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
+                          className="sm:hidden h-9 w-9 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
                         >
                           <Wallet className="w-5 h-5 text-white" />
                         </Button>
@@ -475,7 +475,7 @@ export function Header() {
                       <Button
                         onClick={openChainModal}
                         variant="destructive"
-                        className="h-9 px-3 bg-[#1f1f29] hover:bg-[#1f1f29]/90 [&>*]:text-white [&>*]:font-normal [&>*]:!important"
+                        className="h-9 px-3 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important"
                       >
                         Wrong Network
                       </Button>
@@ -487,7 +487,7 @@ export function Header() {
                       <Button
                         onClick={openAccountModal}
                         variant="outline"
-                        className="hidden sm:inline-flex h-9 px-3 bg-[#1f1f29] hover:bg-[#1f1f29]/90 [&>*]:text-white [&>*]:font-normal [&>*]:!important"
+                        className="hidden sm:inline-flex h-9 px-3 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important"
                       >
                         {account.displayName}
                       </Button>
@@ -495,7 +495,7 @@ export function Header() {
                         onClick={openAccountModal}
                         variant="outline"
                         size="icon"
-                        className="sm:hidden h-9 w-9 bg-[#1f1f29] hover:bg-[#1f1f29]/90 [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
+                        className="sm:hidden h-9 w-9 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
                       >
                         <Wallet className="w-5 h-5 text-white" />
                       </Button>
@@ -510,7 +510,7 @@ export function Header() {
         <Button
           variant="outline"
           size="icon"
-          className="h-9 w-9 bg-[#1f1f29] hover:bg-[#1f1f29]/90 [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
+          className="h-9 w-9 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
           onClick={() => setIsSettingsOpen(!isSettingsOpen)}
         >
           <Settings className="w-5 h-5 text-white" />

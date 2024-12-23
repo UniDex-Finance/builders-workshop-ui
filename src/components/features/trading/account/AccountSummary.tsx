@@ -278,7 +278,7 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
       <Button
         variant="outline"
         onClick={() => setIsOpen(!isOpen)}
-        className={`bg-[var(--component-background)] hover:bg-[var(--component-background)]/90 ${className}`}
+        className={`bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] ${className}`}
       >
         {buttonText}
       </Button>
