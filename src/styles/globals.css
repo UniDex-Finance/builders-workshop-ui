@@ -73,6 +73,10 @@ a {
     --main-accent: #8062f1;
     --foreground-accent: #9469e9;
     --text-accent: #ab80ff;
+    --textbox-background: #f5f5fa;
+    --textbox-border: #dbdbe7;
+    --deposit-card-background: #f5f5fa;
+    --deposit-card-border: #dbdbe7;
   }
   .dark {
     --background: 240 13% 5%;
@@ -109,6 +113,10 @@ a {
     --main-accent: #8062f1;
     --foreground-accent: #3e2370;
     --text-accent: #e4d6ff;
+    --textbox-background: #272734;
+    --textbox-border: #272734;
+    --deposit-card-background: #17161d;
+    --deposit-card-border: #17161d;
 
     /* Add these NextUI specific variables */
     --nextui-dropdown-background: #0e0d12;

@@ -278,7 +278,7 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
       <Button
         variant="outline"
         onClick={() => setIsOpen(!isOpen)}
-        className={`bg-[#1f1f29] hover:bg-[#1f1f29]/90 ${className}`}
+        className={`bg-[var(--component-background)] hover:bg-[var(--component-background)]/90 ${className}`}
       >
         {buttonText}
       </Button>
@@ -294,8 +294,8 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
             z-50 
             p-4 
             space-y-4 
-            bg-[#17161d]
-            text-white
+            bg-[var(--deposit-card-background)]
+            text-[var(--foreground)]
             border-zinc-800
             
             /* Mobile styles */
@@ -431,13 +431,13 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
 
                   <div className="flex gap-2">
                     <Button 
-                      className="flex-1 bg-[#1f1f29] hover:bg-[#1f1f29]/90 text-white"
+                      className="flex-1 bg-[var(--color-long-short-button)] hover:bg-[var(--color-long-short-button-hover)] text-[var(--foreground)]"
                       onClick={handleDepositClick}
                     >
                       Deposit
                     </Button>
                     <Button 
-                      className="flex-1 bg-[#1f1f29] hover:bg-[#1f1f29]/90 text-white"
+                      className="flex-1 bg-[var(--color-long-short-button)] hover:bg-[var(--color-long-short-button-hover)] text-[var(--foreground)]"
                       onClick={handleWithdrawClick}
                     >
                       Withdraw

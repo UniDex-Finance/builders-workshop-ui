@@ -2,7 +2,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import Link from "next/link";
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownSection, DropdownItem, Modal, ModalContent, useDisclosure } from "@nextui-org/react";
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownSection, DropdownItem } from "@nextui-org/react";
 import { Menu, ChevronDown, Wallet, Coins, DollarSign, PiggyBank, Users2, MessageCircle, Send, Twitter, X, Settings } from "lucide-react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -20,12 +20,14 @@ import {
   SheetHeader,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { SettingsModal } from "./SettingsModal";
+import { useState } from "react";
 
 export function Header() {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
-    <header className="flex items-center px-4 md:px-6 h-14 pt-2 md:pt-3 mb-1">
+    <header className="flex items-center px-4 pt-2 mb-1 md:px-6 h-14 md:pt-3">
       <div className="flex items-center space-x-4">
         <Link href="/" className="hover:opacity-80">
           {/* Desktop Logo */}
@@ -509,10 +511,15 @@ export function Header() {
           variant="outline"
           size="icon"
           className="h-9 w-9 bg-[#1f1f29] hover:bg-[#1f1f29]/90 [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
-          onClick={() => {}}
+          onClick={() => setIsSettingsOpen(!isSettingsOpen)}
         >
           <Settings className="w-5 h-5 text-white" />
         </Button>
+
+        <SettingsModal 
+          isOpen={isSettingsOpen} 
+          onClose={() => setIsSettingsOpen(false)} 
+        />
       </div>
     </header>
   );
