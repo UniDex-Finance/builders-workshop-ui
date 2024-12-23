@@ -238,7 +238,7 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
                 <div className="text-right">Funding Rate</div>
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto scrollbar-custom">
               {filteredMarkets.map((market) => (
                 <Button
                   key={market.pair}

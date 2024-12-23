@@ -142,17 +142,40 @@ a {
 }
 
 @layer utilities {
-  .scrollbar-thin {
+  /* Modern scrollbar styling */
+  .scrollbar-custom {
     scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
   }
-  .scrollbar-thumb-neutral-800::-webkit-scrollbar-thumb {
-    background-color: #262626;
-    border-radius: 6px;
+  
+  .scrollbar-custom::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+    display: block;
+    background: transparent;
   }
-  .scrollbar-track-transparent::-webkit-scrollbar-track {
-    background-color: transparent;
+  
+  .scrollbar-custom::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 3px;
   }
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
+  
+  .scrollbar-custom::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground) / 0.2);
+    border-radius: 9999px;
+  }
+  
+  .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground) / 0.4);
+  }
+
+  /* Hide scrollbar buttons */
+  .scrollbar-custom::-webkit-scrollbar-button {
+    display: none;
+  }
+
+  /* Hide scrollbar corner */
+  .scrollbar-custom::-webkit-scrollbar-corner {
+    background: transparent;
   }
 }
