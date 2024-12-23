@@ -78,7 +78,12 @@ const MarketRow: React.FC<MarketRowProps> = ({ market, isFavorite, onToggleFavor
               )}
             />
           </button>
-          <span>{market.pair}</span>
+          <div className="flex items-center gap-1">
+            <span>{market.pair}</span>
+            <span className="px-1 py-1 text-[11px] leading-none font-medium rounded bg-[var(--foreground-accent)] text-[var(--text-accent)]">
+              100x
+            </span>
+          </div>
         </div>
         <div className="w-[100px] text-right font-mono">
           {formatPrice(market.pair)}
@@ -131,7 +136,12 @@ const MarketRow: React.FC<MarketRowProps> = ({ market, isFavorite, onToggleFavor
               )}
             />
           </button>
-          <span>{market.pair}</span>
+          <div className="flex items-center gap-1">
+            <span>{market.pair}</span>
+            <span className="px-1.5 py-0.5 text-[11px] leading-none font-medium rounded bg-[var(--foreground-accent)] text-[var(--text-accent)]">
+              100x
+            </span>
+          </div>
         </div>
         <div className="font-mono text-right">
           {formatPrice(market.pair)}

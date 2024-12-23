@@ -63,7 +63,8 @@ a {
     --color-long-short-button: #7142cf;
     --color-long-short-button-hover: #683ebe;
     --main-accent: #8062f1;
-
+    --foreground-accent: #9469e9;
+    --text-accent: #ab80ff;
   }
   .dark {
     --background: 240 13% 5%;
@@ -98,6 +99,8 @@ a {
     --color-long-short-button: #7142cf;
     --color-long-short-button-hover: #683ebe;
     --main-accent: #8062f1;
+    --foreground-accent: #3e2370;
+    --text-accent: #e4d6ff;
 
     /* Add these NextUI specific variables */
     --nextui-dropdown-background: #0e0d12;
