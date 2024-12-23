@@ -137,8 +137,8 @@ export function PositionCollateralDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="p-0 border-0 sm:max-w-md bg-[#17161d]">
-        <Card className="w-full border-0 shadow-lg bg-[#17161d]">
+      <DialogContent className="p-0 border-0 sm:max-w-md bg-[var(--position-cards-background)]">
+        <Card className="w-full border-0 shadow-lg bg-[var(--position-cards-background)]">
           <CardHeader className="flex flex-row items-center p-4 space-x-0 border-b border-zinc-800">
             <div className="flex-1 font-medium text-center text-white">Edit Margin</div>
           </CardHeader>

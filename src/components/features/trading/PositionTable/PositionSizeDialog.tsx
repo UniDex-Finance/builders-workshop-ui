@@ -158,8 +158,8 @@ export function PositionSizeDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="p-0 border-0 sm:max-w-[360px] bg-[#17161d]" hideClose>
-        <Card className="border-0 shadow-lg bg-[#17161d] rounded-xl overflow-hidden">
+      <DialogContent className="p-0 border-0 sm:max-w-[360px] bg-[var(--position-cards-background)]" hideClose>
+        <Card className="border-0 shadow-lg bg-[var(--position-cards-background)] rounded-xl overflow-hidden">
           <CardContent className="p-6 space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-base font-semibold text-white">Edit Position Size</h2>
@@ -289,7 +289,7 @@ export function PositionSizeDialog({
             </div>
           </CardContent>
 
-          <CardFooter className="p-6 bg-[#17161d]">
+          <CardFooter className="p-6 bg-[var(--position-cards-background)]">
             <Button 
               className="w-full font-semibold text-white bg-[#7142cf] hover:bg-[#7142cf]/80 py-4 text-sm"
               disabled={!isValid || isLoading || !collateralAmount}
