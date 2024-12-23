@@ -9,3 +9,9 @@
     --tv-color-pane-background: #ffffff;
     --tv-color-pane-background-secondary: #ffffff;
 }
+
+.theme-greenify:root {
+    --tv-color-platform-background: #060e13;
+    --tv-color-pane-background: #060e13;
+    --tv-color-pane-background-secondary: #060e13;
+}

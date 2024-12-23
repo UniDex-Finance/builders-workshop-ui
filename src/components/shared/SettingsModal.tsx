@@ -3,7 +3,7 @@
 import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 import { XIcon, SunIcon, MoonIcon } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 interface SettingsModalProps {
@@ -12,26 +12,48 @@ interface SettingsModalProps {
 }
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
-  const { theme, setTheme } = useTheme();
-  const [selected, setSelected] = useState(theme === 'dark' ? 1 : 0);
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const [selected, setSelected] = useState(0);
+
+  // Handle initial theme setup after mount
+  useEffect(() => {
+    setMounted(true);
+    console.log('Current theme:', theme);
+    switch (theme) {
+      case 'dark':
+        setSelected(1);
+        break;
+      case 'greenify':
+        setSelected(2);
+        break;
+      default:
+        setSelected(0);
+    }
+  }, [theme]);
 
   const themeOptions = [
-    { label: "Light", icon: SunIcon },
-    { label: "Dark", icon: MoonIcon },
+    { label: "Light", icon: SunIcon, value: 'light' },
+    { label: "Dark", icon: MoonIcon, value: 'dark' },
+    { label: "Greenify", icon: SunIcon, value: 'greenify' },
   ];
 
   const handleThemeChange = (index: number) => {
+    const newTheme = themeOptions[index].value;
+    console.log('Switching to theme:', newTheme);
     setSelected(index);
-    const newTheme = index === 0 ? 'light' : 'dark';
     setTheme(newTheme);
   };
+
+  // Don't render anything until mounted to prevent hydration mismatch
+  if (!mounted) return null;
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
           animate={{
-            height: 140,
+            height: 180,
             width: 280,
             opacity: 1,
           }}
@@ -62,7 +84,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           >
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-foreground">
-                Theme Settings
+                Theme Settings ({theme})
               </span>
               <button
                 className="transition-colors duration-300 transform-gpu text-muted-foreground hover:text-foreground"
@@ -73,19 +95,17 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               </button>
             </div>
             
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-1 gap-2">
               {themeOptions.map((item, index) => (
                 <button
                   className={cn(
-                    "inline-flex w-[calc(50%-0.25rem)] transform-gpu items-center justify-center gap-2 rounded-md px-3 py-2 transition-colors duration-300",
+                    "inline-flex w-full transform-gpu items-center justify-center gap-2 rounded-md px-3 py-2 transition-colors duration-300",
                     index === selected
                       ? "bg-accent text-accent-foreground"
                       : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
                   )}
                   key={item.label}
-                  onClick={() => {
-                    handleThemeChange(index);
-                  }}
+                  onClick={() => handleThemeChange(index)}
                   type="button"
                 >
                   <item.icon className="size-5" />
