@@ -17,6 +17,7 @@ export function Footer() {
     10: 'Optimism',
     11155111: 'Sepolia',
     8453: 'Base',
+    1: 'Ethereum',
   }[chainId] ?? 'Not Connected';
 
   return (
