@@ -1,0 +1,11 @@
+:root {
+    --tv-color-pane-background: #0c1012;
+    --tv-color-platform-background: #0c1012;
+    --tv-color-toolbar-toggle-button-background-active: #07423a !important; /* background of hide drawings toolbar button when hovered */
+    --tv-color-toolbar-toggle-button-background-active-hover: #096355 !important; /* border of hide drawings toolbar button when hovered */
+    --tv-color-toolbar-button-text: #798f86;
+    --tv-color-toolbar-button-text-hover: #91ceb4;
+    --tv-color-toolbar-button-text-active: #42ffc5;
+    --tv-color-toolbar-button-text-active-hover: #42ffc5;
+    --tv-color-toolbar-button-background-hover: rgba(69, 247, 149, 0.075);
+  }
