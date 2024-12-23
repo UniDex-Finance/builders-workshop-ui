@@ -1,14 +1,12 @@
-import React, { useRef, useState } from "react";
-import { Search } from "lucide-react";
+import React, { useRef, useState, useEffect } from "react";
+import { Search, Star } from "lucide-react";
 import { cn } from "../../../lib/utils";
-import {
-  TokenIcon,
-  TokenPairDisplay,
-  PrefetchTokenImages,
-} from "../../../hooks/use-token-icon";
+import { TokenIcon } from "../../../hooks/use-token-icon";
 import { useMarketData } from "../../../hooks/use-market-data";
 import { usePrices } from "../../../lib/websocket-price-context";
 import { usePairPrecision } from "../../../hooks/use-pair-precision";
+import { use24hChange } from "../../../hooks/use-24h-change";
+import { MarketCategory, AVAILABLE_CATEGORIES, getPairsInCategory } from "../../../lib/market-categories";
 import {
   Popover,
   PopoverContent,
@@ -22,25 +20,28 @@ interface PairSelectorProps {
   onPairChange: (value: string) => void;
 }
 
-export const PairSelector: React.FC<PairSelectorProps> = ({
-  selectedPair,
-  onPairChange,
-}) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
+interface MarketRowProps {
+  market: {
+    pair: string;
+    availableLiquidity: {
+      long: number;
+      short: number;
+    };
+    fundingRate: number;
+  };
+  isFavorite: boolean;
+  onToggleFavorite: (pair: string) => void;
+}
+
+const MarketRow: React.FC<MarketRowProps> = ({ market, isFavorite, onToggleFavorite }) => {
   const { formatPairPrice } = usePairPrecision();
-  const { marketData: unidexMarketData, allMarkets } = useMarketData({
-    selectedPair,
-  });
   const { prices } = usePrices();
+  const { percentageChange, error } = use24hChange(market.pair);
 
-  const basePair = selectedPair.split("/")[0].toLowerCase();
-  const currentPrice = prices[basePair]?.price;
-
-  const filteredMarkets = allMarkets.filter((market) =>
-    market.pair.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleFavorite(market.pair);
+  };
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -58,6 +59,161 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
   const formatFundingRate = (rate: number) => {
     return `${rate.toFixed(4)}%`;
   };
+
+  return (
+    <>
+      {/* Desktop layout */}
+      <div className="items-center hidden w-full grid-cols-6 text-xs font-normal md:grid">
+        <div className="w-[80px] flex items-center gap-1">
+          <button
+            onClick={handleFavoriteClick}
+            className="p-0.5 hover:bg-muted/60 rounded-sm"
+          >
+            <Star
+              className={cn(
+                "h-3.5 w-3.5",
+                isFavorite
+                  ? "fill-[var(--main-accent)] stroke-[var(--main-accent)]"
+                  : "text-muted-foreground hover:text-[var(--main-accent)]"
+              )}
+            />
+          </button>
+          <div className="flex items-center gap-1">
+            <span>{market.pair}</span>
+            <span className="px-1 py-1 text-[11px] leading-none font-medium rounded bg-[var(--foreground-accent)] text-[var(--text-accent)]">
+              100x
+            </span>
+          </div>
+        </div>
+        <div className="w-[100px] text-right font-mono">
+          {formatPrice(market.pair)}
+        </div>
+        <div className="w-[100px] text-right">
+          {!error ? (
+            <span className={cn(
+              percentageChange >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"
+            )}>
+              {percentageChange >= 0 ? "+" : ""}
+               {percentageChange.toFixed(2)}%
+            </span>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          )}
+        </div>
+        <div className="w-[120px] text-right">
+          ${formatNumber(market.availableLiquidity.long)}
+        </div>
+        <div className="w-[120px] text-right">
+          ${formatNumber(market.availableLiquidity.short)}
+        </div>
+        <div className="w-[120px] text-right">
+          <span
+            className={cn(
+              market.fundingRate > 0
+                ? "text-[#22c55e]"
+                : market.fundingRate < 0
+                ? "text-[#ef4444]"
+                : "text-foreground"
+            )}
+          >
+            {formatFundingRate(market.fundingRate)}
+          </span>
+        </div>
+      </div>
+      {/* Mobile layout */}
+      <div className="grid w-full grid-cols-4 text-xs font-normal md:hidden">
+        <div className="flex items-center gap-1">
+          <button
+            onClick={handleFavoriteClick}
+            className="p-0.5 hover:bg-muted/60 rounded-sm"
+          >
+            <Star
+              className={cn(
+                "h-3.5 w-3.5",
+                isFavorite
+                  ? "fill-[var(--main-accent)] stroke-[var(--main-accent)]"
+                  : "text-muted-foreground hover:text-[var(--main-accent)]"
+              )}
+            />
+          </button>
+          <div className="flex items-center gap-1">
+            <span>{market.pair}</span>
+            <span className="px-1.5 py-0.5 text-[11px] leading-none font-medium rounded bg-[var(--foreground-accent)] text-[var(--text-accent)]">
+              100x
+            </span>
+          </div>
+        </div>
+        <div className="font-mono text-right">
+          {formatPrice(market.pair)}
+        </div>
+        <div className="text-right">
+          {!error ? (
+            <span className={cn(
+              percentageChange >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"
+            )}>
+              {percentageChange >= 0 ? "+" : ""}
+               {percentageChange.toFixed(2)}%
+            </span>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          )}
+        </div>
+        <div className="text-right">
+          <span
+            className={cn(
+              market.fundingRate > 0
+                ? "text-[#22c55e]"
+                : market.fundingRate < 0
+                ? "text-[#ef4444]"
+                : "text-foreground"
+            )}
+          >
+            {formatFundingRate(market.fundingRate)}
+          </span>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export const PairSelector: React.FC<PairSelectorProps> = ({
+  selectedPair,
+  onPairChange,
+}) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<MarketCategory>("All");
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    const saved = localStorage.getItem("favoriteMarkets");
+    return saved ? JSON.parse(saved) : [];
+  });
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const { formatPairPrice } = usePairPrecision();
+  const { marketData: unidexMarketData, allMarkets } = useMarketData({
+    selectedPair,
+  });
+  const { prices } = usePrices();
+
+  const basePair = selectedPair.split("/")[0].toLowerCase();
+  const currentPrice = prices[basePair]?.price;
+
+  useEffect(() => {
+    localStorage.setItem("favoriteMarkets", JSON.stringify(favorites));
+  }, [favorites]);
+
+  const handleToggleFavorite = (pair: string) => {
+    setFavorites(prev => 
+      prev.includes(pair)
+        ? prev.filter(p => p !== pair)
+        : [...prev, pair]
+    );
+  };
+
+  const filteredMarkets = allMarkets.filter((market) => {
+    const matchesSearch = market.pair.toLowerCase().includes(searchQuery.toLowerCase());
+    const categoryPairs = getPairsInCategory(selectedCategory, allMarkets.map(m => m.pair), favorites);
+    return matchesSearch && categoryPairs.includes(market.pair);
+  });
 
   const handlePairSelect = (pair: string) => {
     onPairChange(pair);
@@ -97,67 +253,96 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
           </Button>
         </PopoverTrigger>
         <PopoverContent 
-          className="w-[900px] p-0 bg-[hsl(var(--component-background))] overflow-hidden"
+          className={cn(
+            "p-0 bg-[hsl(var(--component-background))] overflow-hidden",
+            "md:w-[800px] w-screen",
+            "md:h-[500px] h-[100dvh]",
+            "md:border md:rounded-md border-0 rounded-none",
+            "md:left-0 left-0",
+            "md:top-2 top-0"
+          )}
           align="start"
-          onOpenAutoFocus={(e) => {
-            e.preventDefault();
-            searchInputRef.current?.focus();
-          }}
+          side="bottom"
+          sideOffset={8}
+          alignOffset={-8}
         >
-          <div className="flex flex-col h-[500px]">
-            <PrefetchTokenImages pairs={allMarkets.map((market) => market.pair)} />
+          <div className="flex flex-col h-full">
             <div className="sticky top-0 z-20 bg-[hsl(var(--component-background))] shadow-sm">
-              <div className="px-4 py-2 border-b">
+              <div className="flex items-center justify-between p-4 border-b md:hidden">
+                <div className="text-sm font-medium">Select Market</div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsOpen(false)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  Cancel
+                </Button>
+              </div>
+              <div className="px-3 py-2.5">
                 <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-3 w-3 text-muted-foreground" />
+                  <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-foreground" />
                   <input
                     ref={searchInputRef}
                     type="text"
-                    placeholder="Search pairs..."
+                    placeholder="Search markets..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={handleSearchKeyDown}
-                    className="w-full py-2 pl-8 pr-4 text-xs bg-transparent border rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-ring"
+                    className="w-full py-1.5 pr-3 text-xs bg-transparent border rounded-md pl-8 focus:outline-none focus:ring-1 focus:ring-[var(--main-accent)] text-muted-foreground placeholder:text-muted-foreground"
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-5 px-4 py-2 text-xs font-medium border-b text-muted-foreground bg-muted/30">
-                <div className="w-[180px]">Pair</div>
-                <div className="w-[140px]">Market Price</div>
-                <div className="w-[140px]">Long Liquidity</div>
-                <div className="w-[140px]">Short Liquidity</div>
-                <div className="w-[140px]">Funding Rate</div>
+              <div className="flex gap-1.5 px-3 py-2 overflow-x-auto scrollbar-none">
+                {AVAILABLE_CATEGORIES.map((category) => (
+                  <Button
+                    key={category}
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedCategory(category)}
+                    className={cn(
+                      "h-6 px-2 text-xs font-medium shrink-0",
+                      selectedCategory === category
+                        ? "text-[var(--main-accent)] hover:text-[var(--main-accent)]"
+                        : "text-muted-foreground hover:text-[var(--main-accent)]"
+                    )}
+                  >
+                    {category}
+                  </Button>
+                ))}
+              </div>
+              <div className="pt-2">
+                {/* Desktop columns */}
+                <div className="hidden grid-cols-6 px-3 py-1.5 text-xs font-medium md:grid text-muted-foreground">
+                  <div className="w-[80px]">Market</div>
+                  <div className="w-[100px] text-right">Oracle Price</div>
+                  <div className="w-[100px] text-right">24h Change</div>
+                  <div className="w-[120px] text-right">Long Liquidity</div>
+                  <div className="w-[120px] text-right">Short Liquidity</div>
+                  <div className="w-[120px] text-right">Funding Rate</div>
+                </div>
+                {/* Mobile columns */}
+                <div className="grid grid-cols-4 px-4 py-2 text-xs font-medium md:hidden text-muted-foreground">
+                  <div>Market</div>
+                  <div className="text-right">Oracle Price</div>
+                  <div className="text-right">24h Change</div>
+                  <div className="text-right">Funding Rate</div>
+                </div>
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto scrollbar-custom">
               {filteredMarkets.map((market) => (
                 <Button
                   key={market.pair}
                   variant="ghost"
-                  className="w-full h-auto px-4 py-2 hover:bg-muted/60"
+                  className="w-full h-auto px-2 py-2 hover:bg-muted/60"
                   onClick={() => handlePairSelect(market.pair)}
                 >
-                  <div className="grid items-center w-full grid-cols-5 text-xs">
-                    <div className="w-[180px]">
-                      <TokenPairDisplay pair={market.pair} />
-                    </div>
-                    <div className="w-[140px]">{formatPrice(market.pair)}</div>
-                    <div className="w-[140px]">${formatNumber(market.availableLiquidity.long)}</div>
-                    <div className="w-[140px]">${formatNumber(market.availableLiquidity.short)}</div>
-                    <div className="w-[140px]">
-                      <span
-                        className={cn(
-                          market.fundingRate > 0
-                            ? "text-[#22c55e]"
-                            : market.fundingRate < 0
-                            ? "text-[#ef4444]"
-                            : "text-foreground"
-                        )}
-                      >
-                        {formatFundingRate(market.fundingRate)}
-                      </span>
-                    </div>
-                  </div>
+                  <MarketRow
+                    market={market}
+                    isFavorite={favorites.includes(market.pair)}
+                    onToggleFavorite={handleToggleFavorite}
+                  />
                 </Button>
               ))}
             </div>
