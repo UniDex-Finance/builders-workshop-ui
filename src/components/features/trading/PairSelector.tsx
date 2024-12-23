@@ -1,5 +1,5 @@
-import React, { useRef, useState } from "react";
-import { Search } from "lucide-react";
+import React, { useRef, useState, useEffect } from "react";
+import { Search, Star } from "lucide-react";
 import { cn } from "../../../lib/utils";
 import { TokenIcon } from "../../../hooks/use-token-icon";
 import { useMarketData } from "../../../hooks/use-market-data";
@@ -28,12 +28,19 @@ interface MarketRowProps {
     };
     fundingRate: number;
   };
+  isFavorite: boolean;
+  onToggleFavorite: (pair: string) => void;
 }
 
-const MarketRow: React.FC<MarketRowProps> = ({ market }) => {
+const MarketRow: React.FC<MarketRowProps> = ({ market, isFavorite, onToggleFavorite }) => {
   const { formatPairPrice } = usePairPrecision();
   const { prices } = usePrices();
   const { percentageChange, error } = use24hChange(market.pair);
+
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleFavorite(market.pair);
+  };
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -56,7 +63,20 @@ const MarketRow: React.FC<MarketRowProps> = ({ market }) => {
     <>
       {/* Desktop layout */}
       <div className="items-center hidden w-full grid-cols-6 text-xs font-normal md:grid">
-        <div className="w-[80px]">
+        <div className="w-[80px] flex items-center gap-1">
+          <button
+            onClick={handleFavoriteClick}
+            className="p-0.5 hover:bg-muted/60 rounded-sm"
+          >
+            <Star
+              className={cn(
+                "h-3.5 w-3.5",
+                isFavorite
+                  ? "fill-[var(--main-accent)] stroke-[var(--main-accent)]"
+                  : "text-muted-foreground hover:text-[var(--main-accent)]"
+              )}
+            />
+          </button>
           <span>{market.pair}</span>
         </div>
         <div className="w-[100px] text-right font-mono">
@@ -96,7 +116,20 @@ const MarketRow: React.FC<MarketRowProps> = ({ market }) => {
       </div>
       {/* Mobile layout */}
       <div className="grid w-full grid-cols-3 text-xs font-normal md:hidden">
-        <div className="flex items-center">
+        <div className="flex items-center gap-1">
+          <button
+            onClick={handleFavoriteClick}
+            className="p-0.5 hover:bg-muted/60 rounded-sm"
+          >
+            <Star
+              className={cn(
+                "h-3.5 w-3.5",
+                isFavorite
+                  ? "fill-[var(--main-accent)] stroke-[var(--main-accent)]"
+                  : "text-muted-foreground hover:text-[var(--main-accent)]"
+              )}
+            />
+          </button>
           <span>{market.pair}</span>
         </div>
         <div className="font-mono text-right">
@@ -127,6 +160,10 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    const saved = localStorage.getItem("favoriteMarkets");
+    return saved ? JSON.parse(saved) : [];
+  });
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { formatPairPrice } = usePairPrecision();
   const { marketData: unidexMarketData, allMarkets } = useMarketData({
@@ -137,9 +174,25 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
   const basePair = selectedPair.split("/")[0].toLowerCase();
   const currentPrice = prices[basePair]?.price;
 
-  const filteredMarkets = allMarkets.filter((market) =>
-    market.pair.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    localStorage.setItem("favoriteMarkets", JSON.stringify(favorites));
+  }, [favorites]);
+
+  const handleToggleFavorite = (pair: string) => {
+    setFavorites(prev => 
+      prev.includes(pair)
+        ? prev.filter(p => p !== pair)
+        : [...prev, pair]
+    );
+  };
+
+  const filteredMarkets = allMarkets.filter((market) => {
+    const matchesSearch = market.pair.toLowerCase().includes(searchQuery.toLowerCase());
+    if (selectedCategory === "Favorites") {
+      return matchesSearch && favorites.includes(market.pair);
+    }
+    return matchesSearch;
+  });
 
   const handlePairSelect = (pair: string) => {
     onPairChange(pair);
@@ -214,7 +267,7 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={handleSearchKeyDown}
-                    className="w-full py-1.5 pr-3 text-xs bg-transparent border rounded-md pl-8 focus:outline-none focus:ring-1 focus:ring-[hsl(var(--main-accent))] text-muted-foreground placeholder:text-muted-foreground"
+                    className="w-full py-1.5 pr-3 text-xs bg-transparent border rounded-md pl-8 focus:outline-none focus:ring-1 focus:ring-[var(--main-accent)] text-muted-foreground placeholder:text-muted-foreground"
                   />
                 </div>
               </div>
@@ -228,8 +281,8 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
                     className={cn(
                       "h-6 px-2 text-xs font-medium shrink-0",
                       selectedCategory === category
-                        ? "text-[hsl(var(--main-accent))]"
-                        : "text-muted-foreground hover:text-[hsl(var(--main-accent))]"
+                        ? "text-[var(--main-accent)] hover:text-[var(--main-accent)]"
+                        : "text-muted-foreground hover:text-[var(--main-accent)]"
                     )}
                   >
                     {category}
@@ -262,7 +315,11 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
                   className="w-full h-auto px-4 py-2 hover:bg-muted/60"
                   onClick={() => handlePairSelect(market.pair)}
                 >
-                  <MarketRow market={market} />
+                  <MarketRow
+                    market={market}
+                    isFavorite={favorites.includes(market.pair)}
+                    onToggleFavorite={handleToggleFavorite}
+                  />
                 </Button>
               ))}
             </div>
