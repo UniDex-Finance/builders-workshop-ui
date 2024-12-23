@@ -101,12 +101,16 @@ function MyApp({ Component, pageProps }: AppProps) {
             >
               <PriceProvider>
                 <DailyBasePricesProvider>
-                  <div className="pb-8">
-                    <Component {...pageProps} />
+                  <div className="relative flex flex-col min-h-screen">
+                    <div className="flex-grow pb-8">
+                      <Component {...pageProps} />
+                    </div>
+                    <div className="fixed bottom-0 left-0 right-0 bg-background">
+                      <Footer />
+                    </div>
+                    <Toaster />
+                    <NewVersionNotification />
                   </div>
-                  <Footer />
-                  <Toaster />
-                  <NewVersionNotification />
                 </DailyBasePricesProvider>
               </PriceProvider>
             </RainbowKitProvider>
