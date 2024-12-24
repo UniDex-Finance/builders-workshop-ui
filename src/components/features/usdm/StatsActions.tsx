@@ -95,7 +95,7 @@ export function StatsActions({ balances, isLoading }: Props) {
           <span className="font-medium text-white">{esMoltenApr.toFixed(2)}%</span>
         </div>
         <p className="text-sm text-[#A0AEC0]">
-          Earn 20,000 esMOLTEN tokens monthly when you stake USD.m on the staking page. 
+          20,000 esMOLTEN tokens are allocated for rewards this month those who stake USD.m on the staking page. 
           esMOLTEN can be vested to MOLTEN tokens over 12 months.
         </p>
       </div>
