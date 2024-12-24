@@ -385,22 +385,29 @@ export function ActionsCard({
 
   // Fix: Update getAvailableBalance to use correct balance
   const getAvailableBalance = () => {
+    const prefix = (
+      <span>
+        <span className="md:hidden">Balance: </span>
+        <span className="hidden md:inline">Available Balance: </span>
+      </span>
+    );
+
     if (action === 'mint') {
-      if (!balances) return 'Available Balance: 0.0000 USDC';
+      if (!balances) return <>{prefix}0.0000 USDC</>;
       switch (selectedAsset) {
         case "arbitrum-usdc":
-          return `Available Balance: ${balances.formattedEoaUsdcBalance} USDC`;
+          return <>{prefix}{balances.formattedEoaUsdcBalance} USDC</>;
         case "optimism-usdc":
-          return `Available Balance: ${balances.formattedEoaOptimismUsdcBalance} USDC`;
+          return <>{prefix}{balances.formattedEoaOptimismUsdcBalance} USDC</>;
         case "base-usdc":
-          return `Available Balance: ${balances.formattedEoaBaseUsdcBalance} USDC`;
+          return <>{prefix}{balances.formattedEoaBaseUsdcBalance} USDC</>;
         case "ethereum-usdc":
-          return `Available Balance: ${balances.formattedEoaEthUsdcBalance} USDC`;
+          return <>{prefix}{balances.formattedEoaEthUsdcBalance} USDC</>;
         default:
-          return 'Available Balance: 0.0000 USDC';
+          return <>{prefix}0.0000 USDC</>;
       }
     }
-    return `Available Balance: ${usdmData?.displayUsdmBalance || '0.00'} USD.m`
+    return <>{prefix}{usdmData?.displayUsdmBalance || '0.00'} USD.m</>
   }
 
   // Update handleMaxClick to use correct balance
@@ -523,41 +530,43 @@ export function ActionsCard({
               )}
             </CardTitle>
             {action === 'mint' && (
-              <Select 
-                value={selectedAsset.split('-')[0]} 
-                onValueChange={(chain) => handleAssetChange(`${chain}-usdc`)}
-              >
-                <SelectTrigger className="w-[140px] h-[30px] bg-[#272734] border-0 focus:ring-0">
-                  <SelectValue>
-                    {selectedChainAsset && (
-                      <div className="flex items-center gap-2">
-                        <Image 
-                          src={selectedChainAsset.icon}
-                          alt={selectedChainAsset.chain}
-                          width={16}
-                          height={16}
-                        />
-                        <span className="capitalize">{selectedChainAsset.chain}</span>
-                      </div>
-                    )}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="bg-[#272734] border-zinc-800">
-                  {CHAIN_ASSETS.map((asset) => (
-                    <SelectItem key={asset.chain} value={asset.chain}>
-                      <div className="flex items-center gap-2">
-                        <Image 
-                          src={asset.icon}
-                          alt={asset.chain}
-                          width={16}
-                          height={16}
-                        />
-                        <span className="capitalize">{asset.chain}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="hidden md:block">
+                <Select 
+                  value={selectedAsset.split('-')[0]} 
+                  onValueChange={(chain) => handleAssetChange(`${chain}-usdc`)}
+                >
+                  <SelectTrigger className="w-[140px] h-[30px] bg-[#272734] border-0 focus:ring-0">
+                    <SelectValue>
+                      {selectedChainAsset && (
+                        <div className="flex items-center gap-2">
+                          <Image 
+                            src={selectedChainAsset.icon}
+                            alt={selectedChainAsset.chain}
+                            width={16}
+                            height={16}
+                          />
+                          <span className="capitalize">{selectedChainAsset.chain}</span>
+                        </div>
+                      )}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#272734] border-zinc-800">
+                    {CHAIN_ASSETS.map((asset) => (
+                      <SelectItem key={asset.chain} value={asset.chain}>
+                        <div className="flex items-center gap-2">
+                          <Image 
+                            src={asset.icon}
+                            alt={asset.chain}
+                            width={16}
+                            height={16}
+                          />
+                          <span className="capitalize">{asset.chain}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             )}
           </div>
           <div className="flex gap-1 sm:gap-2">
@@ -581,45 +590,119 @@ export function ActionsCard({
       <CardContent className="pt-4 space-y-6">
         <div className="space-y-4">
           <div className="flex flex-col gap-2 md:flex-row">
-            <Select 
-              value={action === 'burn' ? "arbitrum-usdc" : selectedAsset} 
-              onValueChange={() => {}}
-            >
-              <SelectTrigger className="w-full md:w-[210px] h-[42px] bg-[#272734] border-0 focus:ring-0">
-                <SelectValue>
-                  <div className="flex items-center gap-2">
-                    <Image 
-                      src={USDCIcon}
-                      alt="USDC"
-                      width={20}
-                      height={20}
-                    />
-                    <span>USD Coin (USDC)</span>
-                  </div>
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent className="bg-[#272734] border-zinc-800">
-                <SelectItem value="arbitrum-usdc">
-                  <div className="flex items-center gap-2">
-                    <Image 
-                      src={USDCIcon}
-                      alt="USDC"
-                      width={20}
-                      height={20}
-                    />
-                    <span>USD Coin (USDC)</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="grid grid-cols-2 gap-2 md:hidden">
+              {action === 'mint' && (
+                <Select 
+                  value={selectedAsset.split('-')[0]} 
+                  onValueChange={(chain) => handleAssetChange(`${chain}-usdc`)}
+                >
+                  <SelectTrigger className="w-full h-[42px] bg-[#272734] border-0 focus:ring-0">
+                    <SelectValue>
+                      {selectedChainAsset && (
+                        <div className="flex items-center gap-2">
+                          <Image 
+                            src={selectedChainAsset.icon}
+                            alt={selectedChainAsset.chain}
+                            width={16}
+                            height={16}
+                          />
+                          <span className="capitalize">{selectedChainAsset.chain}</span>
+                        </div>
+                      )}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#272734] border-zinc-800">
+                    {CHAIN_ASSETS.map((asset) => (
+                      <SelectItem key={asset.chain} value={asset.chain}>
+                        <div className="flex items-center gap-2">
+                          <Image 
+                            src={asset.icon}
+                            alt={asset.chain}
+                            width={16}
+                            height={16}
+                          />
+                          <span className="capitalize">{asset.chain}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              <Select 
+                value={action === 'burn' ? "arbitrum-usdc" : selectedAsset} 
+                onValueChange={() => {}}
+              >
+                <SelectTrigger className="w-full h-[42px] bg-[#272734] border-0 focus:ring-0">
+                  <SelectValue>
+                    <div className="flex items-center gap-2">
+                      <Image 
+                        src={USDCIcon}
+                        alt="USDC"
+                        width={20}
+                        height={20}
+                      />
+                      <span>USD Coin (USDC)</span>
+                    </div>
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="bg-[#272734] border-zinc-800">
+                  <SelectItem value="arbitrum-usdc">
+                    <div className="flex items-center gap-2">
+                      <Image 
+                        src={USDCIcon}
+                        alt="USDC"
+                        width={20}
+                        height={20}
+                      />
+                      <span>USD Coin (USDC)</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="hidden md:flex md:flex-row md:gap-2">
+              <Select 
+                value={action === 'burn' ? "arbitrum-usdc" : selectedAsset} 
+                onValueChange={() => {}}
+              >
+                <SelectTrigger className="w-[210px] h-[42px] bg-[#272734] border-0 focus:ring-0">
+                  <SelectValue>
+                    <div className="flex items-center gap-2">
+                      <Image 
+                        src={USDCIcon}
+                        alt="USDC"
+                        width={20}
+                        height={20}
+                      />
+                      <span>USD Coin (USDC)</span>
+                    </div>
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="bg-[#272734] border-zinc-800">
+                  <SelectItem value="arbitrum-usdc">
+                    <div className="flex items-center gap-2">
+                      <Image 
+                        src={USDCIcon}
+                        alt="USDC"
+                        width={20}
+                        height={20}
+                      />
+                      <span>USD Coin (USDC)</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
             <div className="relative flex-1">
               <Input
                 type="text"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full h-[42px] bg-[#272734] border-0 text-lg pr-20"
+                className="w-full h-[42px] bg-[#272734] border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none text-lg pr-20 ring-offset-0 rounded-md shadow-none"
                 placeholder="0.00"
+                style={{ WebkitAppearance: 'none', margin: 0 }}
               />
               <div className="absolute text-[#A0AEC0] -translate-y-1/2 right-3 top-1/2">
                 ~${calculateUsdValue(amount)}
