@@ -84,6 +84,7 @@ export function ActionsCard({
   const [isOpen, setIsOpen] = React.useState(true)
   const [action, setAction] = React.useState<'mint' | 'burn'>('mint')
   const [selectedAsset, setSelectedAsset] = React.useState("arbitrum-usdc")
+  const [approvalState, setApprovalState] = React.useState<{ needsApproval: boolean } | null>(null)
   
   // Add effect to handle action changes
   React.useEffect(() => {
@@ -105,6 +106,36 @@ export function ActionsCard({
   const { chain } = useAccount()
   const { switchChain } = useSwitchChain()
   const { checkApproval, getCrossChainMintTransaction } = useSquidCrossChainMint()
+
+  // Add effect to check approval state for cross-chain minting
+  React.useEffect(() => {
+    const checkApprovalState = async () => {
+      if (!walletClient || !chain || !amount || action !== 'mint' || chain.id === 42161) {
+        setApprovalState(null)
+        return
+      }
+
+      const selectedChainAsset = CHAIN_ASSETS.find(asset => asset.id === selectedAsset)
+      if (!selectedChainAsset) {
+        setApprovalState(null)
+        return
+      }
+
+      try {
+        const result = await checkApproval(
+          walletClient.account.address,
+          chain.id.toString(),
+          selectedChainAsset.address,
+          amount
+        )
+        setApprovalState(result)
+      } catch (error) {
+        console.error('Error checking approval:', error)
+        setApprovalState(null)
+      }
+    }
+    checkApprovalState()
+  }, [amount, chain, selectedAsset, walletClient, action])
 
   const selectedChainAsset = CHAIN_ASSETS.find(asset => asset.id === selectedAsset)
 
@@ -182,13 +213,14 @@ export function ActionsCard({
             await walletClient.writeContract(approvalCheck.approvalData)
             await new Promise(r => setTimeout(r, 2000))
             
-            // Verify approval went through
+            // Verify approval went through and update state
             const verifyCheck = await checkApproval(
               walletClient.account.address,
               chain.id.toString(),
               selectedChainAsset.address,
               amount
             )
+            setApprovalState(verifyCheck)
             if (verifyCheck.needsApproval) {
               throw new Error('Approval failed')
             }
@@ -248,14 +280,24 @@ export function ActionsCard({
   }
 
   const needsApproval = () => {
-    if (!amount || !usdmData) return false
+    if (!amount || !chain || !walletClient) return false
     try {
-      const parsedAmount = action === 'mint'
-        ? parseUnits(amount, 6)
-        : parseUnits(amount, 18) // Use 18 decimals for USD.m approvals
-      return action === 'mint' 
-        ? parsedAmount > usdmData.usdcAllowance
-        : parsedAmount > usdmData.usdmAllowance
+      if (action === 'mint') {
+        // If we're on Arbitrum, use the normal minting flow
+        if (chain.id === 42161) {
+          if (!usdmData) return false
+          const parsedAmount = parseUnits(amount, 6)
+          return parsedAmount > usdmData.usdcAllowance
+        } else {
+          // For cross-chain minting, use the cached approval state
+          return approvalState?.needsApproval ?? false
+        }
+      } else {
+        // Burning flow remains unchanged
+        if (!usdmData) return false
+        const parsedAmount = parseUnits(amount, 18)
+        return parsedAmount > usdmData.usdmAllowance
+      }
     } catch {
       return false
     }
