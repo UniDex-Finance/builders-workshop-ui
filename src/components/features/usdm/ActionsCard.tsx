@@ -28,6 +28,7 @@ import ArbLogo from "@/../../public/static/images/chain-logos/arb.svg"
 import OpLogo from "@/../../public/static/images/chain-logos/op.svg"
 import BaseLogo from "@/../../public/static/images/chain-logos/base.svg"
 import EthLogo from "@/../../public/static/images/chain-logos/eth.svg"
+import { useSquidCrossChainMint } from "@/hooks/usdmHooks/squid-crosschain-mint"
 
 interface ActionsCardProps {
   isStaking: boolean
@@ -77,11 +78,7 @@ const CHAIN_ASSETS = [
 ] as const
 
 export function ActionsCard({ 
-  isStaking, 
-  setIsStaking, 
-  balances,
-  isLoading,
-  refetchBalances 
+  balances
 }: ActionsCardProps) {
   const [amount, setAmount] = React.useState("")
   const [isOpen, setIsOpen] = React.useState(true)
@@ -102,15 +99,12 @@ export function ActionsCard({
     approveUsdm,
     mint,
     burn,
-    refetch,
-    usdcBalance, // Add this
-    usdcBalanceRaw // Add this
+    refetch
   } = useUsdm()
   const { price: usdcPrice } = useUsdcPrice()
   const { chain } = useAccount()
   const { switchChain } = useSwitchChain()
-  
-  const isArbitrum = chain?.id === 42161
+  const { checkApproval, getCrossChainMintTransaction } = useSquidCrossChainMint()
 
   const selectedChainAsset = CHAIN_ASSETS.find(asset => asset.id === selectedAsset)
 
@@ -146,45 +140,105 @@ export function ActionsCard({
       return handleNetworkSwitch()
     }
 
-    if (!walletClient || !amount) return
+    if (!walletClient || !amount || !chain || !usdmData) return
 
     try {
       if (action === 'mint') {
         const parsedAmount = parseUnits(amount, 6) // USDC has 6 decimals
-        if (usdmData && parsedAmount > usdmData.usdcAllowance) {
-          const request = await approveUsdc(parsedAmount)
-          if (request) {
-            await walletClient.writeContract(request)
-            await new Promise(r => setTimeout(r, 2000))
-            await refetch()
+
+        // If we're on Arbitrum, use the normal minting flow
+        if (chain.id === 42161) {
+          if (parsedAmount > usdmData.usdcAllowance) {
+            const approvalRequest = await approveUsdc(parsedAmount)
+            if (approvalRequest) {
+              await walletClient.writeContract(approvalRequest)
+              await new Promise(r => setTimeout(r, 2000))
+              await refetch()
+            }
+            return
           }
-          return
-        }
-        
-        const request = await mint(parsedAmount)
-        if (request) {
-          await walletClient.writeContract(request)
+          
+          const mintRequest = await mint(parsedAmount)
+          if (mintRequest) {
+            await walletClient.writeContract(mintRequest)
+            setAmount("")
+          }
+        } else {
+          // Cross-chain minting flow
+          const selectedChainAsset = CHAIN_ASSETS.find(asset => asset.id === selectedAsset)
+          if (!selectedChainAsset) throw new Error('Invalid asset selected')
+
+          // Check if we need to approve the token for Squid
+          const approvalCheck = await checkApproval(
+            walletClient.account.address,
+            chain.id.toString(),
+            selectedChainAsset.address,
+            amount
+          )
+
+          if (approvalCheck.needsApproval) {
+            if (!approvalCheck.approvalData) throw new Error('Missing approval data')
+            
+            await walletClient.writeContract(approvalCheck.approvalData)
+            await new Promise(r => setTimeout(r, 2000))
+            
+            // Verify approval went through
+            const verifyCheck = await checkApproval(
+              walletClient.account.address,
+              chain.id.toString(),
+              selectedChainAsset.address,
+              amount
+            )
+            if (verifyCheck.needsApproval) {
+              throw new Error('Approval failed')
+            }
+            return
+          }
+
+          // Get the cross-chain transaction data
+          const crossChainTx = await getCrossChainMintTransaction(
+            walletClient.account.address,
+            chain.id.toString(),
+            selectedChainAsset.address,
+            amount
+          )
+
+          if (!crossChainTx.transactionRequest || !crossChainTx.transactionRequest.target || !crossChainTx.transactionRequest.data) {
+            throw new Error('Invalid transaction request from Squid')
+          }
+
+          // Execute the cross-chain transaction using the raw transaction request
+          const tx = {
+            account: walletClient.account,
+            to: crossChainTx.transactionRequest.target as `0x${string}`,
+            data: crossChainTx.transactionRequest.data as `0x${string}`,
+            value: crossChainTx.transactionRequest.value ? BigInt(crossChainTx.transactionRequest.value) : BigInt(0),
+            chainId: chain.id,
+            gas: crossChainTx.transactionRequest.gasLimit ? BigInt(crossChainTx.transactionRequest.gasLimit) : undefined,
+            maxFeePerGas: crossChainTx.transactionRequest.maxFeePerGas ? BigInt(crossChainTx.transactionRequest.maxFeePerGas) : undefined,
+            maxPriorityFeePerGas: crossChainTx.transactionRequest.maxPriorityFeePerGas ? BigInt(crossChainTx.transactionRequest.maxPriorityFeePerGas) : undefined,
+          }
+          await walletClient.sendTransaction(tx)
           setAmount("")
         }
       } else {
-        // For approvals, use 18 decimals (ERC20 standard)
+        // Burning flow remains unchanged as it's only available on Arbitrum
         const approvalAmount = parseUnits(amount, 18)
-        // For burning, use 30 decimals (vault requirement)
         const burnAmount = parseUnits(amount, 18)
 
-        if (usdmData && approvalAmount > usdmData.usdmAllowance) {
-          const request = await approveUsdm(approvalAmount)
-          if (request) {
-            await walletClient.writeContract(request)
+        if (approvalAmount > usdmData.usdmAllowance) {
+          const approvalRequest = await approveUsdm(approvalAmount)
+          if (approvalRequest) {
+            await walletClient.writeContract(approvalRequest)
             await new Promise(r => setTimeout(r, 2000))
             await refetch()
           }
           return
         }
         
-        const request = await burn(burnAmount)
-        if (request) {
-          await walletClient.writeContract(request)
+        const burnRequest = await burn(burnAmount)
+        if (burnRequest) {
+          await walletClient.writeContract(burnRequest)
           setAmount("")
         }
       }
