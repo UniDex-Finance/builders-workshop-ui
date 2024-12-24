@@ -345,12 +345,15 @@ export function ActionsCard({
 
   // Update the button text based on action and approval status
   const getButtonText = () => {
-    if (!isOnCorrectChain()) {
-      const networkName = selectedChainAsset?.chain || 'Arbitrum'
-      return `Switch to ${networkName}`
+    if (!amount) {
+      return 'Input Amount'
     }
     if (hasInsufficientBalance()) {
       return 'Insufficient Balance'
+    }
+    if (!isOnCorrectChain()) {
+      const networkName = selectedChainAsset?.chain || 'Arbitrum'
+      return `Switch to ${networkName}`
     }
     if (needsApproval()) {
       return action === 'mint' ? 'Approve USDC' : 'Approve USD.m'
