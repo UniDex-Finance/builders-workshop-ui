@@ -88,7 +88,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         attribute="class" 
         defaultTheme="dark" 
         enableSystem={false}
-        themes={['light', 'dark', 'greenify', 'hotline']}
+        themes={['light', 'dark', 'greenify', 'hotline', 'oled']}
       >
         <WagmiProvider config={config}>
           <QueryClientProvider client={client}>

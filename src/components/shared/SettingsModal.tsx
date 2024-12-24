@@ -40,6 +40,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     { label: "Dark", icon: MoonIcon, value: 'dark' },
     { label: "Greenify", icon: SunIcon, value: 'greenify' },
     { label: "Hotline", icon: MoonIcon, value: 'hotline' },
+    { label: "OLED", icon: MoonIcon, value: 'oled' },
   ];
 
   const handleThemeChange = (index: number) => {

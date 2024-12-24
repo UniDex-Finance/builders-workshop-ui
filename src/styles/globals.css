@@ -245,6 +245,60 @@ a {
     --sidebar-border: 251 71% 19%;
     --sidebar-ring: 187 83% 20%;
   }
+  .oled {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 98%;
+    --component-background: 0 0% 0%;
+    --card: 0 0% 0%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 0%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 253 84% 66%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 3.7% 15.9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --color-long: #3df57b;
+    --color-long-dark: #44c64d;
+    --color-short: #ea435c;
+    --color-short-dark: #c72525;
+    --color-long-short-button: #7142cf;
+    --color-long-short-button-hover: #683ebe;
+    --main-accent: #8062f1;
+    --foreground-accent: #3e2370;
+    --text-accent: #e4d6ff;
+    --textbox-background: #000000;
+    --textbox-border: #1a1a1a;
+    --deposit-card-background: #000000;
+    --deposit-card-border: #1a1a1a;
+    --header-button-background: #000000;
+    --header-button-hover: #0a0a0a;
+    --pane-hover: #0a0a0a;
+    --position-cards-background: #000000;
+    --nextui-dropdown-background: #000000;
+    --nextui-background: #000000;
+    --sidebar-background: 0 0% 0%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
 }
 
 /* Add these styles to remove number input spinners */
