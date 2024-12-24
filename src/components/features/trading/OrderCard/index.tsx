@@ -387,7 +387,7 @@ const totalRequired = calculatedMargin + tradingFee;
             <Button
               variant={formState.isLong ? "default" : "outline"}
               className={`w-full ${
-                formState.isLong ? "bg-longShortButton hover:bg-longShortButtonHover text-white" : ""
+                formState.isLong ? "bg-[var(--main-accent)] hover:bg-[var(--main-accent)]/80 text-white" : ""
               }`}
               onClick={() => formState.isLong || toggleDirection()}
             >
@@ -396,7 +396,7 @@ const totalRequired = calculatedMargin + tradingFee;
             <Button
               variant={!formState.isLong ? "default" : "outline"}
               className={`w-full ${
-                !formState.isLong ? "bg-longShortButton hover:bg-longShortButtonHover text-white" : ""
+                !formState.isLong ? "bg-[var(--main-accent)] hover:bg-[var(--main-accent)]/80 text-white" : ""
               }`}
               onClick={() => !formState.isLong || toggleDirection()}
             >
