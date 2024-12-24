@@ -22,6 +22,12 @@ import {
 } from "@/components/ui/select"
 import { useUsdcPrice } from "@/hooks/use-usdc-price"
 import { type Balances } from "@/hooks/use-balances"
+import Image from "next/image"
+import USDCIcon from "@/../../public/static/images/tokens/USDC.svg"
+import ArbLogo from "@/../../public/static/images/chain-logos/arb.svg"
+import OpLogo from "@/../../public/static/images/chain-logos/op.svg"
+import BaseLogo from "@/../../public/static/images/chain-logos/base.svg"
+import EthLogo from "@/../../public/static/images/chain-logos/eth.svg"
 
 interface ActionsCardProps {
   isStaking: boolean
@@ -30,6 +36,45 @@ interface ActionsCardProps {
   isLoading: boolean
   refetchBalances: () => Promise<void>
 }
+
+const CHAIN_ASSETS = [
+  {
+    id: "arbitrum-usdc",
+    chain: "arbitrum",
+    name: "USD Coin",
+    displayName: "Arbitrum USD Coin (USDC)",
+    address: "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+    icon: ArbLogo,
+    tokenIcon: USDCIcon,
+  },
+  {
+    id: "optimism-usdc",
+    chain: "optimism",
+    name: "USD Coin",
+    displayName: "Optimism USD Coin (USDC)",
+    address: "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
+    icon: OpLogo,
+    tokenIcon: USDCIcon,
+  },
+  {
+    id: "base-usdc",
+    chain: "base",
+    name: "USD Coin",
+    displayName: "Base USD Coin (USDC)",
+    address: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    icon: BaseLogo,
+    tokenIcon: USDCIcon,
+  },
+  {
+    id: "ethereum-usdc",
+    chain: "ethereum",
+    name: "USD Coin",
+    displayName: "Ethereum USD Coin (USDC)",
+    address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+    icon: EthLogo,
+    tokenIcon: USDCIcon,
+  },
+] as const
 
 export function ActionsCard({ 
   isStaking, 
@@ -41,6 +86,15 @@ export function ActionsCard({
   const [amount, setAmount] = React.useState("")
   const [isOpen, setIsOpen] = React.useState(true)
   const [action, setAction] = React.useState<'mint' | 'burn'>('mint')
+  const [selectedAsset, setSelectedAsset] = React.useState("arbitrum-usdc")
+  
+  // Add effect to handle action changes
+  React.useEffect(() => {
+    if (action === 'burn') {
+      setSelectedAsset("arbitrum-usdc")
+    }
+  }, [action])
+
   const { data: walletClient } = useWalletClient()
   const { 
     usdmData,
@@ -58,16 +112,40 @@ export function ActionsCard({
   
   const isArbitrum = chain?.id === 42161
 
+  const selectedChainAsset = CHAIN_ASSETS.find(asset => asset.id === selectedAsset)
+
+  const getRequiredChainId = () => {
+    if (action === 'burn') return 42161; // Arbitrum
+    
+    switch (selectedAsset) {
+      case "arbitrum-usdc":
+        return 42161; // Arbitrum
+      case "optimism-usdc":
+        return 10; // Optimism
+      case "base-usdc":
+        return 8453; // Base
+      case "ethereum-usdc":
+        return 1; // Ethereum
+      default:
+        return 42161;
+    }
+  }
+
+  const isOnCorrectChain = () => {
+    return chain?.id === getRequiredChainId();
+  }
+
   const handleNetworkSwitch = async () => {
     if (switchChain) {
-      await switchChain({ chainId: 42161 })
+      await switchChain({ chainId: getRequiredChainId() })
     }
   }
 
   const handleTransaction = async () => {
-    if (!isArbitrum) {
+    if (!isOnCorrectChain()) {
       return handleNetworkSwitch()
     }
+
     if (!walletClient || !amount) return
 
     try {
@@ -131,8 +209,9 @@ export function ActionsCard({
 
   // Update the button text based on action and approval status
   const getButtonText = () => {
-    if (!isArbitrum) {
-      return 'Switch to Arbitrum'
+    if (!isOnCorrectChain()) {
+      const networkName = selectedChainAsset?.chain || 'Arbitrum'
+      return `Switch to ${networkName}`
     }
     if (needsApproval()) {
       return action === 'mint' ? 'Approve USDC' : 'Approve USD.m'
@@ -143,27 +222,49 @@ export function ActionsCard({
   // Fix: Update getAvailableBalance to use correct balance
   const getAvailableBalance = () => {
     if (action === 'mint') {
-      return `Available: ${usdcBalance} USDC`
+      if (!balances) return 'Available Balance: 0.0000 USDC';
+      switch (selectedAsset) {
+        case "arbitrum-usdc":
+          return `Available Balance: ${balances.formattedEoaUsdcBalance} USDC`;
+        case "optimism-usdc":
+          return `Available Balance: ${balances.formattedEoaOptimismUsdcBalance} USDC`;
+        case "base-usdc":
+          return `Available Balance: ${balances.formattedEoaBaseUsdcBalance} USDC`;
+        case "ethereum-usdc":
+          return `Available Balance: ${balances.formattedEoaEthUsdcBalance} USDC`;
+        default:
+          return 'Available Balance: 0.0000 USDC';
+      }
     }
-    return `Available: ${usdmData?.displayUsdmBalance || '0.00'} USD.m`
+    return `Available Balance: ${usdmData?.displayUsdmBalance || '0.00'} USD.m`
   }
 
-  // Add: Handle max button click
-  const handleMaxClick = () => {
-    if (action === 'mint') {
-      setAmount(usdcBalance)
-    } else {
-      setAmount(usdmData?.displayUsdmBalance || '0')
-    }
-  }
-
-  // Update canSubmit function to use correct decimal places for validation
+  // Update canSubmit function to use correct decimal places and balance for validation
   const canSubmit = () => {
     if (!amount || amount === '0') return false
     try {
       if (action === 'mint') {
         const parsedAmount = parseUnits(amount, 6)
-        return parsedAmount <= usdcBalanceRaw
+        if (!balances) return false;
+        
+        let relevantBalance: bigint;
+        switch (selectedAsset) {
+          case "arbitrum-usdc":
+            relevantBalance = balances.eoaUsdcBalance;
+            break;
+          case "optimism-usdc":
+            relevantBalance = balances.eoaOptimismUsdcBalance;
+            break;
+          case "base-usdc":
+            relevantBalance = balances.eoaBaseUsdcBalance;
+            break;
+          case "ethereum-usdc":
+            relevantBalance = balances.eoaEthUsdcBalance;
+            break;
+          default:
+            return false;
+        }
+        return parsedAmount <= relevantBalance;
       } else {
         // Use 18 decimals when checking USD.m balance
         const parsedAmount = parseUnits(amount, 18)
@@ -174,15 +275,55 @@ export function ActionsCard({
     }
   }
 
-  // Update percentage buttons to work
+  // Update handleMaxClick to use correct balance
+  const handleMaxClick = () => {
+    if (action === 'mint') {
+      if (!balances) return;
+      switch (selectedAsset) {
+        case "arbitrum-usdc":
+          setAmount(balances.formattedEoaUsdcBalance);
+          break;
+        case "optimism-usdc":
+          setAmount(balances.formattedEoaOptimismUsdcBalance);
+          break;
+        case "base-usdc":
+          setAmount(balances.formattedEoaBaseUsdcBalance);
+          break;
+        case "ethereum-usdc":
+          setAmount(balances.formattedEoaEthUsdcBalance);
+          break;
+      }
+    } else {
+      setAmount(usdmData?.displayUsdmBalance || '0')
+    }
+  }
+
+  // Update handlePercentageClick to use correct balance
   const handlePercentageClick = (percentage: number) => {
     if (action === 'mint') {
-      const value = (Number(usdcBalance) * percentage).toFixed(6)
-      setAmount(value)
+      if (!balances) return;
+      let baseBalance: string;
+      switch (selectedAsset) {
+        case "arbitrum-usdc":
+          baseBalance = balances.formattedEoaUsdcBalance;
+          break;
+        case "optimism-usdc":
+          baseBalance = balances.formattedEoaOptimismUsdcBalance;
+          break;
+        case "base-usdc":
+          baseBalance = balances.formattedEoaBaseUsdcBalance;
+          break;
+        case "ethereum-usdc":
+          baseBalance = balances.formattedEoaEthUsdcBalance;
+          break;
+        default:
+          baseBalance = '0';
+      }
+      const value = (Number(baseBalance) * percentage).toFixed(6);
+      setAmount(value);
     } else {
-      // Update to show fewer decimal places for USD.m
-      const value = (Number(usdmData?.formattedUsdmBalance || 0) * percentage).toFixed(6)
-      setAmount(value)
+      const value = (Number(usdmData?.formattedUsdmBalance || 0) * percentage).toFixed(6);
+      setAmount(value);
     }
   }
 
@@ -260,19 +401,49 @@ export function ActionsCard({
       <CardContent className="pt-4 space-y-6">
         <div className="space-y-4">
           <div className="flex flex-col gap-2 md:flex-row">
-            <Select defaultValue="usdc" disabled>
-              <SelectTrigger className="w-full md:w-[140px] h-[42px] bg-[#272734] border-0 focus:ring-0">
+            <Select 
+              value={action === 'burn' ? "arbitrum-usdc" : selectedAsset} 
+              onValueChange={setSelectedAsset}
+              disabled={action === 'burn'}
+            >
+              <SelectTrigger className="w-full md:w-[180px] h-[42px] bg-[#272734] border-0 focus:ring-0">
                 <SelectValue>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center justify-center w-6 h-6 text-sm bg-blue-500 rounded-full">
-                      $
+                  {selectedChainAsset && (
+                    <div className="flex items-center gap-2">
+                      <Image 
+                        src={selectedChainAsset.icon}
+                        alt={selectedChainAsset.chain}
+                        width={20}
+                        height={20}
+                      />
+                      <span>USDC</span>
                     </div>
-                    <span>USDC</span>
-                  </div>
+                  )}
                 </SelectValue>
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="usdc">USDC</SelectItem>
+              <SelectContent className="bg-[#272734] border-zinc-800">
+                {action === 'burn' ? (
+                  <SelectItem value="arbitrum-usdc">
+                    <div className="flex items-center gap-2">
+                      <Image src={ArbLogo} alt="Arbitrum" width={20} height={20} />
+                      <span>Arbitrum USD Coin (USDC)</span>
+                    </div>
+                  </SelectItem>
+                ) : (
+                  CHAIN_ASSETS.map((asset) => (
+                    <SelectItem key={asset.id} value={asset.id}>
+                      <div className="flex items-center gap-2">
+                        <Image 
+                          src={asset.icon}
+                          alt={asset.chain}
+                          width={20}
+                          height={20}
+                        />
+                        <span>{asset.displayName}</span>
+                      </div>
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
 
