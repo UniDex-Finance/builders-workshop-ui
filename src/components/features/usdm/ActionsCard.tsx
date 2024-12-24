@@ -514,7 +514,52 @@ export function ActionsCard({
     <Card className="bg-[#16161D] border-[#1b1b22]">
       <CardHeader className="pt-3 pb-0 sm:pt-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base sm:text-lg">{action === 'mint' ? 'Mint' : 'Redeem'} USD.m</CardTitle>
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-base sm:text-lg">
+              {action === 'mint' ? (
+                <>Mint USD.m from<span className="mr-1" /></>
+              ) : (
+                'Redeem USD.m'
+              )}
+            </CardTitle>
+            {action === 'mint' && (
+              <Select 
+                value={selectedAsset.split('-')[0]} 
+                onValueChange={(chain) => handleAssetChange(`${chain}-usdc`)}
+              >
+                <SelectTrigger className="w-[140px] h-[30px] bg-[#272734] border-0 focus:ring-0">
+                  <SelectValue>
+                    {selectedChainAsset && (
+                      <div className="flex items-center gap-2">
+                        <Image 
+                          src={selectedChainAsset.icon}
+                          alt={selectedChainAsset.chain}
+                          width={16}
+                          height={16}
+                        />
+                        <span className="capitalize">{selectedChainAsset.chain}</span>
+                      </div>
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="bg-[#272734] border-zinc-800">
+                  {CHAIN_ASSETS.map((asset) => (
+                    <SelectItem key={asset.chain} value={asset.chain}>
+                      <div className="flex items-center gap-2">
+                        <Image 
+                          src={asset.icon}
+                          alt={asset.chain}
+                          width={16}
+                          height={16}
+                        />
+                        <span className="capitalize">{asset.chain}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
           <div className="flex gap-1 sm:gap-2">
             <Button 
               variant="ghost" 
@@ -538,47 +583,33 @@ export function ActionsCard({
           <div className="flex flex-col gap-2 md:flex-row">
             <Select 
               value={action === 'burn' ? "arbitrum-usdc" : selectedAsset} 
-              onValueChange={handleAssetChange}
-              disabled={action === 'burn'}
+              onValueChange={() => {}}
             >
-              <SelectTrigger className="w-full md:w-[180px] h-[42px] bg-[#272734] border-0 focus:ring-0">
+              <SelectTrigger className="w-full md:w-[210px] h-[42px] bg-[#272734] border-0 focus:ring-0">
                 <SelectValue>
-                  {selectedChainAsset && (
-                    <div className="flex items-center gap-2">
-                      <Image 
-                        src={selectedChainAsset.icon}
-                        alt={selectedChainAsset.chain}
-                        width={20}
-                        height={20}
-                      />
-                      <span>USDC</span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <Image 
+                      src={USDCIcon}
+                      alt="USDC"
+                      width={20}
+                      height={20}
+                    />
+                    <span>USD Coin (USDC)</span>
+                  </div>
                 </SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-[#272734] border-zinc-800">
-                {action === 'burn' ? (
-                  <SelectItem value="arbitrum-usdc">
-                    <div className="flex items-center gap-2">
-                      <Image src={ArbLogo} alt="Arbitrum" width={20} height={20} />
-                      <span>Arbitrum USD Coin (USDC)</span>
-                    </div>
-                  </SelectItem>
-                ) : (
-                  CHAIN_ASSETS.map((asset) => (
-                    <SelectItem key={asset.id} value={asset.id}>
-                      <div className="flex items-center gap-2">
-                        <Image 
-                          src={asset.icon}
-                          alt={asset.chain}
-                          width={20}
-                          height={20}
-                        />
-                        <span>{asset.displayName}</span>
-                      </div>
-                    </SelectItem>
-                  ))
-                )}
+                <SelectItem value="arbitrum-usdc">
+                  <div className="flex items-center gap-2">
+                    <Image 
+                      src={USDCIcon}
+                      alt="USDC"
+                      width={20}
+                      height={20}
+                    />
+                    <span>USD Coin (USDC)</span>
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
 
