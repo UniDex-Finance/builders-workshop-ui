@@ -303,11 +303,54 @@ export function ActionsCard({
     }
   }
 
+  const hasInsufficientBalance = () => {
+    if (!amount || amount === '0') return false
+    try {
+      if (action === 'mint') {
+        const parsedAmount = parseUnits(amount, 6)
+        if (!balances) return true;
+        
+        let relevantBalance: bigint;
+        switch (selectedAsset) {
+          case "arbitrum-usdc":
+            relevantBalance = balances.eoaUsdcBalance;
+            break;
+          case "optimism-usdc":
+            relevantBalance = balances.eoaOptimismUsdcBalance;
+            break;
+          case "base-usdc":
+            relevantBalance = balances.eoaBaseUsdcBalance;
+            break;
+          case "ethereum-usdc":
+            relevantBalance = balances.eoaEthUsdcBalance;
+            break;
+          default:
+            return true;
+        }
+        return parsedAmount > relevantBalance;
+      } else {
+        // Use 18 decimals when checking USD.m balance
+        const parsedAmount = parseUnits(amount, 18)
+        return parsedAmount > (usdmData?.usdmBalance || BigInt(0))
+      }
+    } catch {
+      return false
+    }
+  }
+
+  const canSubmit = () => {
+    if (!amount || amount === '0') return false
+    return !hasInsufficientBalance()
+  }
+
   // Update the button text based on action and approval status
   const getButtonText = () => {
     if (!isOnCorrectChain()) {
       const networkName = selectedChainAsset?.chain || 'Arbitrum'
       return `Switch to ${networkName}`
+    }
+    if (hasInsufficientBalance()) {
+      return 'Insufficient Balance'
     }
     if (needsApproval()) {
       return action === 'mint' ? 'Approve USDC' : 'Approve USD.m'
@@ -333,42 +376,6 @@ export function ActionsCard({
       }
     }
     return `Available Balance: ${usdmData?.displayUsdmBalance || '0.00'} USD.m`
-  }
-
-  // Update canSubmit function to use correct decimal places and balance for validation
-  const canSubmit = () => {
-    if (!amount || amount === '0') return false
-    try {
-      if (action === 'mint') {
-        const parsedAmount = parseUnits(amount, 6)
-        if (!balances) return false;
-        
-        let relevantBalance: bigint;
-        switch (selectedAsset) {
-          case "arbitrum-usdc":
-            relevantBalance = balances.eoaUsdcBalance;
-            break;
-          case "optimism-usdc":
-            relevantBalance = balances.eoaOptimismUsdcBalance;
-            break;
-          case "base-usdc":
-            relevantBalance = balances.eoaBaseUsdcBalance;
-            break;
-          case "ethereum-usdc":
-            relevantBalance = balances.eoaEthUsdcBalance;
-            break;
-          default:
-            return false;
-        }
-        return parsedAmount <= relevantBalance;
-      } else {
-        // Use 18 decimals when checking USD.m balance
-        const parsedAmount = parseUnits(amount, 18)
-        return parsedAmount <= (usdmData?.usdmBalance || BigInt(0))
-      }
-    } catch {
-      return false
-    }
   }
 
   // Update handleMaxClick to use correct balance
@@ -469,6 +476,13 @@ export function ActionsCard({
     } catch {
       return '0.00'
     }
+  }
+
+  const getEstimatedTime = () => {
+    if (action === 'burn' || selectedAsset === "arbitrum-usdc") {
+      return "0.1 Seconds"
+    }
+    return "20 Seconds"
   }
 
   return (
@@ -595,6 +609,12 @@ export function ActionsCard({
                   <div className="flex items-center gap-2">
                     <span>{amount ? calculateFees(amount) : '0.00'}</span>
                     <span className="text-[#A0AEC0]">{action === 'mint' ? 'USDC' : 'USD.m'}</span>
+                  </div>
+                </div>
+                <div className="flex justify-between text-xs sm:text-sm">
+                  <span className="text-[#A0AEC0]">Estimated Time</span>
+                  <div className="flex items-center gap-2">
+                    <span>{getEstimatedTime()}</span>
                   </div>
                 </div>
               </div>
