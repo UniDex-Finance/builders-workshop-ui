@@ -129,13 +129,13 @@ export function PositionsContent({
                   side="top"
                   align="center"
                   sideOffset={5}
-                  className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md text-[13px]"
+                  className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[var(--position-cards-background)]/80 backdrop-blur-md text-[13px]"
                 >
                   <div className="space-y-2">
                     <p>The top value represents the USD value of the position's exposure to the pair.</p>
                     <p>While the bottom value represents the notional size in the pairs units based on the entry price.</p>
                   </div>
-                  <HoverCard.Arrow className="fill-[#17161d]/80" />
+                  <HoverCard.Arrow className="fill-[var(--position-cards-background)]/80" />
                 </HoverCard.Content>
               </HoverCard.Portal>
             </HoverCard.Root>
@@ -154,13 +154,13 @@ export function PositionsContent({
                   side="top"
                   align="center"
                   sideOffset={5}
-                  className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md text-[13px]"
+                  className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[var(--position-cards-background)]/80 backdrop-blur-md text-[13px]"
                 >
                   <div className="space-y-2">
                     <p>The top value represents the current reported oracle price for this pair.</p>
                     <p>While the bottom value shows the current latest liquidation price for the position.</p>
                   </div>
-                  <HoverCard.Arrow className="fill-[#17161d]/80" />
+                  <HoverCard.Arrow className="fill-[var(--position-cards-background)]/80" />
                 </HoverCard.Content>
               </HoverCard.Portal>
             </HoverCard.Root>
@@ -178,12 +178,12 @@ export function PositionsContent({
                   side="top"
                   align="center"
                   sideOffset={5}
-                  className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md text-[13px]"
+                  className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[var(--position-cards-background)]/80 backdrop-blur-md text-[13px]"
                 >
                   <div className="space-y-2">
                     <p>This value shows the current unrealized profit and loss after accounting for trade fees, funding fees, and borrow fees assume the aggregated dex has them</p>
                   </div>
-                  <HoverCard.Arrow className="fill-[#17161d]/80" />
+                  <HoverCard.Arrow className="fill-[var(--position-cards-background)]/80" />
                 </HoverCard.Content>
               </HoverCard.Portal>
             </HoverCard.Root>
@@ -225,7 +225,7 @@ export function PositionsContent({
             return (
               <TableRow 
                 key={position.positionId}
-                className="cursor-pointer hover:[background-color:#1f1f29] md:table-row flex flex-col border-b"
+                className="cursor-pointer hover:bg-[var(--pane-hover)] md:table-row flex flex-col border-b"
                 onClick={() => handleRowClick(position)}
               >
                 <TableCell className="flex flex-col md:table-cell md:block">
@@ -251,7 +251,7 @@ export function PositionsContent({
                   </div>
                 </TableCell>
                 <TableCell 
-                  className="flex justify-between md:table-cell cursor-pointer hover:bg-[#272734]"
+                  className="flex justify-between md:table-cell cursor-pointer hover:bg-[var(--pane-hover)]"
                   onClick={(e) => handleSizeClick(position, e)}
                 >
                   <span className="md:hidden">Size:</span>
@@ -269,7 +269,7 @@ export function PositionsContent({
                   </div>
                 </TableCell>
                 <TableCell 
-                  className="flex justify-between md:table-cell cursor-pointer hover:bg-[#272734]"
+                  className="flex justify-between md:table-cell cursor-pointer hover:bg-[var(--pane-hover)]"
                   onClick={(e) => handleCollateralClick(position, e)}
                 >
                   <span className="md:hidden">Margin:</span>
@@ -295,7 +295,7 @@ export function PositionsContent({
                   </div>
                 </TableCell>
                 <TableCell 
-                  className="flex justify-between md:table-cell cursor-pointer hover:bg-[#272734]"
+                  className="flex justify-between md:table-cell cursor-pointer hover:bg-[var(--pane-hover)]"
                   onClick={(e) => handleSLTPClick(position, e)}
                 >
                   <span className="md:hidden">Stop Loss:</span>
@@ -313,7 +313,7 @@ export function PositionsContent({
                   </div>
                 </TableCell>
                 <TableCell 
-                  className="flex justify-between md:hidden cursor-pointer hover:bg-[#272734]"
+                  className="flex justify-between md:hidden cursor-pointer hover:bg-[var(--pane-hover)]"
                   onClick={(e) => handleSLTPClick(position, e)}
                 >
                   <span>Take Profit:</span>

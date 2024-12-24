@@ -84,7 +84,12 @@ function MyApp({ Component, pageProps }: AppProps) {
         src="/static/charting_library/charting_library.standalone.js"
         strategy="beforeInteractive"
       />
-      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+      <ThemeProvider 
+        attribute="class" 
+        defaultTheme="dark" 
+        enableSystem={false}
+        themes={['light', 'dark', 'greenify']}
+      >
         <WagmiProvider config={config}>
           <QueryClientProvider client={client}>
             <RainbowKitProvider

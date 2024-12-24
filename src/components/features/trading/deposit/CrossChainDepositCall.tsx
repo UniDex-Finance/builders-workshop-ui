@@ -8,7 +8,7 @@ import {
   useSwitchChain,
 } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
-import { arbitrum, optimism, base } from "wagmi/chains";
+import { arbitrum, optimism, base, mainnet } from "wagmi/chains";
 import { useSmartAccount } from "@/hooks/use-smart-account";
 import { useState, useEffect } from "react";
 
@@ -58,6 +58,12 @@ const CHAIN_CONFIG = {
     name: "Base",
     chainId: base.id,
     usdcAddress: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    needsApproval: true,
+  },
+  [mainnet.id]: {
+    name: "Ethereum",
+    chainId: mainnet.id,
+    usdcAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
     needsApproval: true,
   },
 } as const;

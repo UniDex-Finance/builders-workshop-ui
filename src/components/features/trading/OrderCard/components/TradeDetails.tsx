@@ -73,10 +73,10 @@ export function TradeDetails({
               side="top"
               align="center"
               sideOffset={5}
-              className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md text-[13px]"
+              className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[var(--position-cards-background)]/80 backdrop-blur-md text-[13px]"
             >
               <p>We do perp aggregation, so the route shows whos DEX is used to place this trade</p>
-              <HoverCard.Arrow className="fill-[#17161d]/80" />
+              <HoverCard.Arrow className="fill-[var(--position-cards-background)]/80" />
             </HoverCard.Content>
           </HoverCard.Portal>
         </HoverCard.Root>
@@ -110,7 +110,7 @@ export function TradeDetails({
                 side="top"
                 align="center"
                 sideOffset={5}
-                className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md text-[13px]"
+                className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[var(--position-cards-background)]/80 backdrop-blur-md text-[13px]"
               >
                 <div className="space-y-1">
                   <div className="flex items-center justify-between gap-4">
@@ -122,7 +122,7 @@ export function TradeDetails({
                     <span>{splitOrderInfo.gtrade.size.toFixed(2)} USD</span>
                   </div>
                 </div>
-                <HoverCard.Arrow className="fill-[#17161d]/80" />
+                <HoverCard.Arrow className="fill-[var(--position-cards-background)]/80" />
               </HoverCard.Content>
             </HoverCard.Portal>
           </HoverCard.Root>
@@ -153,10 +153,10 @@ export function TradeDetails({
               side="top"
               align="center"
               sideOffset={5}
-              className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md text-[13px]"
+              className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[var(--position-cards-background)]/80 backdrop-blur-md text-[13px]"
             >
               <p>The estimated aggregate entry price for the position</p>
-              <HoverCard.Arrow className="fill-[#17161d]/80" />
+              <HoverCard.Arrow className="fill-[var(--position-cards-background)]/80" />
             </HoverCard.Content>
           </HoverCard.Portal>
         </HoverCard.Root>
@@ -184,7 +184,7 @@ export function TradeDetails({
                 side="top"
                 align="center"
                 sideOffset={5}
-                className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md text-[13px]"
+                className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[var(--position-cards-background)]/80 backdrop-blur-md text-[13px]"
               >
                 <div className="space-y-1">
                   <div className="flex items-center justify-between gap-4">
@@ -202,7 +202,7 @@ export function TradeDetails({
                     </div>
                   </div>
                 </div>
-                <HoverCard.Arrow className="fill-[#17161d]/80" />
+                <HoverCard.Arrow className="fill-[var(--position-cards-background)]/80" />
               </HoverCard.Content>
             </HoverCard.Portal>
           </HoverCard.Root>
@@ -225,10 +225,10 @@ export function TradeDetails({
               side="top"
               align="center"
               sideOffset={5}
-              className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md text-[13px]"
+              className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[var(--position-cards-background)]/80 backdrop-blur-md text-[13px]"
             >
               <p>The estimated hourly payment for this position by combining the borrow fee and funding rate in USD</p>
-              <HoverCard.Arrow className="fill-[#17161d]/80" />
+              <HoverCard.Arrow className="fill-[var(--position-cards-background)]/80" />
             </HoverCard.Content>
           </HoverCard.Portal>
         </HoverCard.Root>
@@ -251,10 +251,10 @@ export function TradeDetails({
               side="top"
               align="center"
               sideOffset={5}
-              className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md text-[13px]"
+              className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[var(--position-cards-background)]/80 backdrop-blur-md text-[13px]"
             >
               <p>The amount of balance needed to open this trade</p>
-              <HoverCard.Arrow className="fill-[#17161d]/80" />
+              <HoverCard.Arrow className="fill-[var(--position-cards-background)]/80" />
             </HoverCard.Content>
           </HoverCard.Portal>
         </HoverCard.Root>

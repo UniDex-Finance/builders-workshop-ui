@@ -1,9 +1,10 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { http } from 'viem';
-import { arbitrum, optimism, sepolia, base } from 'wagmi/chains';
+import { arbitrum, optimism, sepolia, base, mainnet } from 'wagmi/chains';
 
 // Define chains
 const chains = [
+  mainnet,
   arbitrum,
   optimism,
   base,
@@ -16,6 +17,7 @@ export const config = getDefaultConfig({
   projectId: '51445d14652b7a86dab5f5d7a4b8b70c',
   chains,
   transports: {
+    [mainnet.id]: http(process.env.NEXT_PUBLIC_ETH_RPC || 'https://rpc.ankr.com/eth'),
     [arbitrum.id]: http(process.env.NEXT_PUBLIC_ARBITRUM_RPC || 'https://rpc.ankr.com/arbitrum'),
     [optimism.id]: http(process.env.NEXT_PUBLIC_OPTIMISM_RPC || 'https://rpc.ankr.com/optimism'),
     [base.id]: http(process.env.NEXT_PUBLIC_BASE_RPC || 'https://rpc.ankr.com/base'),

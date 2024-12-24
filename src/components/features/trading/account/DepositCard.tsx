@@ -16,7 +16,7 @@ import { useAccount, useSwitchChain } from "wagmi"
 import { useSmartAccount } from "@/hooks/use-smart-account"
 import { useToast } from "@/hooks/use-toast"
 import { useTokenTransferActions } from "@/hooks/use-token-transfer-actions"
-import { arbitrum, optimism, base } from "wagmi/chains"
+import { arbitrum, optimism, base, mainnet } from "wagmi/chains"
 import { CrossChainDepositCall } from "../deposit/CrossChainDepositCall"
 import { formatUnits } from "viem"
 import { parseUnits } from "viem"
@@ -25,6 +25,7 @@ import USDCIcon from "@/../../public/static/images/tokens/USDC.svg"
 import ArbLogo from "@/../../public/static/images/chain-logos/arb.svg"
 import OpLogo from "@/../../public/static/images/chain-logos/op.svg"
 import BaseLogo from "@/../../public/static/images/chain-logos/base.svg"
+import EthLogo from "@/../../public/static/images/chain-logos/eth.svg"
 
 interface DepositCardProps {
   onClose: () => void;
@@ -60,6 +61,12 @@ const CHAIN_CONFIG = {
     name: "Base",
     chainId: base.id,
     usdcAddress: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    needsQuote: true,
+  },
+  ethereum: {
+    name: "Ethereum",
+    chainId: mainnet.id,
+    usdcAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
     needsQuote: true,
   },
 } as const;
@@ -132,6 +139,8 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
         return balances.formattedEoaOptimismUsdcBalance;
       case "base":
         return balances.formattedEoaBaseUsdcBalance;
+      case "ethereum":
+        return balances.formattedEoaEthUsdcBalance;
       default:
         return "0.0000";
     }
@@ -280,7 +289,7 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
                   <SelectValue>
                     <div className="flex items-center gap-2">
                       <Image 
-                        src={selectedChain === "arbitrum" ? ArbLogo : selectedChain === "optimism" ? OpLogo : BaseLogo} 
+                        src={selectedChain === "arbitrum" ? ArbLogo : selectedChain === "optimism" ? OpLogo : selectedChain === "ethereum" ? EthLogo : BaseLogo} 
                         alt={selectedChain} 
                         width={24} 
                         height={24} 
@@ -306,6 +315,12 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
                     <div className="flex items-center gap-2">
                       <Image src={BaseLogo} alt="Base" width={24} height={24} />
                       <span>Base</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="ethereum">
+                    <div className="flex items-center gap-2">
+                      <Image src={EthLogo} alt="Ethereum" width={24} height={24} />
+                      <span>Ethereum</span>
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -374,7 +389,7 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-sm text-zinc-500">Available</span>
+              <span className="text-sm text-zinc-500">Available to deposit</span>
               <span className="text-sm">
                 {getAvailableBalance()}
               </span>
@@ -393,7 +408,7 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
               </div>
             )}
             <div className="flex items-center justify-between">
-              <span className="text-sm text-zinc-500">Equity</span>
+              <span className="text-sm text-zinc-500">Balance Change</span>
               <span className="text-sm">{getCurrentAndNewBalance()}</span>
             </div>
           </div>

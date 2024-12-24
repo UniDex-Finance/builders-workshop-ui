@@ -10,7 +10,7 @@ export interface InputProps
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, label, ...props }, ref) => {
     return (
-      <div className="relative flex w-full bg-[#272734] border rounded-md shadow-sm h-9 border-input">
+      <div className="relative flex w-full bg-[var(--textbox-background)] border rounded-md shadow-sm h-9 border-[var(--textbox-border)]">
         {label && (
           <span className="absolute text-sm -translate-y-1/2 left-3 top-1/2 text-muted-foreground">
             {label}
