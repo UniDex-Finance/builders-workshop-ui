@@ -166,6 +166,28 @@ export function ActionsCard({
     }
   }
 
+  const handleAssetChange = async (value: string) => {
+    setSelectedAsset(value)
+    
+    // Find the required chain ID for the new asset
+    const newChainId = (() => {
+      if (value === "arbitrum-usdc") return 42161
+      if (value === "optimism-usdc") return 10
+      if (value === "base-usdc") return 8453
+      if (value === "ethereum-usdc") return 1
+      return 42161
+    })()
+    
+    // If we're not on the correct chain, trigger the switch
+    if (chain?.id !== newChainId && switchChain) {
+      try {
+        await switchChain({ chainId: newChainId })
+      } catch (error) {
+        console.error('Failed to switch chain:', error)
+      }
+    }
+  }
+
   const handleTransaction = async () => {
     if (!isOnCorrectChain()) {
       return handleNetworkSwitch()
@@ -516,7 +538,7 @@ export function ActionsCard({
           <div className="flex flex-col gap-2 md:flex-row">
             <Select 
               value={action === 'burn' ? "arbitrum-usdc" : selectedAsset} 
-              onValueChange={setSelectedAsset}
+              onValueChange={handleAssetChange}
               disabled={action === 'burn'}
             >
               <SelectTrigger className="w-full md:w-[180px] h-[42px] bg-[#272734] border-0 focus:ring-0">
