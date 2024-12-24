@@ -334,7 +334,7 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
                     <ConnectButton.Custom>
                       {({ openConnectModal }) => (
                         <Button
-                          className="w-full h-[52px] bg-[#7142cf] hover:bg-[#7142cf]/80 text-white"
+                          className="w-full h-[52px] bg-[var(--main-accent)] hover:bg-[var(--main-accent)]/80 text-white"
                           onClick={openConnectModal}
                         >
                           Connect Wallet
@@ -353,7 +353,7 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
                       Every trading account address is unique to the wallet address used to setup the account.
                     </p>
                     <Button
-                      className="w-full h-[52px] bg-[#7142cf] hover:bg-[#7142cf]/80 text-white"
+                      className="w-full h-[52px] bg-[var(--main-accent)] hover:bg-[var(--main-accent)]/80 text-white"
                       onClick={handleSetupSmartAccount}
                       disabled={isSigningSessionKey}
                     >

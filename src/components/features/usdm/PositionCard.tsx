@@ -58,13 +58,6 @@ export function PositionCard({ balances, isLoading }: Props) {
             </span>
           </div>
           <div className="flex justify-between text-xs md:text-sm">
-            <span className="text-[#A0AEC0]">Vesting Rewards</span>
-            <span className="text-[#00FF00] text-right">
-              {moltenStakingData?.displayEarnedBalance || '0.00'} esMOLTEN {' '}
-              <span className="text-[#A0AEC0]">{formatUsdmValue(moltenStakingData?.formattedEarnedBalance || '0')}</span>
-            </span>
-          </div>
-          <div className="flex justify-between text-xs md:text-sm">
             <span className="text-[#A0AEC0]">Share of the Vault</span>
             <span className="text-white">{calculateShareOfPool()}%</span>
           </div>
