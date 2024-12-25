@@ -1,8 +1,9 @@
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import type { ResolutionString } from "../../../../public/static/charting_library/charting_library";
 import datafeed from "../../../utils/datafeed.js";
 import { Position } from "../../../hooks/use-positions";
 import { useTheme } from "next-themes";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 declare global {
   interface Window {
@@ -41,6 +42,60 @@ interface ChartProps {
   positions?: Position[];
 }
 
+// Add this before the Chart component
+const ChartSwitcher = ({ activeChart, onSwitch }: { activeChart: 'trading' | 'analytics', onSwitch: (type: 'trading' | 'analytics') => void }) => {
+  return (
+    <div className="absolute z-20 flex gap-1 top-3 left-3">
+      <button
+        onClick={() => onSwitch('trading')}
+        className={`px-3 py-1 text-xs rounded-md transition-colors ${
+          activeChart === 'trading'
+            ? 'bg-primary/20 text-primary'
+            : 'hover:bg-secondary/50 text-muted-foreground'
+        }`}
+      >
+        Price
+      </button>
+      <button
+        onClick={() => onSwitch('analytics')}
+        className={`px-3 py-1 text-xs rounded-md transition-colors ${
+          activeChart === 'analytics'
+            ? 'bg-primary/20 text-primary'
+            : 'hover:bg-secondary/50 text-muted-foreground'
+        }`}
+      >
+        Funding History
+      </button>
+    </div>
+  );
+};
+
+// Add this before the Chart component
+const AnalyticsChart = () => {
+  // Sample data - replace with your actual data
+  const data = [
+    { name: 'Jan', value: 400 },
+    { name: 'Feb', value: 300 },
+    { name: 'Mar', value: 600 },
+    { name: 'Apr', value: 800 },
+    { name: 'May', value: 500 }
+  ];
+
+  return (
+    <div className="w-full h-full p-4">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          <Line type="monotone" dataKey="value" stroke="#3df57b" />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
 export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positions = [] }: ChartProps) {
   const widgetRef = useRef<any>(null);
   const isDragging = useRef(false);
@@ -49,6 +104,7 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
   const currentPositionIdsRef = useRef<Set<string>>(new Set());
   const isChartReadyRef = useRef(false);
   const { theme } = useTheme();
+  const [activeChart, setActiveChart] = useState<'trading' | 'analytics'>('trading');
 
   // Memoize positions based on their IDs and entry prices only
   const positionKey = useMemo(() => {
@@ -286,13 +342,24 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
     document.removeEventListener('mouseup', handleMouseUp);
   };
 
+  // Add this effect to cleanup TradingView when switching charts
+  useEffect(() => {
+    if (activeChart === 'analytics' && widgetRef.current) {
+      widgetRef.current.remove();
+      widgetRef.current = null;
+      isChartReadyRef.current = false;
+    } else if (activeChart === 'trading' && !widgetRef.current) {
+      loadTradingView();
+    }
+  }, [activeChart]);
+
   return (
     <div 
       className={`relative rounded-xl border border-border bg-[var(--deposit-card-background)]`}
       style={{ 
         height: `${height}px`,
         resize: 'vertical',
-        overflow: 'auto',
+        overflow: 'hidden',
         paddingBottom: '16px',
         minHeight: '300px',
         maxHeight: '800px',
@@ -302,11 +369,24 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
       }}
       onMouseDown={handleMouseDown}
     >
-      <div
-        id="tv_chart_container"
-        className="w-full h-full"
-        style={{ pointerEvents: 'auto' }}
-      />
+      <div className="w-full h-12">
+        <ChartSwitcher activeChart={activeChart} onSwitch={setActiveChart} />
+      </div>
+      
+      <div className="w-full h-[calc(100%-48px)]">
+        {activeChart === 'trading' ? (
+          <div
+            id="tv_chart_container"
+            className="w-full h-full"
+            style={{ pointerEvents: 'auto' }}
+          />
+        ) : (
+          <div className="w-full h-full">
+            <AnalyticsChart />
+          </div>
+        )}
+      </div>
+      
       <div 
         className="absolute bottom-0 left-0 right-0 h-4 cursor-ns-resize bg-[var(--deposit-card-background)]"
       />
