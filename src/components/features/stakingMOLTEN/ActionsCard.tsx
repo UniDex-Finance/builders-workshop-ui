@@ -139,6 +139,7 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
         <CardHeader>
           <CardTitle className="text-white">Manage Position</CardTitle>
         </CardHeader>
+        {walletClient?.account ? (
         <CardContent className="space-y-6">
           {!isArbitrum ? (
             <Button 
@@ -272,6 +273,11 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
             </>
           )}
         </CardContent>
+        ) : (
+          <CardContent>
+            Wallet not connected
+          </CardContent>
+        )}
       </Card>
     )
   }
