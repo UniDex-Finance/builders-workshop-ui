@@ -1,12 +1,5 @@
 import { useState, useEffect } from 'react';
-
-// Map trading pairs to their market IDs
-const MARKET_IDS: Record<string, number> = {
-  'BTC/USD': 1,
-  'ETH/USD': 2,
-  'SOL/USD': 4,
-  // Add more pairs as needed
-};
+import { TRADING_PAIRS } from './use-market-data';
 
 interface ApiResponse {
   market: {
@@ -41,7 +34,8 @@ export function useFundingHistory(pair: string) {
     const fetchFundingHistory = async () => {
       setLoading(true);
       try {
-        const marketId = MARKET_IDS[pair];
+        // Find the market ID by matching the pair
+        const marketId = Object.entries(TRADING_PAIRS).find(([_, p]) => p === pair)?.[0];
         if (!marketId) {
           throw new Error(`Market ID not found for pair ${pair}`);
         }
@@ -56,12 +50,6 @@ export function useFundingHistory(pair: string) {
 
         const apiData: ApiResponse = await response.json();
         
-        // Log raw data to see what we're getting
-        console.log('Raw API data sample:', {
-          firstFew: apiData.history.slice(0, 5),
-          total: apiData.history.length
-        });
-
         // Transform the API data into our FundingData format
         const transformedData: FundingData[] = apiData.history
           .filter(item => item.rate !== "0") // Filter out zero values
@@ -69,11 +57,6 @@ export function useFundingHistory(pair: string) {
             timestamp: parseInt(item.timestamp),
             rate: Number(item.rate)
           }));
-
-        console.log('Transformed data sample:', {
-          firstFew: transformedData.slice(0, 5),
-          total: transformedData.length
-        });
 
         setData(transformedData);
         setError(null);

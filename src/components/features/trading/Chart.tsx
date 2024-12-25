@@ -180,6 +180,12 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
         isChartReadyRef.current = false;
       }
 
+      const container = document.getElementById('tv_chart_container');
+      if (!container) {
+        console.log("TradingView container not found");
+        return;
+      }
+
       console.log("Creating TradingView widget");
       const widget = new window.TradingView.widget({
         container: "tv_chart_container",
@@ -323,7 +329,13 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
       widgetRef.current = null;
       isChartReadyRef.current = false;
     } else if (activeChart === 'trading' && !widgetRef.current) {
-      loadTradingView();
+      // Add a small delay to ensure the container is ready
+      setTimeout(() => {
+        const container = document.getElementById('tv_chart_container');
+        if (container) {
+          loadTradingView();
+        }
+      }, 0);
     }
   }, [activeChart]);
 
