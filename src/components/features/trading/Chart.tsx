@@ -1,8 +1,9 @@
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import type { ResolutionString } from "../../../../public/static/charting_library/charting_library";
 import datafeed from "../../../utils/datafeed.js";
 import { Position } from "../../../hooks/use-positions";
 import { useTheme } from "next-themes";
+import { FundingChart } from "./FundingChart";
 
 declare global {
   interface Window {
@@ -41,6 +42,34 @@ interface ChartProps {
   positions?: Position[];
 }
 
+// Add this before the Chart component
+const ChartSwitcher = ({ activeChart, onSwitch }: { activeChart: 'trading' | 'analytics', onSwitch: (type: 'trading' | 'analytics') => void }) => {
+  return (
+    <div className="absolute z-20 flex gap-1 top-3 left-3">
+      <button
+        onClick={() => onSwitch('trading')}
+        className={`px-3 py-1 text-xs rounded-md transition-colors ${
+          activeChart === 'trading'
+            ? 'bg-primary/20 text-primary'
+            : 'hover:bg-secondary/50 text-muted-foreground'
+        }`}
+      >
+        Price
+      </button>
+      <button
+        onClick={() => onSwitch('analytics')}
+        className={`px-3 py-1 text-xs rounded-md transition-colors ${
+          activeChart === 'analytics'
+            ? 'bg-primary/20 text-primary'
+            : 'hover:bg-secondary/50 text-muted-foreground'
+        }`}
+      >
+        Funding History
+      </button>
+    </div>
+  );
+};
+
 export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positions = [] }: ChartProps) {
   const widgetRef = useRef<any>(null);
   const isDragging = useRef(false);
@@ -49,6 +78,7 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
   const currentPositionIdsRef = useRef<Set<string>>(new Set());
   const isChartReadyRef = useRef(false);
   const { theme } = useTheme();
+  const [activeChart, setActiveChart] = useState<'trading' | 'analytics'>('trading');
 
   // Memoize positions based on their IDs and entry prices only
   const positionKey = useMemo(() => {
@@ -148,6 +178,12 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
         widgetRef.current.remove();
         widgetRef.current = null;
         isChartReadyRef.current = false;
+      }
+
+      const container = document.getElementById('tv_chart_container');
+      if (!container) {
+        console.log("TradingView container not found");
+        return;
       }
 
       console.log("Creating TradingView widget");
@@ -286,13 +322,30 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
     document.removeEventListener('mouseup', handleMouseUp);
   };
 
+  // Add this effect to cleanup TradingView when switching charts
+  useEffect(() => {
+    if (activeChart === 'analytics' && widgetRef.current) {
+      widgetRef.current.remove();
+      widgetRef.current = null;
+      isChartReadyRef.current = false;
+    } else if (activeChart === 'trading' && !widgetRef.current) {
+      // Add a small delay to ensure the container is ready
+      setTimeout(() => {
+        const container = document.getElementById('tv_chart_container');
+        if (container) {
+          loadTradingView();
+        }
+      }, 0);
+    }
+  }, [activeChart]);
+
   return (
     <div 
       className={`relative rounded-xl border border-border bg-[var(--deposit-card-background)]`}
       style={{ 
         height: `${height}px`,
         resize: 'vertical',
-        overflow: 'auto',
+        overflow: 'hidden',
         paddingBottom: '16px',
         minHeight: '300px',
         maxHeight: '800px',
@@ -302,11 +355,22 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
       }}
       onMouseDown={handleMouseDown}
     >
-      <div
-        id="tv_chart_container"
-        className="w-full h-full"
-        style={{ pointerEvents: 'auto' }}
-      />
+      <div className="w-full h-12">
+        <ChartSwitcher activeChart={activeChart} onSwitch={setActiveChart} />
+      </div>
+      
+      <div className="w-full h-[calc(100%-48px)]">
+        {activeChart === 'trading' ? (
+          <div
+            id="tv_chart_container"
+            className="w-full h-full"
+            style={{ pointerEvents: 'auto' }}
+          />
+        ) : (
+          <FundingChart pair={selectedPair} />
+        )}
+      </div>
+      
       <div 
         className="absolute bottom-0 left-0 right-0 h-4 cursor-ns-resize bg-[var(--deposit-card-background)]"
       />
