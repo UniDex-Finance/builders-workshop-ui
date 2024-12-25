@@ -32,17 +32,21 @@ export function FundingChart({ pair }: FundingChartProps) {
     );
   }
 
-  const formattedData = data.map(item => ({
-    timestamp: new Date(item.timestamp).toLocaleString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }),
-    rate: item.rate,
-    positiveRate: item.rate > 0 ? item.rate : 0,
-    negativeRate: item.rate < 0 ? item.rate : 0,
-  }));
+  const formattedData = data.map(item => {
+    const date = new Date(item.timestamp);
+    return {
+      timestamp: date,
+      displayTime: date.toLocaleString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      rate: item.rate,
+      positiveRate: item.rate > 0 ? item.rate : 0,
+      negativeRate: item.rate < 0 ? item.rate : 0,
+    };
+  });
 
   return (
     <div className="w-full h-full p-4">
@@ -59,19 +63,39 @@ export function FundingChart({ pair }: FundingChartProps) {
             </linearGradient>
           </defs>
           
-          <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
           <XAxis 
-            dataKey="timestamp" 
+            dataKey="timestamp"
+            tickFormatter={(timestamp: Date) => {
+              // Only show hour and minute for timestamps at the start of each hour
+              if (timestamp.getMinutes() === 0) {
+                const hour = timestamp.getHours();
+                // For midnight, show the date
+                if (hour === 0) {
+                  return timestamp.toLocaleString(undefined, {
+                    day: 'numeric',
+                  });
+                }
+                // For noon and midnight, show '12 PM' and '12 AM'
+                if (hour === 12) {
+                  return '12 PM';
+                }
+                // For other hours, show in 12-hour format
+                return `${hour % 12 || 12}${hour >= 12 ? 'PM' : 'AM'}`;
+              }
+              return '';
+            }}
             tick={{ fontSize: 12 }}
-            interval="preserveStartEnd"
-            angle={-45}
-            textAnchor="end"
-            height={60}
+            interval={0}
+            angle={0}
+            axisLine={{ stroke: 'var(--muted-foreground)', strokeWidth: 1 }}
+            tickLine={{ stroke: 'var(--muted-foreground)' }}
           />
           <YAxis 
             tick={{ fontSize: 12 }}
             tickFormatter={(value) => `${value}%`}
             domain={['auto', 'auto']}
+            axisLine={{ stroke: 'var(--muted-foreground)', strokeWidth: 1 }}
+            tickLine={{ stroke: 'var(--muted-foreground)' }}
           />
           <Tooltip
             contentStyle={{
@@ -81,7 +105,12 @@ export function FundingChart({ pair }: FundingChartProps) {
               fontSize: '12px',
             }}
             formatter={(value: number) => [`${value}%`, 'Rate']}
-            labelFormatter={(label) => `Time: ${label}`}
+            labelFormatter={(timestamp: Date) => timestamp.toLocaleString(undefined, {
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
           />
           <ReferenceLine y={0} stroke="var(--muted-foreground)" strokeDasharray="3 3" />
           
