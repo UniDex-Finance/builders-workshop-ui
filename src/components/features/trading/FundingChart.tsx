@@ -3,10 +3,16 @@ import { useFundingHistory } from '../../../hooks/use-funding-history';
 
 interface FundingChartProps {
   pair: string;
+  isActive?: boolean;
 }
 
-export function FundingChart({ pair }: FundingChartProps) {
-  const { data, loading, error } = useFundingHistory(pair);
+interface ChartDataPoint {
+  timestamp: Date;
+  rate: number;
+}
+
+export function FundingChart({ pair, isActive = false }: FundingChartProps) {
+  const { data, loading, error } = useFundingHistory(pair, isActive);
 
   if (loading) {
     return (
@@ -32,21 +38,10 @@ export function FundingChart({ pair }: FundingChartProps) {
     );
   }
 
-  const formattedData = data.map(item => {
-    const date = new Date(item.timestamp);
-    return {
-      timestamp: date,
-      displayTime: date.toLocaleString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-      rate: item.rate,
-      positiveRate: item.rate > 0 ? item.rate : 0,
-      negativeRate: item.rate < 0 ? item.rate : 0,
-    };
-  });
+  const formattedData: ChartDataPoint[] = data.map(item => ({
+    timestamp: new Date(item.timestamp),
+    rate: item.rate,
+  }));
 
   return (
     <div className="w-full h-full p-4">
@@ -66,27 +61,15 @@ export function FundingChart({ pair }: FundingChartProps) {
           <XAxis 
             dataKey="timestamp"
             tickFormatter={(timestamp: Date) => {
-              // Only show hour and minute for timestamps at the start of each hour
-              if (timestamp.getMinutes() === 0) {
-                const hour = timestamp.getHours();
-                // For midnight, show the date
-                if (hour === 0) {
-                  return timestamp.toLocaleString(undefined, {
-                    day: 'numeric',
-                  });
-                }
-                // For noon and midnight, show '12 PM' and '12 AM'
-                if (hour === 12) {
-                  return '12 PM';
-                }
-                // For other hours, show in 12-hour format
-                return `${hour % 12 || 12}${hour >= 12 ? 'PM' : 'AM'}`;
-              }
-              return '';
+              return timestamp.toLocaleString(undefined, {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+              });
             }}
             tick={{ fontSize: 12 }}
-            interval={0}
-            angle={0}
+            interval="preserveStartEnd"
+            minTickGap={60}
             axisLine={{ stroke: 'var(--muted-foreground)', strokeWidth: 1 }}
             tickLine={{ stroke: 'var(--muted-foreground)' }}
           />
@@ -104,7 +87,10 @@ export function FundingChart({ pair }: FundingChartProps) {
               borderRadius: '8px',
               fontSize: '12px',
             }}
-            formatter={(value: number) => [`${value}%`, 'Rate']}
+            formatter={(value: number) => {
+              const color = value >= 0 ? 'rgb(61, 245, 123)' : 'rgb(234, 67, 92)';
+              return [<span style={{ color }}>{`${value}%`}</span>, 'Rate'];
+            }}
             labelFormatter={(timestamp: Date) => timestamp.toLocaleString(undefined, {
               month: 'short',
               day: 'numeric',
@@ -114,34 +100,24 @@ export function FundingChart({ pair }: FundingChartProps) {
           />
           <ReferenceLine y={0} stroke="var(--muted-foreground)" strokeDasharray="3 3" />
           
-          {/* Positive area */}
+          {/* Positive values */}
           <Area 
             type="monotone"
-            dataKey="positiveRate"
+            dataKey={(item: ChartDataPoint) => item.rate >= 0 ? item.rate : undefined}
             stroke="rgb(61, 245, 123)"
-            fillOpacity={1}
             fill="url(#positiveGradient)"
+            fillOpacity={1}
             strokeWidth={1}
           />
           
-          {/* Negative area */}
+          {/* Negative values */}
           <Area 
             type="monotone"
-            dataKey="negativeRate"
+            dataKey={(item: ChartDataPoint) => item.rate < 0 ? item.rate : undefined}
             stroke="rgb(234, 67, 92)"
-            fillOpacity={1}
             fill="url(#negativeGradient)"
+            fillOpacity={1}
             strokeWidth={1}
-          />
-          
-          {/* Main line */}
-          <Line 
-            type="monotone"
-            dataKey="rate"
-            stroke="var(--primary)"
-            dot={false}
-            strokeWidth={1}
-            animationDuration={500}
           />
         </ComposedChart>
       </ResponsiveContainer>
