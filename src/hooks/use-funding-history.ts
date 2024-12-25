@@ -40,7 +40,7 @@ export function useFundingHistory(pair: string, isActive: boolean = false) {
       }
 
       const response = await fetch(
-        `https://unidexv4-market-data.up.railway.app/api/market/${marketId}/history/duration/30d?granularity=15m`
+        `https://unidexv4-market-data.up.railway.app/api/market/${marketId}/history/duration/30d?granularity=1h`
       );
 
       if (!response.ok) {
@@ -54,7 +54,7 @@ export function useFundingHistory(pair: string, isActive: boolean = false) {
         .filter(item => item.rate !== "0") // Filter out zero values
         .map(item => ({
           timestamp: parseInt(item.timestamp),
-          rate: Number(item.rate)
+          rate: Number(Number(item.rate).toFixed(5)) // Round to 5 decimal places
         }));
 
       setData(transformedData);

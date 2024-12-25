@@ -61,23 +61,15 @@ export function FundingChart({ pair, isActive = false }: FundingChartProps) {
           <XAxis 
             dataKey="timestamp"
             tickFormatter={(timestamp: Date) => {
-              if (timestamp.getMinutes() === 0) {
-                const hour = timestamp.getHours();
-                if (hour === 0) {
-                  return timestamp.toLocaleString(undefined, {
-                    day: 'numeric',
-                  });
-                }
-                if (hour === 12) {
-                  return '12 PM';
-                }
-                return `${hour % 12 || 12}${hour >= 12 ? 'PM' : 'AM'}`;
-              }
-              return '';
+              return timestamp.toLocaleString(undefined, {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+              });
             }}
             tick={{ fontSize: 12 }}
-            interval={0}
-            angle={0}
+            interval="preserveStartEnd"
+            minTickGap={60}
             axisLine={{ stroke: 'var(--muted-foreground)', strokeWidth: 1 }}
             tickLine={{ stroke: 'var(--muted-foreground)' }}
           />
