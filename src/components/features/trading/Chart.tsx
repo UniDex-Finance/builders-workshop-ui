@@ -367,7 +367,7 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
             style={{ pointerEvents: 'auto' }}
           />
         ) : (
-          <FundingChart pair={selectedPair} />
+          <FundingChart pair={selectedPair} isActive={activeChart === 'analytics'} />
         )}
       </div>
       

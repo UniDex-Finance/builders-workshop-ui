@@ -3,6 +3,7 @@ import { useFundingHistory } from '../../../hooks/use-funding-history';
 
 interface FundingChartProps {
   pair: string;
+  isActive?: boolean;
 }
 
 interface ChartDataPoint {
@@ -10,8 +11,8 @@ interface ChartDataPoint {
   rate: number;
 }
 
-export function FundingChart({ pair }: FundingChartProps) {
-  const { data, loading, error } = useFundingHistory(pair);
+export function FundingChart({ pair, isActive = false }: FundingChartProps) {
+  const { data, loading, error } = useFundingHistory(pair, isActive);
 
   if (loading) {
     return (
