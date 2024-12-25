@@ -3,7 +3,7 @@ import type { ResolutionString } from "../../../../public/static/charting_librar
 import datafeed from "../../../utils/datafeed.js";
 import { Position } from "../../../hooks/use-positions";
 import { useTheme } from "next-themes";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { FundingChart } from "./FundingChart";
 
 declare global {
   interface Window {
@@ -66,32 +66,6 @@ const ChartSwitcher = ({ activeChart, onSwitch }: { activeChart: 'trading' | 'an
       >
         Funding History
       </button>
-    </div>
-  );
-};
-
-// Add this before the Chart component
-const AnalyticsChart = () => {
-  // Sample data - replace with your actual data
-  const data = [
-    { name: 'Jan', value: 400 },
-    { name: 'Feb', value: 300 },
-    { name: 'Mar', value: 600 },
-    { name: 'Apr', value: 800 },
-    { name: 'May', value: 500 }
-  ];
-
-  return (
-    <div className="w-full h-full p-4">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Line type="monotone" dataKey="value" stroke="#3df57b" />
-        </LineChart>
-      </ResponsiveContainer>
     </div>
   );
 };
@@ -381,9 +355,7 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
             style={{ pointerEvents: 'auto' }}
           />
         ) : (
-          <div className="w-full h-full">
-            <AnalyticsChart />
-          </div>
+          <FundingChart pair={selectedPair} />
         )}
       </div>
       
