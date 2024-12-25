@@ -45,27 +45,27 @@ interface ChartProps {
 // Add this before the Chart component
 const ChartSwitcher = ({ activeChart, onSwitch }: { activeChart: 'trading' | 'analytics', onSwitch: (type: 'trading' | 'analytics') => void }) => {
   return (
-    <div className="absolute z-20 flex gap-1 top-3 left-3">
-      <button
+    <div className="absolute z-20 flex gap-4 top-4 left-6">
+      <span
         onClick={() => onSwitch('trading')}
-        className={`px-3 py-1 text-xs rounded-md transition-colors ${
+        className={`text-xs cursor-pointer transition-colors ${
           activeChart === 'trading'
-            ? 'bg-primary/20 text-primary'
-            : 'hover:bg-secondary/50 text-muted-foreground'
+            ? 'text-primary'
+            : 'text-muted-foreground hover:text-primary/80'
         }`}
       >
         Price
-      </button>
-      <button
+      </span>
+      <span
         onClick={() => onSwitch('analytics')}
-        className={`px-3 py-1 text-xs rounded-md transition-colors ${
+        className={`text-xs cursor-pointer transition-colors ${
           activeChart === 'analytics'
-            ? 'bg-primary/20 text-primary'
-            : 'hover:bg-secondary/50 text-muted-foreground'
+            ? 'text-primary'
+            : 'text-muted-foreground hover:text-primary/80'
         }`}
       >
         Funding History
-      </button>
+      </span>
     </div>
   );
 };
