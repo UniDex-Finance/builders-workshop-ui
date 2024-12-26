@@ -143,7 +143,7 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
         <CardContent className="space-y-6">
           {!isArbitrum ? (
             <Button 
-              className="w-full bg-[#7B3FE4] hover:bg-[#6B2FD4] text-white"
+              className="w-full bg-primary hover:bg-primary/80 text-white"
               onClick={handleNetworkSwitch}
             >
               Switch to Arbitrum
@@ -229,14 +229,15 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
                 </div>
                 {!isArbitrum ? (
                   <Button 
-                    className="bg-[#7B3FE4] hover:bg-[#6B2FD4] text-white"
+                    className="bg-primary hover:bg-primary/80 text-white"
                     onClick={handleNetworkSwitch}
                   >
                     Switch to Arbitrum
                   </Button>
                 ) : (
                   <Button 
-                    className="bg-[#7B3FE4] hover:bg-[#6B2FD4] text-white"
+                  variant="market"
+                    // className="bg-primary hover:bg-primary/80 text-white"
                     disabled={!stakingData?.earnedBalance || stakingData.earnedBalance <= 0n}
                     onClick={handleClaim}
                   >
@@ -255,14 +256,15 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
                 </div>
                 {!isArbitrum ? (
                   <Button 
-                    className="w-full bg-[#7B3FE4] hover:bg-[#6B2FD4] text-white"
+                    className="w-full bg-primary hover:bg-primary/80 text-white"
                     onClick={handleNetworkSwitch}
                   >
                     Switch to Arbitrum
                   </Button>
                 ) : (
                   <Button 
-                    className="w-full bg-[#7B3FE4] hover:bg-[#6B2FD4] text-white"
+                  variant="market"
+                    // className="w-full bg-primary hover:bg-primary/80 text-white"
                     disabled={!stakingData?.earnedBalance || stakingData.earnedBalance <= 0n}
                     onClick={handleClaim}
                   >
@@ -275,7 +277,7 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
         </CardContent>
         ) : (
           <CardContent>
-            Wallet not connected
+            <p className="text-white">Wallet not connected</p>
           </CardContent>
         )}
       </Card>

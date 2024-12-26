@@ -58,7 +58,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       {isOpen && (
         <motion.div
           animate={{
-            height: 200,
+            height: 240,
             width: 380,
             opacity: 1,
           }}
