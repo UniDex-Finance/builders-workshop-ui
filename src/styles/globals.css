@@ -81,6 +81,9 @@ a {
     --header-button-hover: #dbdbe7;
     --pane-hover: #f5f5fa;
     --position-cards-background: #f5f5fa;
+    --slider-range: var(--primary);
+    --slider-thumb: var(--primary);
+    --slider-track: var(--border);
   }
   .dark {
     --background: 240 13% 5%;
@@ -90,7 +93,7 @@ a {
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 240 5.9% 10%;
+    --primary: 253 84% 66%;
     --primary-foreground: 0 0% 98%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
@@ -136,6 +139,9 @@ a {
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --slider-range: var(--primary);
+    --slider-thumb: var(--primary);
+    --slider-track: var(--border);
   }
   .greenify {
     --background: 206 50% 5%;
@@ -190,6 +196,9 @@ a {
     --sidebar-accent-foreground: 143 20% 69%;
     --sidebar-border: 173 47% 16%;
     --sidebar-ring: 164 90% 45%;
+    --slider-range: var(--primary);
+    --slider-thumb: var(--primary);
+    --slider-track: var(--border);
   }
   .hotline {
     --background: 247 59% 11%;
@@ -244,6 +253,9 @@ a {
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 251 71% 19%;
     --sidebar-ring: 187 83% 20%;
+    --slider-range: var(--primary);
+    --slider-thumb: var(--primary);
+    --slider-track: var(--border);
   }
   .oled {
     --background: 0 0% 0%;
@@ -298,6 +310,9 @@ a {
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --slider-range: var(--primary);
+    --slider-thumb: var(--primary);
+    --slider-track: var(--border);
   }
 }
 
@@ -368,5 +383,32 @@ a {
   /* Hide scrollbar corner */
   .scrollbar-custom::-webkit-scrollbar-corner {
     background: transparent;
+  }
+
+  /* Slider styling */
+  [type='range'] {
+    &::-webkit-slider-thumb {
+      background-color: hsl(var(--slider-thumb));
+    }
+    
+    &::-webkit-slider-runnable-track {
+      background: linear-gradient(
+        to right,
+        hsl(var(--slider-range)) var(--range-progress, 0%),
+        hsl(var(--slider-track)) var(--range-progress, 0%)
+      );
+    }
+    
+    &::-moz-range-thumb {
+      background-color: hsl(var(--slider-thumb));
+    }
+    
+    &::-moz-range-track {
+      background: linear-gradient(
+        to right,
+        hsl(var(--slider-range)) var(--range-progress, 0%),
+        hsl(var(--slider-track)) var(--range-progress, 0%)
+      );
+    }
   }
 }
