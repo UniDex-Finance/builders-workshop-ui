@@ -36,7 +36,7 @@ export function Header() {
           {/* Desktop Logo */}
           <div className="hidden md:block">
             <Image
-              src="/static/images/logo-large.png"
+              src={theme === 'light' ? '/static/images/logo-large-dark.png' : '/static/images/logo-large.png'}
               alt="UniDex Logo"
               width={100}
               height={32}
@@ -46,7 +46,7 @@ export function Header() {
           {/* Mobile Logo */}
           <div className="block md:hidden">
             <Image
-              src="/static/images/logo-small.png"
+              src={theme === 'light' ? '/static/images/logo-small-dark.png' : '/static/images/logo-small.png'}
               alt="UniDex Logo"
               width={32}
               height={32}
