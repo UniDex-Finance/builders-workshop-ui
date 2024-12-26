@@ -119,7 +119,7 @@ export function StatsActions({ balances, isLoading }: Props) {
             <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
               <TooltipTrigger asChild>
                 <div 
-                  className="inline-block text-xl text-white border-b border-dashed cursor-pointer border-white/50"
+                  className="inline-block text-xl text-foreground border-b border-dashed cursor-pointer border-white/50"
                   onClick={() => setIsTooltipOpen(!isTooltipOpen)}
                 >
                   {totalApr === 0 ? "Loading..." : `${totalApr.toFixed(2)}%`}
@@ -135,7 +135,7 @@ export function StatsActions({ balances, isLoading }: Props) {
           <div className="text-sm text-[#A0AEC0]">Current Price</div>
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 bg-primary hover:bg-primary/80 rounded-full" />
-            <span className="text-xl text-white">
+            <span className="text-xl text-foreground">
               ${usdmData?.formattedUsdmPrice || '0.00'}
             </span>
           </div>

@@ -37,7 +37,7 @@ export function ReferralDashboard() {
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="space-y-4">
             <div className="flex items-center gap-2" />
-            <h1 className="text-2xl font-bold tracking-tight text-white">Referral Rebates</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Referral Rebates</h1>
             <p className="text-gray-400">
               By referring traders with your referral code, you can earn a percentage of their trading fees.{" "}
               <Link href="https://docs.unidex.exchange/Leverage-Trading/Referrals" className="text-indigo-400 hover:underline">
@@ -100,7 +100,7 @@ export function ReferralDashboard() {
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-white">Referral Codes</h2>
+              <h2 className="text-xl font-semibold text-foreground">Referral Codes</h2>
               <Button variant="secondary" onClick={handleCreateOpen}>Create</Button>
             </div>
             <p className="text-sm text-gray-400">

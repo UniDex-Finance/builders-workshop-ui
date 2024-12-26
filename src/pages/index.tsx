@@ -60,14 +60,14 @@ export default function TradingInterface() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header />
 
-      <main className="flex flex-col flex-1 md:flex-row md:gap-12">
+      <main className="flex flex-col flex-1 md:flex-row md:gap-12 space-x-2" >
         {/* PairHeader for mobile - shown above OrderCard */}
         <div className="w-full px-2 md:hidden">
           <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
         </div>
 
         {/* Left Side - Trading Panel */}
-        <aside className="w-full md:w-[320px] md:min-w-[320px] md:max-w-[320px] px-2 md:mt-[8px]">
+        <aside className="w-full md:w-[320px] md:min-w-[320px] md:max-w-[320px] px-2 md:mt-[6px]">
           <div className="mb-2">
             <OrderCard
               leverage={leverage}
