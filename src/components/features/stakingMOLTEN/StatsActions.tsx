@@ -9,13 +9,13 @@ export function StatsActions() {
       <div className="flex gap-4 flex-nowrap">
         <div className="space-y-1">
           <div className="text-[#A0AEC0] text-sm">Staking APR</div>
-          <div className="text-white text-[#00FF00] text-base md:text-xl">{stats?.apy.toFixed(2)}%</div>
+          <div className="text-foreground text-base md:text-xl">{stats?.apy.toFixed(2)}%</div>
         </div>
         <div className="space-y-1">
           <div className="text-[#A0AEC0] text-sm">Current Price</div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 md:w-5 md:h-5 bg-[#7B3FE4] rounded-full" />
-            <span className="text-base text-white md:text-xl">${stats?.price.toFixed(4) || '0.00'}</span>
+            <div className="w-4 h-4 md:w-5 md:h-5 bg-primary rounded-full" />
+            <span className="text-base text-foreground md:text-xl">${stats?.price.toFixed(4) || '0.00'}</span>
           </div>
         </div>
       </div>

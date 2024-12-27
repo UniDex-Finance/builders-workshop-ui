@@ -518,11 +518,11 @@ export function ActionsCard({
   }
 
   return (
-    <Card className="bg-[#16161D] border-[#1b1b22]">
+    <Card className="bg-[#16161D] border-[#1b1b22] text-white">
       <CardHeader className="pt-3 pb-0 sm:pt-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <CardTitle className="text-base sm:text-lg">
+            <CardTitle className="text-white sm:text-lg">
               {action === 'mint' ? (
                 <>Mint USD.m from<span className="mr-1" /></>
               ) : (
@@ -572,14 +572,14 @@ export function ActionsCard({
           <div className="flex gap-1 sm:gap-2">
             <Button 
               variant="ghost" 
-              className={`text-[#A0AEC0] hover:text-white text-sm px-2 sm:px-4 ${action === 'mint' ? 'bg-[#272734]' : ''}`}
+              className={`text-[#A0AEC0] text-sm px-2 sm:px-4 ${action === 'mint' ? 'bg-[#272734] hover:bg-[#373745]' : ''}`}
               onClick={() => setAction('mint')}
             >
               Mint
             </Button>
             <Button 
               variant="ghost" 
-              className={`text-[#A0AEC0] hover:text-white text-sm px-2 sm:px-4 ${action === 'burn' ? 'bg-[#272734]' : ''}`}
+              className={`text-[#A0AEC0] text-sm px-2 sm:px-4 ${action === 'burn' ? 'bg-[#272734] hover:bg-[#373745]' : ''}`}
               onClick={() => setAction('burn')}
             >
               Redeem
@@ -765,7 +765,7 @@ export function ActionsCard({
             onClick={handleTransaction}
             disabled={!canSubmit()}
           >
-            {getButtonText()}
+            {getButtonText()} aa
           </Button>
         </div>
       </CardContent>

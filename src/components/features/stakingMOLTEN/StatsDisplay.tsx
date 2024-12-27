@@ -8,13 +8,13 @@ export function StatsDisplay() {
     <div className="flex flex-wrap gap-4">
       <div className="space-y-1">
         <div className="text-[#A0AEC0] text-sm">Total Staked</div>
-        <div className="text-base text-white md:text-xl">
+        <div className="text-base text-foreground md:text-xl">
           {formatLargeNumber(stakingData?.formattedTotalStaked || '0')} <span className="hidden md:inline text-[#A0AEC0] text-sm">MOLTEN</span>
         </div>
       </div>
       <div className="space-y-1">
         <div className="text-[#A0AEC0] text-sm">% of Circ. Supply</div>
-        <div className="text-base text-white md:text-xl">{stakingData?.percentageStaked || '0'}%</div>
+        <div className="text-base text-foreground md:text-xl">{stakingData?.percentageStaked || '0'}%</div>
       </div>
     </div>
   )
