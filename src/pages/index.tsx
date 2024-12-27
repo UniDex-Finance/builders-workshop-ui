@@ -60,7 +60,7 @@ export default function TradingInterface() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header />
 
-      <main className="flex flex-col flex-1 md:flex-row md:gap-12 space-x-2" >
+      <main className="flex flex-col flex-1 md:flex-row md:gap-12 md:space-x-2">
         {/* PairHeader for mobile - shown above OrderCard */}
         <div className="w-full px-2 md:hidden">
           <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
@@ -79,7 +79,7 @@ export default function TradingInterface() {
         </aside>
 
         {/* Right Side - Chart and Positions Container */}
-        <div className="flex flex-col flex-1 min-w-0 px-2 overflow-x-auto md:pl-0">
+        <div className="flex flex-col flex-1 min-w-0 px-2 overflow-x-auto md:pl-0 space-y-1">
           <div className="hidden md:block">
             <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
           </div>
