@@ -39,15 +39,15 @@ export function StatsActions() {
       <div className="flex flex-wrap gap-8">
         <div className="space-y-1">
           <div className="text-sm text-[#A0AEC0]">Staking APR</div>
-          <div className="text-xl text-foreground">
+          <div className="text-xl text-white">
             {stakingApr ? `${stakingApr.toFixed(2)}` : '0.00'}%
           </div>
         </div>
         <div className="space-y-1">
           <div className="text-sm text-[#A0AEC0]">Current Price</div>
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 bg-primary hover:bg-primary/80 rounded-full" />
-            <span className="text-xl text-foreground">${usdmData?.formattedUsdmPrice || '0.00'}</span>
+            <div className="w-5 h-5 bg-[#7B3FE4] rounded-full" />
+            <span className="text-xl text-white">${usdmData?.formattedUsdmPrice || '0.00'}</span>
           </div>
         </div>
       </div>

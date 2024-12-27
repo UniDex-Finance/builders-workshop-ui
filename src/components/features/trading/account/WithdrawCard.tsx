@@ -267,9 +267,7 @@ export function WithdrawCard({ onClose, balances, onSuccess }: WithdrawCardProps
           </div>
 
           <Button 
-            // className="w-full h-[52px] bg-[#7142cf] hover:bg-[#7142cf]/80 text-white"
-            variant="market"
-              className="w-full mt-4 h-[52px]"
+            className="w-full h-[52px] bg-[#7142cf] hover:bg-[#7142cf]/80 text-white"
             disabled={
               !amount || 
               parseFloat(amount) <= 0 || 

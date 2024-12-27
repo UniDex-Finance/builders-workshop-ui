@@ -76,7 +76,7 @@ export function UsdmPositionsTable() {
 
   return (
     <TooltipProvider>
-      <Card className="bg-[#16161D] border-[#1b1b22] text-white">
+      <Card className="bg-[#16161D] border-[#1b1b22]">
         <CardHeader className="py-3">
           <CardTitle className="text-base">Active Positions</CardTitle>
         </CardHeader>

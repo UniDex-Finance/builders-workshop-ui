@@ -201,8 +201,8 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
                 </span>
               )}
             </div>
-            <span className="text-right text-muted-foreground mr-10">Price</span>
-            <span className="text-right text-muted-foreground mr-4">Time</span>
+            <span className="text-right text-muted-foreground">Price</span>
+            <span className="text-right text-muted-foreground">Time</span>
           </div>
         </div>
       )}
@@ -223,14 +223,14 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
                     }}
                   />
                   
-                  <div className="relative grid items-center grid-cols-[100px_70px_auto] text-xs">
+                  <div className="relative grid items-center grid-cols-[120px_70px_auto] text-xs">
                     <div className="flex items-center gap-1">
                       {getSourceIcon(trade.id)}
                       <span className="text-muted-foreground group-hover:text-foreground">
                         {formatUSD(trade.sizeUSD)}
                       </span>
                     </div>
-                    <span className={`text-right mr-2 ${trade.side === 'LONG' ? 'text-long' : 'text-short'}`}>
+                    <span className={`text-right ${trade.side === 'LONG' ? 'text-long' : 'text-short'}`}>
                       {formatUSD(trade.price)}
                     </span>
                     <span className="text-right text-muted-foreground group-hover:text-foreground">

@@ -91,7 +91,7 @@ export function TradeDetails({
                     width={16}
                     height={16}
                   />
-                  <span className="text-sm text-foreground">UniDex</span>
+                  <span className="text-sm text-primary">UniDex</span>
                 </div>
                 <span className="text-[#A0AEC0]">+</span>
                 <div className="flex items-center gap-1">
@@ -101,7 +101,7 @@ export function TradeDetails({
                     width={16}
                     height={16}
                   />
-                  <span className="text-sm text-foreground">gTrade</span>
+                  <span className="text-sm text-primary">gTrade</span>
                 </div>
               </div>
             </HoverCard.Trigger>
@@ -134,7 +134,7 @@ export function TradeDetails({
               width={16}
               height={16}
             />
-            <span className="text-sm text-foreground">
+            <span className="text-sm text-primary">
               UniDex
             </span>
           </div>

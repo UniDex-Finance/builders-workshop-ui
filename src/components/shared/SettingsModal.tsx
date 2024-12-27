@@ -19,7 +19,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   // Handle initial theme setup after mount
   useEffect(() => {
     setMounted(true);
-    // console.log('Current theme:', theme);
+    console.log('Current theme:', theme);
     switch (theme) {
       case 'dark':
         setSelected(1);
@@ -58,7 +58,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       {isOpen && (
         <motion.div
           animate={{
-            height: 240,
+            height: 320,
             width: 380,
             opacity: 1,
           }}

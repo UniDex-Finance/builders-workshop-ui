@@ -28,7 +28,7 @@ export function StatsBar() {
       <div className="space-y-1">
         <div className="text-sm text-[#A0AEC0]">Price</div>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 bg-primary rounded-full" />
+          <div className="w-5 h-5 bg-[#7B3FE4] rounded-full" />
           <span className="text-xl text-white">${stats?.price.toFixed(4) || '0.00'}</span>
         </div>
       </div>

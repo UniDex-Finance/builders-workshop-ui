@@ -1,12 +1,10 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import Image from "next/image";
-import { useTheme } from "next-themes";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownSection, DropdownItem } from "@nextui-org/react";
 import { Menu, ChevronDown, Wallet, Coins, DollarSign, PiggyBank, Users2, MessageCircle, Send, Twitter, X, Settings } from "lucide-react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-
 import { 
   faQuestionCircle, 
   faBook, 
@@ -27,7 +25,6 @@ import { useState } from "react";
 
 export function Header() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const { theme, setTheme } = useTheme()
 
   return (
     <header className="flex items-center px-4 pt-2 mb-1 md:px-6 h-14 md:pt-3">
@@ -36,7 +33,7 @@ export function Header() {
           {/* Desktop Logo */}
           <div className="hidden md:block">
             <Image
-              src={theme === 'light' ? '/static/images/logo-large-dark.png' : '/static/images/logo-large.png'}
+              src="/static/images/logo-large.png"
               alt="UniDex Logo"
               width={100}
               height={32}
@@ -46,7 +43,7 @@ export function Header() {
           {/* Mobile Logo */}
           <div className="block md:hidden">
             <Image
-              src={theme === 'light' ? '/static/images/logo-small-dark.png' : '/static/images/logo-small.png'}
+              src="/static/images/logo-small.png"
               alt="UniDex Logo"
               width={32}
               height={32}
@@ -516,7 +513,7 @@ export function Header() {
           className="h-9 w-9 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
           onClick={() => setIsSettingsOpen(!isSettingsOpen)}
         >
-          {theme === 'light' ? <Settings className="w-5 h-5" stroke="black" /> : <Settings className="w-5 h-5" />}
+          <Settings className="w-5 h-5 text-white" />
         </Button>
 
         <SettingsModal 

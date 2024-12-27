@@ -108,7 +108,6 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
             <CardHeader>
                 <CardTitle className="text-white">Manage Position</CardTitle>
             </CardHeader>
-            {walletClient?.account ? (
             <CardContent className="space-y-6">
                 {/* Desktop layout */}
                 <div className="hidden gap-4 md:flex">
@@ -196,8 +195,7 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
                         </TooltipProvider>
                     </div>
                     <Button 
-                    variant="market"
-                        className="flex items-center gap-2"
+                        className="bg-[#7B3FE4] hover:bg-[#6B2FD4] text-white flex items-center gap-2"
                         onClick={() => window.open('https://app.sablier.com/airdrops/?t=eligible', '_blank')}
                     >
                         Claim Rewards
@@ -221,8 +219,7 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
                         </TooltipProvider>
                     </div>
                     <Button 
-                    variant="market"
-                        className="w-full flex items-center justify-center gap-2"
+                        className="w-full bg-[#7B3FE4] hover:bg-[#6B2FD4] text-white flex items-center justify-center gap-2"
                         onClick={() => window.open('https://app.sablier.com/airdrops/?t=eligible', '_blank')}
                     >
                         Claim Rewards
@@ -230,11 +227,6 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
                     </Button>
                 </div>
             </CardContent>
-            ) : (
-          <CardContent>
-            <CardTitle className="text-white">Wallet not connected</CardTitle>
-          </CardContent>
-        )}
         </Card>
     )
 }
