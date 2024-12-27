@@ -41,7 +41,7 @@ export default function TradingInterface() {
         setUsersnapApi(api);
       });
     }
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
 
   useEffect(() => {
     const basePair = selectedPair.split("/")[0].toLowerCase();
