@@ -41,7 +41,7 @@ export default function TradingInterface() {
         setUsersnapApi(api);
       });
     }
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
 
   useEffect(() => {
     const basePair = selectedPair.split("/")[0].toLowerCase();
@@ -79,7 +79,7 @@ export default function TradingInterface() {
         </aside>
 
         {/* Right Side - Chart and Positions Container */}
-        <div className="flex flex-col flex-1 min-w-0 px-2 overflow-x-auto md:pl-0">
+        <div className="flex flex-col flex-1 min-w-0 px-2 space-y-1 overflow-x-auto md:pl-0">
           <div className="hidden md:block">
             <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
           </div>

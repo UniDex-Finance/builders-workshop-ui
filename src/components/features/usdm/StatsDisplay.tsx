@@ -16,13 +16,13 @@ export function StatsDisplay({ balances, isLoading }: Props) {
     <div className="flex flex-wrap gap-8">
       <div className="space-y-1">
         <div className="text-sm text-[#A0AEC0]">USD.m TVL</div>
-        <div className="text-xl text-white">
+        <div className="text-xl text-foreground">
           ${formatLargeNumber(usdmData?.formattedVaultBalance || '0')} <span className="text-[#A0AEC0] text-sm">USD</span>
         </div>
       </div>
       <div className="space-y-1">
         <div className="text-sm text-[#A0AEC0]">Total Vault Return</div>
-        <div className="text-xl text-white">
+        <div className="text-xl text-foreground">
           ${formatLargeNumber(cumulativeReturn.toFixed(2))} <span className="text-[#A0AEC0] text-sm">USD</span>
         </div>
       </div>
