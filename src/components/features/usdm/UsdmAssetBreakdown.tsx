@@ -57,7 +57,7 @@ export function UsdmAssetBreakdown() {
                 side="top"
                 align="center"
                 sideOffset={5}
-                className="z-50 w-80 p-3 rounded-md shadow-lg border border-border/40 bg-[var(--position-cards-background)]/80 backdrop-blur-md text-[13px]"
+                className="z-50 w-80 p-3 rounded-md shadow-lg border border-border/40 bg-[var(--position-cards-background)]/95 backdrop-blur-md text-[13px] text-foreground/90"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between font-medium">
@@ -105,7 +105,27 @@ export function UsdmAssetBreakdown() {
                   }}
                 />
                 <div className="flex items-center gap-1">
-                  <span className="font-medium">{assetType.type}</span>
+                  <HoverCard.Root openDelay={0} closeDelay={0}>
+                    <HoverCard.Trigger asChild>
+                      <span className="font-medium cursor-help border-b border-dashed border-foreground/20 hover:border-foreground/40 transition-colors">{assetType.type}</span>
+                    </HoverCard.Trigger>
+                    <HoverCard.Portal>
+                      <HoverCard.Content
+                        side="top"
+                        align="center"
+                        sideOffset={5}
+                        className="z-50 w-80 p-3 rounded-md shadow-lg border border-border/40 bg-[var(--position-cards-background)]/95 backdrop-blur-md text-[13px] text-foreground/90"
+                      >
+                        <div className="text-muted-foreground">
+                          {assetType.type === "Stablecoins" 
+                            ? "Assets natively deposited into the market making vault"
+                            : "Idle liquidity is rehypothecated into various protocols to earn extra yield for vault depositors"
+                          }
+                        </div>
+                        <HoverCard.Arrow className="fill-[var(--position-cards-background)]/80" />
+                      </HoverCard.Content>
+                    </HoverCard.Portal>
+                  </HoverCard.Root>
                   {assetType.type === "Rehypothecation" && (
                     <Sparkles 
                       className="w-4 h-4 text-yellow-500 animate-twinkle" 
