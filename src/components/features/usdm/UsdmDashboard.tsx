@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { UsdmPositionsTable } from "./UsdmPositionsTable"
 import { UsdmAssetBreakdown } from "./UsdmAssetBreakdown"
+import { UsdmPerformanceChart } from "./UsdmPerformanceChart"
 
 export function UsdmDashboard() {
   return (
@@ -15,6 +16,12 @@ export function UsdmDashboard() {
             Asset Type Breakdown
           </TabsTrigger>
           <TabsTrigger 
+            value="performance" 
+            className="flex-1 data-[state=active]:bg-[#1f1f29] rounded-none"
+          >
+            USD.m Performance
+          </TabsTrigger>
+          <TabsTrigger 
             value="positions" 
             className="flex-1 data-[state=active]:bg-[#1f1f29] rounded-none"
           >
@@ -24,6 +31,10 @@ export function UsdmDashboard() {
 
         <TabsContent value="assets" className="m-0">
           <UsdmAssetBreakdown />
+        </TabsContent>
+
+        <TabsContent value="performance" className="m-0">
+          <UsdmPerformanceChart />
         </TabsContent>
 
         <TabsContent value="positions" className="m-0">
