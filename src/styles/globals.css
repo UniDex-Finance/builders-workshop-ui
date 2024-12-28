@@ -4,6 +4,50 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@layer utilities {
+  .animate-twinkle {
+    animation: twinkle 2s ease-in-out infinite;
+  }
+
+  .rehypothecation-bar {
+    background-size: 200% 200% !important;
+    animation: gradient-shift 8s ease infinite;
+  }
+
+  .rehypothecation-dot {
+    background-size: 200% 200% !important;
+    animation: gradient-shift 8s ease infinite;
+  }
+
+  .rehypothecation-text {
+    background-size: 200% auto !important;
+    animation: gradient-shift 8s ease infinite;
+  }
+}
+
 html,
 body {
   padding: 0;
@@ -56,6 +100,8 @@ a {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+    --rehypothecation-gradient: linear-gradient(135deg, #60a5fa 0%, #8062f1 50%, #5b21b6 100%);
+    --rehypothecation-hover: linear-gradient(135deg, #3b82f6 0%, #7358d9 50%, #4c1d95 100%);
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -142,6 +188,8 @@ a {
     --slider-range: var(--primary);
     --slider-thumb: var(--primary);
     --slider-track: var(--border);
+    --rehypothecation-gradient: linear-gradient(135deg, #60a5fa 0%, #8062f1 50%, #5b21b6 100%);
+    --rehypothecation-hover: linear-gradient(135deg, #3b82f6 0%, #7358d9 50%, #4c1d95 100%);
   }
   .greenify {
     --background: 206 50% 5%;
@@ -199,6 +247,8 @@ a {
     --slider-range: var(--primary);
     --slider-thumb: var(--primary);
     --slider-track: var(--border);
+    --rehypothecation-gradient: linear-gradient(135deg, #60a5fa 0%, #8062f1 50%, #5b21b6 100%);
+    --rehypothecation-hover: linear-gradient(135deg, #3b82f6 0%, #7358d9 50%, #4c1d95 100%);
   }
   .hotline {
     --background: 247 59% 11%;
@@ -256,6 +306,8 @@ a {
     --slider-range: var(--primary);
     --slider-thumb: var(--primary);
     --slider-track: var(--border);
+    --rehypothecation-gradient: linear-gradient(135deg, #93c5fd 0%, #a78bfa 50%, #7c3aed 100%);
+    --rehypothecation-hover: linear-gradient(135deg, #60a5fa 0%, #8b5cf6 50%, #6d28d9 100%);
   }
   .oled {
     --background: 0 0% 0%;
@@ -313,6 +365,8 @@ a {
     --slider-range: var(--primary);
     --slider-thumb: var(--primary);
     --slider-track: var(--border);
+    --rehypothecation-gradient: linear-gradient(135deg, #60a5fa 0%, #8062f1 50%, #5b21b6 100%);
+    --rehypothecation-hover: linear-gradient(135deg, #3b82f6 0%, #7358d9 50%, #4c1d95 100%);
   }
 }
 

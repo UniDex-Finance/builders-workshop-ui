@@ -107,7 +107,7 @@ export function useVaultBreakdown() {
               percentage: aavePercentage
             }
           ],
-          color: "var(--color-long-dark)"
+          color: "transparent"
         }
       ]
     }

@@ -1,6 +1,8 @@
 import { CardContent } from "@/components/ui/card"
 import * as HoverCard from '@radix-ui/react-hover-card'
 import { useVaultBreakdown } from "@/hooks/use-vault-breakdown"
+import { ExternalLink, Sparkles } from "lucide-react"
+import Image from "next/image"
 
 export function UsdmAssetBreakdown() {
   const { data: assetData, isLoading } = useVaultBreakdown()
@@ -17,7 +19,7 @@ export function UsdmAssetBreakdown() {
   if (isLoading) {
     return (
       <CardContent className="py-6">
-        <div className="text-muted-foreground text-center">Loading asset breakdown...</div>
+        <div className="text-center text-muted-foreground">Loading asset breakdown...</div>
       </CardContent>
     )
   }
@@ -25,7 +27,7 @@ export function UsdmAssetBreakdown() {
   if (!assetData) {
     return (
       <CardContent className="py-6">
-        <div className="text-muted-foreground text-center">No asset data available</div>
+        <div className="text-center text-muted-foreground">No asset data available</div>
       </CardContent>
     )
   }
@@ -38,10 +40,14 @@ export function UsdmAssetBreakdown() {
           <HoverCard.Root key={assetType.type} openDelay={0} closeDelay={0}>
             <HoverCard.Trigger asChild>
               <div
-                className="h-full transition-opacity cursor-help hover:opacity-80"
+                className={`h-full transition-all duration-300 cursor-help hover:opacity-80 ${
+                  assetType.type === "Rehypothecation" ? "rehypothecation-bar" : ""
+                }`}
                 style={{
                   width: `${assetType.percentage}%`,
-                  backgroundColor: assetType.color,
+                  background: assetType.type === "Rehypothecation" 
+                    ? "var(--rehypothecation-gradient)"
+                    : assetType.color,
                   borderRight: index < assetData.assets.length - 1 ? '2px solid #16161D' : 'none'
                 }}
               />
@@ -89,10 +95,26 @@ export function UsdmAssetBreakdown() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div 
-                  className="w-2 h-2 rounded-full" 
-                  style={{ backgroundColor: assetType.color }}
+                  className={`w-2 h-2 rounded-full ${
+                    assetType.type === "Rehypothecation" ? "rehypothecation-dot" : ""
+                  }`}
+                  style={{ 
+                    background: assetType.type === "Rehypothecation"
+                      ? "var(--rehypothecation-gradient)"
+                      : assetType.color
+                  }}
                 />
-                <span className="font-medium">{assetType.type}</span>
+                <div className="flex items-center gap-1">
+                  <span className="font-medium">{assetType.type}</span>
+                  {assetType.type === "Rehypothecation" && (
+                    <Sparkles 
+                      className="w-4 h-4 text-yellow-500 animate-twinkle" 
+                      style={{ 
+                        filter: "drop-shadow(0 0 2px rgba(234, 179, 8, 0.3))"
+                      }}
+                    />
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-4">
                 <span className="font-medium text-right">{formatValue(assetType.totalValue)}</span>
@@ -105,7 +127,27 @@ export function UsdmAssetBreakdown() {
               {assetType.assets.map((asset) => (
                 <div key={asset.name} className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">{asset.name}</span>
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      {asset.name.includes("Circle") ? "Circle: " : "AaveV3: "}
+                      <Image
+                        src={asset.name.includes("Circle") ? "/static/images/commons/usdc.svg" : "/static/images/commons/ausdc.webp"}
+                        alt={asset.name.includes("Circle") ? "USDC" : "aUSDC"}
+                        width={16}
+                        height={16}
+                        className="inline-block relative top-[-1px]"
+                      />
+                      {asset.name.includes("Circle") ? "USDC" : "aUSDC"}
+                      <a
+                        href={asset.name === "Circle: USDC" 
+                          ? "https://arbiscan.io/token/0xaf88d065e77c8cc2239327c5edb3a432268e5831"
+                          : "https://arbiscan.io/address/0x724dc807b04555b71ed48a6896b6f41593b8c637"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center opacity-50 hover:opacity-100 transition-opacity"
+                      >
+                        <ExternalLink className="w-[10px] h-[10px] ml-0.5 relative top-[-1px]" />
+                      </a>
+                    </span>
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="text-right">{formatValue(asset.value)}</span>
