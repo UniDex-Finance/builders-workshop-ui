@@ -7,6 +7,7 @@ import { useWalletClient, useAccount, useSwitchChain } from 'wagmi'
 import { parseUnits } from 'viem'
 import { ArrowUpRight } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { ConnectButton } from "@rainbow-me/rainbowkit"
 
 interface ActionsCardProps {
   isStaking: boolean
@@ -16,11 +17,12 @@ interface ActionsCardProps {
 export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
     const [amount, setAmount] = useState<string>("")
     const { data: walletClient } = useWalletClient()
-    const { chain } = useAccount()
+    const { chain, isConnected } = useAccount()
     const { switchChain } = useSwitchChain()
     const { stakingData, claim, stake, withdraw, approve, refetch } = useUsdmStaking()
 
     const handleMax = () => {
+        if (!isConnected) return
         if (stakingData) {
             if (isStaking) {
                 setAmount(stakingData.formattedUsdmBalance)
@@ -37,21 +39,6 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
     const handleNetworkSwitch = async () => {
         if (switchChain) {
             await switchChain({ chainId: 42161 })
-        }
-    }
-
-    const handleClaim = async () => {
-        if (!walletClient) return
-        if (!isOnArbitrum()) {
-            return handleNetworkSwitch()
-        }
-        try {
-            const request = await claim()
-            if (request) {
-                await walletClient.writeContract(request)
-            }
-        } catch (error) {
-            console.error('Error claiming rewards:', error)
         }
     }
 
@@ -121,11 +108,15 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
     }
 
     const canSubmit = () => {
+        if (!isConnected) return false
         if (!amount || amount === '0') return false
         return isStaking ? canStake() : canUnstake()
     }
 
     const getButtonText = () => {
+        if (!isConnected) {
+            return 'Connect Wallet'
+        }
         if (!isOnArbitrum()) {
             return 'Switch to Arbitrum'
         }
@@ -143,6 +134,33 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
             }
             return 'Unstake USD.m'
         }
+    }
+
+    const getButtonAction = () => {
+        if (!isConnected) {
+            return (
+                <ConnectButton.Custom>
+                    {({ openConnectModal }) => (
+                        <Button
+                            className="w-full h-[42px] bg-[#7C5CFF] hover:bg-[#6B4FE0] text-sm text-white"
+                            onClick={openConnectModal}
+                        >
+                            Connect Wallet
+                        </Button>
+                    )}
+                </ConnectButton.Custom>
+            )
+        }
+
+        return (
+            <Button 
+                className="w-full h-[42px] bg-[#7C5CFF] hover:bg-[#6B4FE0] text-sm text-white"
+                onClick={handleAction}
+                disabled={!isOnArbitrum() ? false : !canSubmit()}
+            >
+                {getButtonText()}
+            </Button>
+        )
     }
 
     return (
@@ -168,117 +186,101 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
                     </div>
                 </div>
             </CardHeader>
-            {walletClient?.account ? (
-                <CardContent className="pt-4 space-y-6">
-                    {/* Desktop layout */}
-                    <div className="hidden gap-4 md:flex">
-                        <div className="relative flex-1">
-                            <Input
-                                type="number"
-                                placeholder="Enter amount"
-                                value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
-                                className="w-full h-[42px] bg-[#272734] border-[#373745] text-white placeholder:text-[#A0AEC0] rounded-md"
-                            />
-                            <Button
-                                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 bg-[#373745] hover:bg-[#474755] text-white text-xs px-2"
-                                onClick={handleMax}
-                            >
-                                MAX
-                            </Button>
-                        </div>
-                        <Button 
-                            className="w-[180px] h-[42px] bg-[#7C5CFF] hover:bg-[#6B4FE0] text-sm text-white"
-                            onClick={handleAction}
-                            disabled={!isOnArbitrum() ? false : !canSubmit()}
+            <CardContent className="pt-4 space-y-6">
+                {/* Desktop layout */}
+                <div className="hidden gap-4 md:flex">
+                    <div className="relative flex-1">
+                        <Input
+                            type="number"
+                            placeholder="Enter amount"
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
+                            className="w-full h-[42px] bg-[#272734] border-[#373745] text-white placeholder:text-[#A0AEC0] rounded-md"
+                        />
+                        <Button
+                            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 bg-[#373745] hover:bg-[#474755] text-white text-xs px-2"
+                            onClick={handleMax}
                         >
-                            {getButtonText()}
+                            MAX
                         </Button>
                     </div>
+                    <div className="w-[180px]">
+                        {getButtonAction()}
+                    </div>
+                </div>
 
-                    {/* Mobile layout */}
-                    <div className="flex flex-col gap-4 md:hidden">
-                        <div className="relative w-full">
-                            <Input
-                                type="number"
-                                placeholder="Enter amount"
-                                value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
-                                className="w-full h-[42px] bg-[#272734] border-[#373745] text-white placeholder:text-[#A0AEC0] pr-16 rounded-md"
-                            />
-                            <Button
-                                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 bg-[#373745] hover:bg-[#474755] text-white text-xs px-2"
-                                onClick={handleMax}
-                            >
-                                MAX
-                            </Button>
-                        </div>
-                        <Button 
-                            className="w-full h-[42px] bg-[#7C5CFF] hover:bg-[#6B4FE0] text-sm text-white"
-                            onClick={handleAction}
-                            disabled={!isOnArbitrum() ? false : !canSubmit()}
+                {/* Mobile layout */}
+                <div className="flex flex-col gap-4 md:hidden">
+                    <div className="relative w-full">
+                        <Input
+                            type="number"
+                            placeholder="Enter amount"
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
+                            className="w-full h-[42px] bg-[#272734] border-[#373745] text-white placeholder:text-[#A0AEC0] pr-16 rounded-md"
+                        />
+                        <Button
+                            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 bg-[#373745] hover:bg-[#474755] text-white text-xs px-2"
+                            onClick={handleMax}
                         >
-                            {getButtonText()}
+                            MAX
                         </Button>
                     </div>
+                    {getButtonAction()}
+                </div>
 
-                    <div className="border-t border-[#272734]" />
-                    
-                    {/* Desktop rewards layout */}
-                    <div className="hidden md:flex items-center justify-between p-4 bg-[#272734] rounded-lg">
-                        <div className="space-y-1">
-                            <div className="text-sm text-white">Claim Earned Staking Rewards</div>
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger className="text-[#A0AEC0] hover:text-[#B0BED0] text-xs">
-                                        What is Sablier?
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p className="max-w-xs">Every month, you can claim your staking rewards through our partner Sablier and vest your esMOLTEN into MOLTEN.</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                        </div>
-                        <Button 
-                            variant="market"
-                            className="flex items-center gap-2"
-                            onClick={() => window.open('https://app.sablier.com/airdrops/?t=eligible', '_blank')}
-                        >
-                            Claim Rewards
-                            <ArrowUpRight className="w-4 h-4" />
-                        </Button>
+                <div className="border-t border-[#272734]" />
+                
+                {/* Desktop rewards layout */}
+                <div className="hidden md:flex items-center justify-between p-4 bg-[#272734] rounded-lg">
+                    <div className="space-y-1">
+                        <div className="text-sm text-white">Claim Earned Staking Rewards</div>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger className="text-[#A0AEC0] hover:text-[#B0BED0] text-xs">
+                                    What is Sablier?
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p className="max-w-xs">Every month, you can claim your staking rewards through our partner Sablier and vest your esMOLTEN into MOLTEN.</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                     </div>
+                    <Button 
+                        variant="market"
+                        className="flex items-center gap-2"
+                        onClick={() => window.open('https://app.sablier.com/airdrops/?t=eligible', '_blank')}
+                    >
+                        Claim Rewards
+                        <ArrowUpRight className="w-4 h-4" />
+                    </Button>
+                </div>
 
-                    {/* Mobile rewards layout */}
-                    <div className="flex md:hidden flex-col gap-4 p-4 bg-[#272734] rounded-lg">
-                        <div className="space-y-1">
-                            <div className="text-sm text-white">Claim Earned Staking Rewards</div>
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger className="text-[#A0AEC0] hover:text-[#B0BED0] text-xs">
-                                        What is Sablier?
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p className="max-w-xs">Every month, you can claim your staking rewards through our partner Sablier and vest your esMOLTEN into MOLTEN.</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                        </div>
-                        <Button 
-                            variant="market"
-                            className="flex items-center justify-center w-full gap-2"
-                            onClick={() => window.open('https://app.sablier.com/airdrops/?t=eligible', '_blank')}
-                        >
-                            Claim Rewards
-                            <ArrowUpRight className="w-4 h-4" />
-                        </Button>
+                {/* Mobile rewards layout */}
+                <div className="flex md:hidden flex-col gap-4 p-4 bg-[#272734] rounded-lg">
+                    <div className="space-y-1">
+                        <div className="text-sm text-white">Claim Earned Staking Rewards</div>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger className="text-[#A0AEC0] hover:text-[#B0BED0] text-xs">
+                                    What is Sablier?
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p className="max-w-xs">Every month, you can claim your staking rewards through our partner Sablier and vest your esMOLTEN into MOLTEN.</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                     </div>
-                </CardContent>
-            ) : (
-                <CardContent>
-                    <CardTitle className="text-white">Wallet not connected</CardTitle>
-                </CardContent>
-            )}
+                    <Button 
+                        variant="market"
+                        className="flex items-center justify-center w-full gap-2"
+                        onClick={() => window.open('https://app.sablier.com/airdrops/?t=eligible', '_blank')}
+                    >
+                        Claim Rewards
+                        <ArrowUpRight className="w-4 h-4" />
+                    </Button>
+                </div>
+            </CardContent>
         </Card>
     )
 }
