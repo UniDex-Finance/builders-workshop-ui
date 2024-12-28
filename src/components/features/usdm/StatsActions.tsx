@@ -36,9 +36,34 @@ export function StatsActions({ balances, isLoading }: Props) {
   const { usdmData } = useUsdm()
   const [totalApr, setTotalApr] = useState<number>(0)
   const [esMoltenApr, setEsMoltenApr] = useState<number>(0)
+  const [rehypothecationApr, setRehypothecationApr] = useState<number>(0)
   const { vaultApr } = useDuneData(usdmData?.formattedVaultBalance || '0')
   const isMobile = useMediaQuery("(max-width: 768px)")
   const [isTooltipOpen, setIsTooltipOpen] = useState(false)
+
+  useEffect(() => {
+    const fetchRehypothecationApr = async () => {
+      try {
+        const response = await fetch('https://yields.llama.fi/chart/d9fa8e14-0447-4207-9ae8-7810199dfa1f')
+        if (!response.ok) {
+          throw new Error('Failed to fetch rehypothecation APR')
+        }
+        const data = await response.json()
+        if (data.status === 'success' && data.data.length > 0) {
+          // Get the latest APY value
+          const latestData = data.data.sort((a: any, b: any) => 
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          )[0]
+          setRehypothecationApr(latestData.apy)
+        }
+      } catch (error) {
+        console.error('Error fetching rehypothecation APR:', error)
+        setRehypothecationApr(0)
+      }
+    }
+
+    fetchRehypothecationApr()
+  }, [])
 
   useEffect(() => {
     const fetchMoltenPrice = async () => {
@@ -59,17 +84,17 @@ export function StatsActions({ balances, isLoading }: Props) {
         const calculatedEsMoltenApr = tvl > 0 ? (yearlyEsMoltenUsd / tvl) * 100 : 0
         setEsMoltenApr(calculatedEsMoltenApr)
 
-        // Calculate total APR
-        setTotalApr(vaultApr + calculatedEsMoltenApr)
+        // Calculate total APR including rehypothecation
+        setTotalApr(vaultApr + calculatedEsMoltenApr + rehypothecationApr)
       } catch (error) {
         console.error('Error fetching MOLTEN price:', error)
         setEsMoltenApr(0)
-        setTotalApr(vaultApr)
+        setTotalApr(vaultApr + rehypothecationApr)
       }
     }
 
     fetchMoltenPrice()
-  }, [vaultApr, usdmData?.formattedVaultBalance])
+  }, [vaultApr, usdmData?.formattedVaultBalance, rehypothecationApr])
   
   const aprContent = (
     <div className="space-y-2">
@@ -80,8 +105,21 @@ export function StatsActions({ balances, isLoading }: Props) {
           <span className="font-medium text-white">{vaultApr.toFixed(2)}%</span>
         </div>
         <p className="text-sm text-[#A0AEC0]">
-          Earn yield from trading fees, funding rates, and traders Pnl collected by the protocol. 
-          APR is calculated based on the last 7 days of activity.
+          Yield earned from market making preformance and 50% of trading fees collected by the protocol in the past 7 days annualized.
+        </p>
+      </div>
+
+      {/* Divider */}
+      <div className="my-3 border-t border-[#404040]" />
+
+      {/* Rehypothecation APR Section */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-[#A0AEC0] font-medium">Rehypothecation (Aave V3)</span>
+          <span className="font-medium text-white">{rehypothecationApr.toFixed(2)}%</span>
+        </div>
+        <p className="text-sm text-[#A0AEC0]">
+          Idle funds in the vault earn yield from the Aave V3 lending vault on Arbitrum.
         </p>
       </div>
 
@@ -95,8 +133,7 @@ export function StatsActions({ balances, isLoading }: Props) {
           <span className="font-medium text-white">{esMoltenApr.toFixed(2)}%</span>
         </div>
         <p className="text-sm text-[#A0AEC0]">
-          20,000 esMOLTEN tokens are allocated for rewards this month those who stake USD.m on the staking page. 
-          esMOLTEN can be vested to MOLTEN tokens over 12 months.
+          20,000 esMOLTEN tokens are allocated for rewards this month those who stake USD.m.
         </p>
       </div>
 
@@ -119,7 +156,7 @@ export function StatsActions({ balances, isLoading }: Props) {
             <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
               <TooltipTrigger asChild>
                 <div 
-                  className="inline-block text-xl text-foreground border-b border-dashed cursor-pointer border-white/50"
+                  className="inline-block text-xl border-b border-dashed cursor-pointer text-foreground border-white/50"
                   onClick={() => setIsTooltipOpen(!isTooltipOpen)}
                 >
                   {totalApr === 0 ? "Loading..." : `${totalApr.toFixed(2)}%`}
@@ -134,7 +171,7 @@ export function StatsActions({ balances, isLoading }: Props) {
         <div className="space-y-1">
           <div className="text-sm text-[#A0AEC0]">Current Price</div>
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 bg-primary hover:bg-primary/80 rounded-full" />
+            <div className="w-5 h-5 rounded-full bg-primary hover:bg-primary/80" />
             <span className="text-xl text-foreground">
               ${usdmData?.formattedUsdmPrice || '0.00'}
             </span>
