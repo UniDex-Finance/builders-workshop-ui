@@ -765,7 +765,7 @@ export function ActionsCard({
             onClick={handleTransaction}
             disabled={!canSubmit()}
           >
-            {getButtonText()} aa
+            {getButtonText()}
           </Button>
         </div>
       </CardContent>
