@@ -80,8 +80,19 @@ export function PositionCard({ balances, isLoading }: Props) {
           <div className="flex justify-between text-xs md:text-sm">
             <span className="text-[#A0AEC0]">Stake USD.m for Rewards</span>
             <Link href="/usdm-staking" className="text-white hover:opacity-80">
-              Stake USD.m →
+              Stake {Number(usdmData?.displayUsdmBalance || 0).toFixed(2)} USD.m
             </Link>
+          </div>
+          <div className="flex justify-between text-xs md:text-sm">
+            <span className="text-[#A0AEC0]">External Dashboards</span>
+            <a 
+              href="https://dune.com/supakawaiidesu/unidex-molten-stats" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-white hover:opacity-80"
+            >
+              Dune Analytics ↗
+            </a>
           </div>
         </div>
       </CardContent>
