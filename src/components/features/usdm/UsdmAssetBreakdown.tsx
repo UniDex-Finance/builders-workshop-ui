@@ -107,7 +107,7 @@ export function UsdmAssetBreakdown() {
                 <div className="flex items-center gap-1">
                   <HoverCard.Root openDelay={0} closeDelay={0}>
                     <HoverCard.Trigger asChild>
-                      <span className="font-medium cursor-help">{assetType.type}</span>
+                      <span className="font-medium cursor-help border-b border-dashed border-foreground/20 hover:border-foreground/40 transition-colors">{assetType.type}</span>
                     </HoverCard.Trigger>
                     <HoverCard.Portal>
                       <HoverCard.Content
