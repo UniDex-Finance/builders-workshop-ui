@@ -1,36 +1,10 @@
 import { CardContent } from "@/components/ui/card"
 import * as HoverCard from '@radix-ui/react-hover-card'
-
-// Hardcoded data for now
-const assetData = {
-  totalValue: 302.63,
-  assets: [
-    {
-      type: "Ether",
-      totalValue: 239.30,
-      percentage: 79.1,
-      assets: [
-        { name: "ETH", value: 32.87, percentage: 10.9 },
-        { name: "wstETH", value: 143.51, percentage: 47.4 },
-        { name: "wbETH", value: 41.27, percentage: 13.6 },
-        { name: "apxETH", value: 21.65, percentage: 7.2 },
-      ],
-      color: "var(--main-accent)"
-    },
-    {
-      type: "Stablecoins",
-      totalValue: 63.33,
-      percentage: 20.9,
-      assets: [
-        { name: "USDC", value: 61.73, percentage: 20.4 },
-        { name: "USDT", value: 1.60, percentage: 0.5 },
-      ],
-      color: "var(--color-long-dark)"
-    }
-  ]
-}
+import { useVaultBreakdown } from "@/hooks/use-vault-breakdown"
 
 export function UsdmAssetBreakdown() {
+  const { data: assetData, isLoading } = useVaultBreakdown()
+
   const formatValue = (value: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -38,6 +12,22 @@ export function UsdmAssetBreakdown() {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(value);
+  }
+
+  if (isLoading) {
+    return (
+      <CardContent className="py-6">
+        <div className="text-muted-foreground text-center">Loading asset breakdown...</div>
+      </CardContent>
+    )
+  }
+
+  if (!assetData) {
+    return (
+      <CardContent className="py-6">
+        <div className="text-muted-foreground text-center">No asset data available</div>
+      </CardContent>
+    )
   }
 
   return (
@@ -61,7 +51,7 @@ export function UsdmAssetBreakdown() {
                 side="top"
                 align="center"
                 sideOffset={5}
-                className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[var(--position-cards-background)]/80 backdrop-blur-md text-[13px]"
+                className="z-50 w-80 p-3 rounded-md shadow-lg border border-border/40 bg-[var(--position-cards-background)]/80 backdrop-blur-md text-[13px]"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between font-medium">
@@ -73,7 +63,7 @@ export function UsdmAssetBreakdown() {
                       <div key={asset.name} className="flex items-center justify-between">
                         <span className="text-muted-foreground">{asset.name}</span>
                         <div className="flex gap-2">
-                          <span>{formatValue(asset.value)}M</span>
+                          <span>{formatValue(asset.value)}</span>
                           <span className="text-muted-foreground">({asset.percentage.toFixed(1)}%)</span>
                         </div>
                       </div>
@@ -81,7 +71,7 @@ export function UsdmAssetBreakdown() {
                   </div>
                   <div className="flex justify-between pt-2 font-medium border-t border-border/40">
                     <span>Total Value</span>
-                    <span>{formatValue(assetType.totalValue)}M</span>
+                    <span>{formatValue(assetType.totalValue)}</span>
                   </div>
                 </div>
                 <HoverCard.Arrow className="fill-[var(--position-cards-background)]/80" />
@@ -105,7 +95,7 @@ export function UsdmAssetBreakdown() {
                 <span className="font-medium">{assetType.type}</span>
               </div>
               <div className="flex items-center gap-4">
-                <span className="font-medium text-right">${assetType.totalValue.toFixed(2)}M</span>
+                <span className="font-medium text-right">{formatValue(assetType.totalValue)}</span>
                 <span className="w-16 text-right text-muted-foreground">{assetType.percentage.toFixed(1)}%</span>
               </div>
             </div>
@@ -118,7 +108,7 @@ export function UsdmAssetBreakdown() {
                     <span className="text-muted-foreground">{asset.name}</span>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="text-right">${asset.value.toFixed(2)}M</span>
+                    <span className="text-right">{formatValue(asset.value)}</span>
                     <span className="w-16 text-right text-muted-foreground">{asset.percentage.toFixed(1)}%</span>
                   </div>
                 </div>
