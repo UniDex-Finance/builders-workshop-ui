@@ -169,7 +169,7 @@ export function StatsActions({ balances, isLoading }: Props) {
           </TooltipProvider>
         </div>
         <div className="space-y-1">
-          <div className="text-sm text-[#A0AEC0]">Current Price</div>
+          <div className="text-sm text-[#A0AEC0]">Current Share Price</div>
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-full bg-primary hover:bg-primary/80" />
             <span className="text-xl text-foreground">
