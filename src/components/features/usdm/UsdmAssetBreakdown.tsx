@@ -24,6 +24,8 @@ function useIsMobile() {
 export function UsdmAssetBreakdown() {
   const { data: assetData, isLoading } = useVaultBreakdown()
   const isMobile = useIsMobile()
+  const [openTooltipIndex, setOpenTooltipIndex] = useState<number | null>(null)
+  const [openTextTooltipIndex, setOpenTextTooltipIndex] = useState<number | null>(null)
 
   const formatValue = (value: number) => {
     if (isMobile) {
@@ -65,7 +67,12 @@ export function UsdmAssetBreakdown() {
       {/* Progress Bar */}
       <div className="flex w-full h-4 mb-6 overflow-hidden rounded-lg bg-[#1f1f29]">
         {assetData.assets.map((assetType, index) => (
-          <HoverCard.Root key={assetType.type} openDelay={0} closeDelay={0}>
+          <HoverCard.Root 
+            key={assetType.type} 
+            openDelay={0} 
+            closeDelay={0}
+            open={isMobile ? openTooltipIndex === index : undefined}
+          >
             <HoverCard.Trigger asChild>
               <div
                 className={`h-full transition-all duration-300 cursor-help hover:opacity-80 ${
@@ -78,6 +85,11 @@ export function UsdmAssetBreakdown() {
                     : assetType.color,
                   borderRight: index < assetData.assets.length - 1 ? '2px solid #16161D' : 'none'
                 }}
+                onClick={() => {
+                  if (isMobile) {
+                    setOpenTooltipIndex(openTooltipIndex === index ? null : index)
+                  }
+                }}
               />
             </HoverCard.Trigger>
             <HoverCard.Portal>
@@ -86,6 +98,11 @@ export function UsdmAssetBreakdown() {
                 align="center"
                 sideOffset={5}
                 className="z-50 w-80 p-3 rounded-md shadow-lg border border-border/40 bg-[var(--position-cards-background)]/95 backdrop-blur-md text-[13px] text-foreground/90"
+                onInteractOutside={() => {
+                  if (isMobile) {
+                    setOpenTooltipIndex(null)
+                  }
+                }}
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between font-medium">
@@ -117,7 +134,7 @@ export function UsdmAssetBreakdown() {
 
       {/* Asset Type List */}
       <div className="space-y-6">
-        {assetData.assets.map((assetType) => (
+        {assetData.assets.map((assetType, index) => (
           <div key={assetType.type} className="space-y-2">
             {/* Asset Type Header */}
             <div className="flex items-center justify-between">
@@ -133,9 +150,20 @@ export function UsdmAssetBreakdown() {
                   }}
                 />
                 <div className="flex items-center gap-1">
-                  <HoverCard.Root openDelay={0} closeDelay={0}>
+                  <HoverCard.Root 
+                    openDelay={0} 
+                    closeDelay={0}
+                    open={isMobile ? openTextTooltipIndex === index : undefined}
+                  >
                     <HoverCard.Trigger asChild>
-                      <span className="text-sm font-medium transition-colors border-b border-dashed cursor-help border-foreground/20 hover:border-foreground/40 md:text-base">
+                      <span 
+                        className="text-sm font-medium transition-colors border-b border-dashed cursor-help border-foreground/20 hover:border-foreground/40 md:text-base"
+                        onClick={() => {
+                          if (isMobile) {
+                            setOpenTextTooltipIndex(openTextTooltipIndex === index ? null : index)
+                          }
+                        }}
+                      >
                         {assetType.type === "Rehypothecation" 
                           ? (isMobile ? "Rehypothecation" : "Rehypothecation")
                           : assetType.type}
@@ -147,6 +175,11 @@ export function UsdmAssetBreakdown() {
                         align="center"
                         sideOffset={5}
                         className="z-50 w-80 p-3 rounded-md shadow-lg border border-border/40 bg-[var(--position-cards-background)]/95 backdrop-blur-md text-[13px] text-foreground/90"
+                        onInteractOutside={() => {
+                          if (isMobile) {
+                            setOpenTextTooltipIndex(null)
+                          }
+                        }}
                       >
                         <div className="text-muted-foreground">
                           {assetType.type === "Stablecoins" 
