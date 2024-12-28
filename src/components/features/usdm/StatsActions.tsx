@@ -101,7 +101,7 @@ export function StatsActions({ balances, isLoading }: Props) {
       {/* Vault APR Section */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-[#A0AEC0] font-medium">Vault APR</span>
+          <span className="font-medium text-white">Vault APR</span>
           <span className="font-medium text-white">{vaultApr.toFixed(2)}%</span>
         </div>
         <p className="text-sm text-[#A0AEC0]">
@@ -115,7 +115,7 @@ export function StatsActions({ balances, isLoading }: Props) {
       {/* Rehypothecation APR Section */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-[#A0AEC0] font-medium">Rehypothecation (Aave V3)</span>
+          <span className="font-medium text-white">Rehypothecation (Aave V3)</span>
           <span className="font-medium text-white">{rehypothecationApr.toFixed(2)}%</span>
         </div>
         <p className="text-sm text-[#A0AEC0]">
@@ -129,11 +129,11 @@ export function StatsActions({ balances, isLoading }: Props) {
       {/* esMOLTEN APR Section */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-[#A0AEC0] font-medium">Staking APR (esMOLTEN)</span>
+          <span className="font-medium text-white">Staking APR (esMOLTEN)</span>
           <span className="font-medium text-white">{esMoltenApr.toFixed(2)}%</span>
         </div>
         <p className="text-sm text-[#A0AEC0]">
-          20,000 esMOLTEN tokens are allocated for rewards this month those who stake USD.m.
+          Stake your USD.m to earn a share of 20,000 esMOLTEN tokens on the USD.m staking page.
         </p>
       </div>
 

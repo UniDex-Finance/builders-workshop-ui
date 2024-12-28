@@ -3,17 +3,45 @@ import * as HoverCard from '@radix-ui/react-hover-card'
 import { useVaultBreakdown } from "@/hooks/use-vault-breakdown"
 import { ExternalLink, Sparkles } from "lucide-react"
 import Image from "next/image"
+import { useEffect, useState } from "react"
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkIsMobile()
+    window.addEventListener('resize', checkIsMobile)
+    return () => window.removeEventListener('resize', checkIsMobile)
+  }, [])
+
+  return isMobile
+}
 
 export function UsdmAssetBreakdown() {
   const { data: assetData, isLoading } = useVaultBreakdown()
+  const isMobile = useIsMobile()
 
   const formatValue = (value: number) => {
+    if (isMobile) {
+      if (value >= 1000000) {
+        return `${(value / 1000000).toFixed(2)}M`
+      }
+      if (value >= 1000) {
+        return `${(value / 1000).toFixed(1)}k`
+      }
+      return value.toFixed(2)
+    }
+    
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
-    }).format(value);
+    }).format(value)
   }
 
   if (isLoading) {
@@ -107,7 +135,11 @@ export function UsdmAssetBreakdown() {
                 <div className="flex items-center gap-1">
                   <HoverCard.Root openDelay={0} closeDelay={0}>
                     <HoverCard.Trigger asChild>
-                      <span className="font-medium cursor-help border-b border-dashed border-foreground/20 hover:border-foreground/40 transition-colors">{assetType.type}</span>
+                      <span className="text-sm font-medium transition-colors border-b border-dashed cursor-help border-foreground/20 hover:border-foreground/40 md:text-base">
+                        {assetType.type === "Rehypothecation" 
+                          ? (isMobile ? "Rehypothecation" : "Rehypothecation")
+                          : assetType.type}
+                      </span>
                     </HoverCard.Trigger>
                     <HoverCard.Portal>
                       <HoverCard.Content
@@ -126,7 +158,7 @@ export function UsdmAssetBreakdown() {
                       </HoverCard.Content>
                     </HoverCard.Portal>
                   </HoverCard.Root>
-                  {assetType.type === "Rehypothecation" && (
+                  {assetType.type === "Rehypothecation" && !isMobile && (
                     <Sparkles 
                       className="w-4 h-4 text-yellow-500 animate-twinkle" 
                       style={{ 
@@ -136,25 +168,25 @@ export function UsdmAssetBreakdown() {
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="font-medium text-right">{formatValue(assetType.totalValue)}</span>
-                <span className="w-16 text-right text-muted-foreground">{assetType.percentage.toFixed(1)}%</span>
+              <div className="flex items-center gap-2 gap-4 md:gap-4">
+                <span className="text-sm font-medium text-right md:text-base">{formatValue(assetType.totalValue)}</span>
+                <span className="w-[52px] text-sm text-right text-muted-foreground md:text-base md:w-16">{assetType.percentage.toFixed(1)}%</span>
               </div>
             </div>
 
             {/* Individual Assets */}
             <div className="pl-4 space-y-1">
               {assetType.assets.map((asset) => (
-                <div key={asset.name} className="flex items-center justify-between text-sm">
+                <div key={asset.name} className="flex items-center justify-between text-xs md:text-sm">
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground flex items-center gap-1">
+                    <span className="flex items-center gap-1 text-muted-foreground">
                       {asset.name.includes("Circle") ? "Circle: " : "AaveV3: "}
                       <Image
                         src={asset.name.includes("Circle") ? "/static/images/commons/usdc.svg" : "/static/images/commons/ausdc.webp"}
                         alt={asset.name.includes("Circle") ? "USDC" : "aUSDC"}
                         width={16}
                         height={16}
-                        className="inline-block relative top-[-1px]"
+                        className="inline-block relative top-[-1px] md:w-4 md:h-4 w-3 h-3"
                       />
                       {asset.name.includes("Circle") ? "USDC" : "aUSDC"}
                       <a
@@ -163,15 +195,15 @@ export function UsdmAssetBreakdown() {
                           : "https://arbiscan.io/address/0x724dc807b04555b71ed48a6896b6f41593b8c637"}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center opacity-50 hover:opacity-100 transition-opacity"
+                        className="inline-flex items-center transition-opacity opacity-50 hover:opacity-100"
                       >
-                        <ExternalLink className="w-[10px] h-[10px] ml-0.5 relative top-[-1px]" />
+                        <ExternalLink className="md:w-[10px] md:h-[10px] w-[8px] h-[8px] ml-0.5 relative top-[-1px]" />
                       </a>
                     </span>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <span className="text-right">{formatValue(asset.value)}</span>
-                    <span className="w-16 text-right text-muted-foreground">{asset.percentage.toFixed(1)}%</span>
+                  <div className="flex items-center gap-2 gap-4 md:gap-4">
+                    <span className="text-xs text-right md:text-sm">{formatValue(asset.value)}</span>
+                    <span className="w-[52px] text-xs text-right text-muted-foreground md:text-sm md:w-16">{asset.percentage.toFixed(1)}%</span>
                   </div>
                 </div>
               ))}
