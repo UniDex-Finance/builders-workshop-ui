@@ -6,7 +6,7 @@ import { PositionCard } from "./PositionCard"
 import { ActionsCard } from "./ActionsCard"
 import { StatsActions } from "./StatsActions"
 import { StatsDisplay } from "./StatsDisplay"
-import { UsdmPositionsTable } from "./UsdmPositionsTable"
+import { UsdmDashboard } from "./UsdmDashboard"
 import { useBalances } from "@/hooks/use-balances"
 import { type Balances } from "@/hooks/use-balances"
 
@@ -47,7 +47,7 @@ export function Usdm() {
             </div>
           </div>
 
-          <UsdmPositionsTable />
+          <UsdmDashboard />
         </div>
       </div>
     </div>
