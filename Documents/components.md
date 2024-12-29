@@ -797,7 +797,7 @@ const handleTradingOperation = async (type: "deposit" | "withdraw", amount: stri
         type,
         tokenAddress: USDC_TOKEN,
         amount,
-        smartAccountAddress: smartAccount.address,
+        userAddress: smartAccount.address,
       }),
     });
     // Process response and execute transaction

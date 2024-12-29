@@ -107,7 +107,7 @@ export function WithdrawCard({ onClose, balances, onSuccess }: WithdrawCardProps
               type: "withdraw",
               tokenAddress: "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
               amount,
-              smartAccountAddress: smartAccount.address,
+              userAddress: smartAccount.address,
               fromMargin: true,
             }),
           }
