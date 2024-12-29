@@ -169,7 +169,7 @@ export function useMarketOrderActions() {
               type: "deposit",
               tokenAddress: USDC_TOKEN,
               amount: depositAmount.toString(),
-              smartAccountAddress: smartAccount.address,
+              userAddress: smartAccount.address,
             }),
           }
         );
