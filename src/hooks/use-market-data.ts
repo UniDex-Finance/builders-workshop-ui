@@ -15,8 +15,7 @@ export const TRADING_PAIRS: { [key: string]: string } = {
   '36': 'STRK/USD', '37': 'AAVE/USD', '38': 'XRP/USD', '39': 'TON/USD', '40': 'NOT/USD',
   '41': 'RLB/USD', '42': 'ALICE/USD', '43': 'APE/USD', '44': 'APT/USD', '45': 'AVAIL/USD',
   '46': 'DEGEN/USD', '47': 'RDNT/USD', '48': 'SUI/USD', '49': 'PEPE/USD', '50': 'EIGEN/USD',
-  '51': 'XAU/USD', '52': 'XAG/USD', '53': 'GMCI30/USD', '54': 'GMCL2/USD', '55': 'GMMEME/USD',
-  '56': 'QQQ/USD', '57': 'SPY/USD'
+  '51': 'XAU/USD', '52': 'XAG/USD'
 };
 
 export interface Market {
