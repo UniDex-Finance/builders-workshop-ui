@@ -231,7 +231,7 @@ export function Header() {
               <DropdownItem
                 key="stats"
                 description="View the latest stats"
-                startContent={<FontAwesomeIcon icon={faChartLine} />}
+                startContent={<FontAwesomeIcon icon={faChartLine} className="w-4 h-4" />}
                 onClick={() =>
                   window.open(
                     "https://dune.com/supakawaiidesu/unidex-molten-stats",
@@ -240,6 +240,14 @@ export function Header() {
                 }
               >
                 Stats
+              </DropdownItem>
+              <DropdownItem
+                key="emilia"
+                description="Chat with Emilia AI Assistant"
+                startContent={<MessageCircle className="w-4 h-4" />}
+                onClick={() => window.location.href = "/emilia"}
+              >
+                Chat with Emilia
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
@@ -414,6 +422,14 @@ export function Header() {
                           className="w-4 h-4"
                         />
                         Stats
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2"
+                        onClick={() => window.location.href = "/emilia"}
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        Chat with Emilia
                       </Button>
                     </div>
                   </div>
