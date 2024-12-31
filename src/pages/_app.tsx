@@ -3,6 +3,7 @@ import "@rainbow-me/rainbowkit/styles.css";
 import type { AppProps } from "next/app";
 import Script from "next/script";
 import Head from "next/head";
+import { useRouter } from 'next/router'
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
@@ -34,6 +35,9 @@ const Disclaimer: DisclaimerComponent = ({ Text, Link }) => (
 );
 
 function MyApp({ Component, pageProps }: AppProps) {
+  const router = useRouter()
+  const isEmiliaPage = router.pathname === '/emilia'
+
   return (
     <>
       <Head>
@@ -107,12 +111,14 @@ function MyApp({ Component, pageProps }: AppProps) {
               <PriceProvider>
                 <DailyBasePricesProvider>
                   <div className="relative flex flex-col min-h-screen">
-                    <div className="flex-grow pb-8">
+                    <div className={`flex-grow ${!isEmiliaPage && 'pb-8'}`}>
                       <Component {...pageProps} />
                     </div>
-                    <div className="fixed bottom-0 left-0 right-0 bg-background">
-                      <Footer />
-                    </div>
+                    {!isEmiliaPage && (
+                      <div className="fixed bottom-0 left-0 right-0 bg-background">
+                        <Footer />
+                      </div>
+                    )}
                     <Toaster />
                     <NewVersionNotification />
                   </div>
