@@ -400,7 +400,7 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
                         </Tooltip>
                       </TooltipProvider>
                       <div className="text-lg">
-                        ${parseFloat(balances?.formattedMusdBalance || "0").toFixed(2)}
+                        ${(parseFloat(balances?.formattedMusdBalance || "0") + parseFloat(balances?.formattedUsdcBalance || "0")).toFixed(2)}
                       </div>
                     </div>
                   </div>
