@@ -287,7 +287,7 @@ export function Header() {
                       </div>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2 text-red-500"
+                        className="justify-start w-full gap-2"
                         onClick={() => (window.location.href = "/staking")}
                       >
                         <Coins className="w-4 h-4" />
