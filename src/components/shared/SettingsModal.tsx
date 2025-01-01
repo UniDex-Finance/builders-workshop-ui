@@ -30,6 +30,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       case 'hotline':
         setSelected(3);
         break;
+      case 'oled':
+        setSelected(4);
+        break;
       default:
         setSelected(0);
     }

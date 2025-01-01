@@ -252,7 +252,7 @@ a {
   }
   .hotline {
     --background: 247 59% 11%;
-    --foreground: 0 0% 98%;
+    --foreground: 247 59% 80%;
     --component-background: 248 58% 11%;
     --card: 248 58% 11%;
     --card-foreground: 0 0% 98%;
@@ -311,7 +311,7 @@ a {
   }
   .oled {
     --background: 0 0% 0%;
-    --foreground: 0 0% 98%;
+    --foreground: 0 0% 60%;
     --component-background: 0 0% 0%;
     --card: 0 0% 0%;
     --card-foreground: 0 0% 98%;

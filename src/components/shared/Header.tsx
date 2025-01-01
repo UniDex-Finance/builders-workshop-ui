@@ -56,7 +56,7 @@ export function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="items-center hidden space-x-4 md:flex">
+        <nav className="items-center hidden space-x-4 md:flex ">
           <Link href="/">
             <Button variant="ghost">Trade</Button>
           </Link>
@@ -68,11 +68,11 @@ export function Header() {
             </DropdownTrigger>
             <DropdownMenu
               aria-label="Earn options"
-              className="w-[240px]"
+              className="w-[240px] "
               itemClasses={{
-                base: "gap-4",
+                base: "",
                 title: "text-sm",
-                description: "text-xs text-default-400",
+                description: "text-xs text-default-400 ",
               }}
             >
               <DropdownSection title="Earn with MOLTEN" showDivider>
@@ -82,7 +82,7 @@ export function Header() {
                   startContent={<Coins className="w-4 h-4" />}
                   onClick={() => (window.location.href = "/staking")}
                 >
-                  Stake MOLTEN
+                  <span className="font-semibold">Stake MOLTEN</span>
                 </DropdownItem>
               </DropdownSection>
 
@@ -93,7 +93,7 @@ export function Header() {
                   startContent={<DollarSign className="w-4 h-4" />}
                   onClick={() => (window.location.href = "/usdm")}
                 >
-                  Mint USD.m
+                  <span className="font-semibold">Mint USD.m</span>
                 </DropdownItem>
                 <DropdownItem
                   key="usdm-staking"
@@ -101,7 +101,7 @@ export function Header() {
                   startContent={<PiggyBank className="w-4 h-4" />}
                   onClick={() => (window.location.href = "/usdm-staking")}
                 >
-                  Stake USD.m
+                  <span className="font-semibold">Stake USD.m</span>
                 </DropdownItem>
               </DropdownSection>
 
@@ -112,7 +112,7 @@ export function Header() {
                   startContent={<Users2 className="w-4 h-4" />}
                   onClick={() => (window.location.href = "/referrals")}
                 >
-                  Refer Traders
+                  <span className="font-semibold">Refer Traders</span>
                 </DropdownItem>
               </DropdownSection>
             </DropdownMenu>
@@ -287,7 +287,7 @@ export function Header() {
                       </div>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2"
+                        className="justify-start w-full gap-2 text-red-500"
                         onClick={() => (window.location.href = "/staking")}
                       >
                         <Coins className="w-4 h-4" />
