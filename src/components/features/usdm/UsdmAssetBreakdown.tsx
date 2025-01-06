@@ -48,7 +48,7 @@ export function UsdmAssetBreakdown() {
                   background: assetType.type === "Rehypothecation" 
                     ? "var(--rehypothecation-gradient)"
                     : assetType.color,
-                  borderRight: index < assetData.assets.length - 1 ? '2px solid #16161D' : 'none'
+                  borderRight: index < assetData.assets.length - 1 ? '2px solid #ccc' : 'none'
                 }}
               />
             </HoverCard.Trigger>
@@ -96,7 +96,7 @@ export function UsdmAssetBreakdown() {
               <div className="flex items-center gap-2">
                 <div 
                   className={`w-2 h-2 rounded-full ${
-                    assetType.type === "Rehypothecation" ? "rehypothecation-dot" : ""
+                    assetType.type === "Rehypothecation" ? "rehypothecation-dot " : ""
                   }`}
                   style={{ 
                     background: assetType.type === "Rehypothecation"
