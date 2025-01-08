@@ -133,7 +133,7 @@ export function StatsActions({ balances, isLoading }: Props) {
           <span className="font-medium text-white">{esMoltenApr.toFixed(2)}%</span>
         </div>
         <p className="text-sm text-[#A0AEC0]">
-          Stake your USD.m to earn a share of 20,000 esMOLTEN tokens on the USD.m staking page.
+          Stake your USD.m to earn a share of 15,000 esMOLTEN tokens on the USD.m staking page.
         </p>
       </div>
 

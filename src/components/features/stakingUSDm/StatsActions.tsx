@@ -121,7 +121,7 @@ export function StatsActions() {
           <span className="font-medium text-white">{esMoltenApr.toFixed(2)}%</span>
         </div>
         <p className="text-sm text-[#A0AEC0]">
-          Stake your USD.m to earn a share of 20,000 esMOLTEN tokens distributed monthly.
+          Stake your USD.m to earn a share of 15,000 esMOLTEN tokens distributed monthly.
         </p>
       </div>
 
@@ -159,7 +159,7 @@ export function StatsActions() {
         <div className="space-y-1">
           <div className="text-sm text-[#A0AEC0]">Current Price</div>
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 bg-primary hover:bg-primary/80 rounded-full" />
+            <div className="w-5 h-5 rounded-full bg-primary hover:bg-primary/80" />
             <span className="text-xl text-foreground">${usdmData?.formattedUsdmPrice || '0.00'}</span>
           </div>
         </div>
