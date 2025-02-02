@@ -78,7 +78,7 @@ export function StatsActions({ balances, isLoading }: Props) {
         const moltenPrice = moltenData.coins["arbitrum:0x66E535e8D2ebf13F49F3D49e5c50395a97C137b1"].price
 
         // Calculate esMOLTEN APR
-        const monthlyEsMoltenUsd = moltenPrice * 20000
+        const monthlyEsMoltenUsd = moltenPrice * 6000
         const yearlyEsMoltenUsd = monthlyEsMoltenUsd * 12
         const tvl = parseFloat(usdmData?.formattedVaultBalance || '0')
         const calculatedEsMoltenApr = tvl > 0 ? (yearlyEsMoltenUsd / tvl) * 100 : 0
@@ -133,7 +133,7 @@ export function StatsActions({ balances, isLoading }: Props) {
           <span className="font-medium text-white">{esMoltenApr.toFixed(2)}%</span>
         </div>
         <p className="text-sm text-[#A0AEC0]">
-          Stake your USD.m to earn a share of 15,000 esMOLTEN tokens on the USD.m staking page.
+          Stake your USD.m to earn a share of 6,000 esMOLTEN tokens on the USD.m staking page.
         </p>
       </div>
 
