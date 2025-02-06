@@ -29,6 +29,7 @@ import OpLogo from "@/../../public/static/images/chain-logos/op.svg"
 import BaseLogo from "@/../../public/static/images/chain-logos/base.svg"
 import EthLogo from "@/../../public/static/images/chain-logos/eth.svg"
 import { useSquidCrossChainMint } from "@/hooks/usdmHooks/squid-crosschain-mint"
+import { useUsdmFees } from "@/hooks/usdmHooks/use-usdm-fees"
 
 interface ActionsCardProps {
   isStaking: boolean
@@ -106,6 +107,10 @@ export function ActionsCard({
   const { chain } = useAccount()
   const { switchChain } = useSwitchChain()
   const { checkApproval, getCrossChainMintTransaction } = useSquidCrossChainMint()
+  const { fees, isLoading: feesLoading } = useUsdmFees()
+
+  console.log('ActionsCard fees:', fees)
+  console.log('ActionsCard feesLoading:', feesLoading)
 
   // Add effect to check approval state for cross-chain minting
   React.useEffect(() => {
@@ -476,21 +481,17 @@ export function ActionsCard({
 
   // Update calculate output amount to account for fees
   const calculateOutputAmount = (inputAmount: string) => {
-    if (!inputAmount || !usdmData) return '0.00'
+    if (!inputAmount || !usdmData || !fees) return '0.00'
     try {
       const input = Number(inputAmount)
-      const fee = input * 0.0025 // 0.25% fee
+      const feeRate = action === 'mint' ? fees.stakingFee : fees.unstakingFee
+      const fee = input * (feeRate / 100) // Convert from percentage to decimal
       const amountAfterFees = input - fee
       const usdmPrice = Number(usdmData.formattedUsdmPrice)
 
       if (action === 'mint') {
-        // When minting: (USDC amount - fees) / USDM price
-        // Example: 9.975 USDC / 1.03847 = 9.6054 USDM
         return (amountAfterFees / usdmPrice).toFixed(6)
       } else {
-        // When burning: (USDM amount - fees) * USDM price
-        // Example: If burning 10 USDM with 1.03847 price
-        // 9.975 USDM * 1.03847 = 10.35873 USDC
         return (amountAfterFees * usdmPrice).toFixed(6)
       }
     } catch {
@@ -500,12 +501,18 @@ export function ActionsCard({
 
   // Update the fee calculation to show 2 decimal places
   const calculateFees = (inputAmount: string) => {
-    if (!inputAmount) return '0.00'
+    console.log('calculateFees input:', inputAmount)
+    console.log('calculateFees current fees state:', fees)
+    if (!inputAmount || !fees) return '0.00'
     try {
       const input = Number(inputAmount)
-      const fee = input * 0.0025 // 0.25%
-      return fee.toFixed(2) // Changed from toFixed(6) to toFixed(2)
-    } catch {
+      const feeRate = action === 'mint' ? fees.stakingFee : fees.unstakingFee
+      console.log('Selected fee rate:', feeRate)
+      const fee = input * (feeRate / 100)
+      console.log('Calculated fee amount:', fee)
+      return fee.toFixed(2)
+    } catch (error) {
+      console.error('Error calculating fees:', error)
       return '0.00'
     }
   }
@@ -744,7 +751,9 @@ export function ActionsCard({
                   </div>
                 </div>
                 <div className="flex justify-between text-xs sm:text-sm">
-                  <span className="text-[#A0AEC0]">Fees (0.25%)</span>
+                  <span className="text-[#A0AEC0]">
+                    Fees ({action === 'mint' ? fees?.stakingFee : fees?.unstakingFee}%)
+                  </span>
                   <div className="flex items-center gap-2">
                     <span>{amount ? calculateFees(amount) : '0.00'}</span>
                     <span className="text-[#A0AEC0]">{action === 'mint' ? 'USDC' : 'USD.m'}</span>
