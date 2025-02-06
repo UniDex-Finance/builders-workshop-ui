@@ -2,6 +2,7 @@ import React from "react";
 import Image from "next/image";
 import { TradeDetails as TradeDetailsType, RouteId, TradeDetailsProps } from "../types";
 import * as HoverCard from '@radix-ui/react-hover-card';
+import { useGetGasPrice } from '@/hooks/trading-hooks/unidex-hooks/use-get-gasprice';
 
 export function TradeDetails({ 
   details, 
@@ -14,6 +15,7 @@ export function TradeDetails({
   isLimitOrder = false 
 }: TradeDetailsProps) {
   const { entryPrice, liquidationPrice, fees } = details;
+  const { gasCost } = useGetGasPrice();
 
   const formatNumber = (value: number) => {
     return new Intl.NumberFormat('en-US').format(value);
@@ -259,6 +261,15 @@ export function TradeDetails({
           </HoverCard.Portal>
         </HoverCard.Root>
         <span>{totalRequired.toFixed(2)} USD</span>
+      </div>
+      
+      <div className="flex justify-between">
+        <span>Gas Price</span>
+        <span>
+          {gasCost?.usd 
+            ? `$${gasCost.usd.toFixed(3)}` 
+            : "..."}
+        </span>
       </div>
       
       {referrerSection}
