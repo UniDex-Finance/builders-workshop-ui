@@ -162,7 +162,7 @@ export function useModifyPositionActions() {
               type: "deposit",
               tokenAddress: USDC_TOKEN,
               amount: depositCheck.depositAmount.toString(),
-              smartAccountAddress: smartAccount.address,
+              userAddress: smartAccount.address,
             }),
           }
         );

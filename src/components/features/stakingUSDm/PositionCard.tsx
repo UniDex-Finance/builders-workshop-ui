@@ -64,9 +64,10 @@ export function PositionCard() {
     return `($${value.toFixed(2)})`
   }
 
-  const calculateShareOfPool = () => {
-    if (!stakingData?.stakedBalance || !stakingData?.totalStaked || stakingData.totalStaked === BigInt(0)) return '0'
-    return ((Number(stakingData.stakedBalance) / Number(stakingData.totalStaked)) * 100).toFixed(2)
+  const calculateCombinedBalance = () => {
+    const walletBalance = parseFloat(stakingData?.formattedUsdmBalance || '0')
+    const stakedBalance = parseFloat(stakingData?.formattedStakedBalance || '0')
+    return (walletBalance + stakedBalance).toFixed(2)
   }
   
   return (
@@ -76,19 +77,19 @@ export function PositionCard() {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
-          <div className="text-[#A0AEC0] text-sm">Wallet Balance</div>
+          <div className="text-[#A0AEC0] text-sm">Amount Staked</div>
           <div className="text-2xl text-white">
-            {stakingData?.displayUsdmBalance || '0.00'} <span className="text-[#A0AEC0] text-sm">USD.m</span>{' '}
-            <span className="text-[#A0AEC0] text-sm">{formatUsdValue(stakingData?.formattedUsdmBalance || '0')}</span>
+            {stakingData?.displayStakedBalance || '0.00'} <span className="text-[#A0AEC0] text-sm">USD.m</span>{' '}
+            <span className="text-[#A0AEC0] text-sm">{formatUsdValue(stakingData?.formattedStakedBalance || '0')}</span>
           </div>
         </div>
         <div className="border-t border-[#272734]" />
         <div className="space-y-4">
           <div className="flex justify-between text-sm">
-            <span className="text-[#A0AEC0]">Amount Staked</span>
+            <span className="text-[#A0AEC0]">Wallet Balance</span>
             <span className="text-white">
-              {stakingData?.displayStakedBalance || '0.00'} USD.m {' '}
-              <span className="text-[#A0AEC0]">{formatUsdValue(stakingData?.formattedStakedBalance || '0')}</span>
+              {stakingData?.displayUsdmBalance || '0.00'} USD.m {' '}
+              <span className="text-[#A0AEC0]">{formatUsdValue(stakingData?.formattedUsdmBalance || '0')}</span>
             </span>
           </div>
           <div className="flex justify-between text-sm">
@@ -112,8 +113,11 @@ export function PositionCard() {
             </span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-[#A0AEC0]">Share of Pool</span>
-            <span className="text-white">{calculateShareOfPool()}%</span>
+            <span className="text-[#A0AEC0]">Combined Balance</span>
+            <span className="text-white">
+              {calculateCombinedBalance()} USD.m {' '}
+              <span className="text-[#A0AEC0]">{formatUsdValue(calculateCombinedBalance())}</span>
+            </span>
           </div>
         </div>
       </CardContent>

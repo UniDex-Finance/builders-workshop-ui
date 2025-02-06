@@ -10,6 +10,7 @@ import { OrdersContent } from "./PositionTable/OrdersContent";
 import { TradesContent } from "./PositionTable/TradesContent";
 import { PnLTooltip } from "./PositionTable/PnLTooltip";
 import { Chart } from "./Chart";
+import { usePrices } from "../../../lib/websocket-price-context";
 
 interface PositionsTableProps {
   address: string | undefined;
@@ -34,6 +35,7 @@ export function PositionsTable({ address }: PositionsTableProps) {
   const [hoveredPosition, setHoveredPosition] = useState<string | null>(null);
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
   const cellRefs = useRef<{ [key: string]: HTMLTableCellElement | null }>({});
+  const { prices } = usePrices();
 
   useEffect(() => {
     const container = document.createElement("div");
@@ -61,10 +63,29 @@ export function PositionsTable({ address }: PositionsTableProps) {
 
   const handleClosePosition = (position: Position) => {
     const positionSize = parseFloat(position.size);
+    const basePair = position.market.split("/")[0].toLowerCase();
+    const currentPrice = prices[basePair]?.price;
+    
+    // Add logging with better precision handling
+    console.log('Closing position with details:', {
+      pair: position.market,
+      markPrice: {
+        raw: currentPrice,
+        scientific: currentPrice ? currentPrice.toExponential(8) : '0',
+        fixed: currentPrice ? currentPrice.toFixed(10) : '0',
+        fromPosition: position.markPrice, // Log original mark price for comparison
+        priceObject: prices[basePair], // Log entire price object
+        allPrices: prices // Log all available prices
+      },
+      size: positionSize,
+      isLong: position.isLong,
+      positionId: position.positionId
+    });
+
     closePosition(
       position.positionId,
       position.isLong,
-      Number(position.markPrice),
+      currentPrice || 0,
       positionSize
     );
   };

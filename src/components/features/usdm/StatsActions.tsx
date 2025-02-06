@@ -78,7 +78,7 @@ export function StatsActions({ balances, isLoading }: Props) {
         const moltenPrice = moltenData.coins["arbitrum:0x66E535e8D2ebf13F49F3D49e5c50395a97C137b1"].price
 
         // Calculate esMOLTEN APR
-        const monthlyEsMoltenUsd = moltenPrice * 20000
+        const monthlyEsMoltenUsd = moltenPrice * 6000
         const yearlyEsMoltenUsd = monthlyEsMoltenUsd * 12
         const tvl = parseFloat(usdmData?.formattedVaultBalance || '0')
         const calculatedEsMoltenApr = tvl > 0 ? (yearlyEsMoltenUsd / tvl) * 100 : 0
@@ -101,7 +101,7 @@ export function StatsActions({ balances, isLoading }: Props) {
       {/* Vault APR Section */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-[#A0AEC0] font-medium">Vault APR</span>
+          <span className="font-medium text-white">Vault APR</span>
           <span className="font-medium text-white">{vaultApr.toFixed(2)}%</span>
         </div>
         <p className="text-sm text-[#A0AEC0]">
@@ -115,7 +115,7 @@ export function StatsActions({ balances, isLoading }: Props) {
       {/* Rehypothecation APR Section */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-[#A0AEC0] font-medium">Rehypothecation (Aave V3)</span>
+          <span className="font-medium text-white">Rehypothecation (Aave V3)</span>
           <span className="font-medium text-white">{rehypothecationApr.toFixed(2)}%</span>
         </div>
         <p className="text-sm text-[#A0AEC0]">
@@ -129,11 +129,11 @@ export function StatsActions({ balances, isLoading }: Props) {
       {/* esMOLTEN APR Section */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-[#A0AEC0] font-medium">Staking APR (esMOLTEN)</span>
+          <span className="font-medium text-white">Staking APR (esMOLTEN)</span>
           <span className="font-medium text-white">{esMoltenApr.toFixed(2)}%</span>
         </div>
         <p className="text-sm text-[#A0AEC0]">
-          20,000 esMOLTEN tokens are allocated for rewards this month those who stake USD.m.
+          Stake your USD.m to earn a share of 6,000 esMOLTEN tokens on the USD.m staking page.
         </p>
       </div>
 
@@ -169,7 +169,7 @@ export function StatsActions({ balances, isLoading }: Props) {
           </TooltipProvider>
         </div>
         <div className="space-y-1">
-          <div className="text-sm text-[#A0AEC0]">Current Price</div>
+          <div className="text-sm text-[#A0AEC0]">Current Share Price</div>
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-full bg-primary hover:bg-primary/80" />
             <span className="text-xl text-foreground">

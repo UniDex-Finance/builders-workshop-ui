@@ -5,7 +5,7 @@ import { lensAbi } from '../lib/abi/lens';
 import { arbitrum } from 'viem/chains';
 
 export const TRADING_PAIRS: { [key: string]: string } = {
-  '1': 'BTC/USD', '2': 'ETH/USD', '3': 'FTM/USD', '4': 'SOL/USD', '5': 'DOGE/USD',
+  '1': 'BTC/USD', '2': 'ETH/USD', '3': 'S/USD', '4': 'SOL/USD', '5': 'DOGE/USD',
   '6': 'AVAX/USD', '7': 'BNB/USD', '8': 'ADA/USD', '9': 'LINK/USD', '10': 'ATOM/USD',
   '11': 'NEAR/USD', '12': 'ARB/USD', '13': 'OP/USD', '14': 'LTC/USD', '15': 'GMX/USD',
   '16': 'EUR/USD', '17': 'GBP/USD', '18': 'INJ/USD', '19': 'TIA/USD', '20': 'AERO/USD',

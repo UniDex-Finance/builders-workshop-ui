@@ -63,7 +63,7 @@ export function useTransactionHandler({
             type: "deposit",
             tokenAddress: USDC_TOKEN,
             amount,
-            smartAccountAddress: smartAccount.address,
+            userAddress: smartAccount.address,
           }),
         }
       );
@@ -123,7 +123,7 @@ export function useTransactionHandler({
             type,
             tokenAddress: USDC_TOKEN,
             amount,
-            smartAccountAddress: smartAccount.address,
+            userAddress: smartAccount.address,
           }),
         }
       );
