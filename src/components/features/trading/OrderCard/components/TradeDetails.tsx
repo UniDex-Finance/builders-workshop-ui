@@ -263,14 +263,31 @@ export function TradeDetails({
         <span>{totalRequired.toFixed(2)} USD</span>
       </div>
       
-      <div className="flex justify-between">
-        <span>Gas Price</span>
-        <span>
-          {gasCost?.usd 
-            ? `$${gasCost.usd.toFixed(3)}` 
-            : "..."}
-        </span>
-      </div>
+      {gasCost?.usd && gasCost.usd > 0.5 && (
+        <div className="flex justify-between">
+          <HoverCard.Root openDelay={0} closeDelay={0}>
+            <HoverCard.Trigger asChild>
+              <span className="border-b border-dashed border-muted-foreground/50 cursor-help">
+                Gas Fee
+              </span>
+            </HoverCard.Trigger>
+            <HoverCard.Portal>
+              <HoverCard.Content
+                side="top"
+                align="center"
+                sideOffset={5}
+                className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[var(--position-cards-background)]/80 backdrop-blur-md text-[13px]"
+              >
+                <p>The gas fee in USDC that will used to execute your order. If this is showing, it means that gas prices are to high to be sponsored by us.</p>
+                <HoverCard.Arrow className="fill-[var(--position-cards-background)]/80" />
+              </HoverCard.Content>
+            </HoverCard.Portal>
+          </HoverCard.Root>
+          <span className="text-orange-400">
+            ${gasCost.usd.toFixed(4)}
+          </span>
+        </div>
+      )}
       
       {referrerSection}
     </div>

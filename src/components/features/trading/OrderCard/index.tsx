@@ -132,18 +132,6 @@ export function OrderCard({
     ? parseFloat(formState.amount) / parseFloat(leverage)
     : 0;
 
-// Update the trading fee calculation
-const calculatedSize = formState.amount ? parseFloat(formState.amount) : 0;
-const tradingFee = calculatedSize * (isValidRoutes(routes) && bestRoute ? routes[bestRoute].tradingFee : 0);
-const totalRequired = calculatedMargin + tradingFee;
-
-  const marginWalletBalance = parseFloat(balances?.formattedMusdBalance || "0");
-  const onectWalletBalance = parseFloat(balances?.formattedUsdcBalance || "0");
-  const combinedBalance = marginWalletBalance + onectWalletBalance;
-  const hasInsufficientBalance = totalRequired > combinedBalance;
-  const needsDeposit = totalRequired > marginWalletBalance && totalRequired <= combinedBalance;
-
-  
   const tradeDetails = useTradeCalculations({
     amount: formState.amount,
     leverage,
@@ -152,6 +140,17 @@ const totalRequired = calculatedMargin + tradingFee;
     limitPrice: formState.limitPrice,
     assetId,
   });
+
+  const calculatedSize = formState.amount ? parseFloat(formState.amount) : 0;
+  const tradingFee = calculatedSize * (isValidRoutes(routes) && bestRoute ? routes[bestRoute].tradingFee : 0);
+  const gasFeeUsd = tradeDetails?.gasCost?.usd || 0;
+  const totalRequired = calculatedMargin + tradingFee + gasFeeUsd;
+
+  const marginWalletBalance = parseFloat(balances?.formattedMusdBalance || "0");
+  const onectWalletBalance = parseFloat(balances?.formattedUsdcBalance || "0");
+  const combinedBalance = marginWalletBalance + onectWalletBalance;
+  const hasInsufficientBalance = totalRequired > combinedBalance;
+  const needsDeposit = totalRequired > marginWalletBalance && totalRequired <= combinedBalance;
 
   const market = allMarkets.find((m) => m.assetId === assetId);
 

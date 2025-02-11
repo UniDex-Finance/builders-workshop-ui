@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { create } from 'zustand';
 
 interface GasPrice {
   wei: string;
@@ -17,23 +18,35 @@ interface GasCostResponse {
   gasCost: GasCost;
 }
 
-const GAS_PRICE_QUERY_KEY = ['gasPrice', 'arbitrum'];
-const POLLING_INTERVAL = 5000; // 5 seconds
+interface GasPriceStore {
+  gasCost: GasCost | null;
+  setGasCost: (gasCost: GasCost) => void;
+}
+
+const useGasPriceStore = create<GasPriceStore>((set) => ({
+  gasCost: null,
+  setGasCost: (gasCost) => set({ gasCost }),
+}));
 
 export function useGetGasPrice() {
+  const { setGasCost } = useGasPriceStore();
+  
   const { data: gasCost, isLoading, error } = useQuery({
-    queryKey: GAS_PRICE_QUERY_KEY,
+    queryKey: ['gasPrice', 'arbitrum'],
     queryFn: async () => {
       const response = await fetch('https://gasprice-micro-service-production.up.railway.app/gas-cost');
       const data: GasCostResponse = await response.json();
+      setGasCost(data.gasCost);
       return data.gasCost;
     },
-    refetchInterval: POLLING_INTERVAL,
+    refetchInterval: 5000,
   });
 
   return {
-    gasCost,
+    gasCost: gasCost || useGasPriceStore.getState().gasCost,
     isLoading,
     error,
   };
 }
+
+export const getLatestGasPrice = () => useGasPriceStore.getState().gasCost;

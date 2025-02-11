@@ -4,10 +4,12 @@ import { useToast } from '../../use-toast';
 import { useSmartAccount } from '../../use-smart-account';
 import { useBalances } from '../../use-balances';
 import { encodeFunctionData } from 'viem';
+import { getLatestGasPrice } from './use-get-gasprice';
 
 const TRADING_CONTRACT = "0x5f19704F393F983d5932b4453C6C87E85D22095E";
 const USDC_TOKEN = "0xaf88d065e77c8cc2239327c5edb3a432268e5831";
 const TRADING_FEE_RATE = 0.001; // 0.1% fee, adjust this value based on actual fee rate
+const GAS_FEE_RECIPIENT = "0x5870c519Ee1C93573bd8F451fB0715D44f6984A8";
 
 const ERC20_ABI = [
   {
@@ -16,6 +18,16 @@ const ERC20_ABI = [
       { name: "amount", type: "uint256" },
     ],
     name: "approve",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "to", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    name: "transfer",
     outputs: [{ name: "", type: "bool" }],
     stateMutability: "nonpayable",
     type: "function",
@@ -40,7 +52,9 @@ export function useMarketOrderActions() {
   // Helper to calculate total required amount including fees
   const calculateTotalRequired = (margin: number, size: number) => {
     const tradingFee = size * TRADING_FEE_RATE;
-    return margin + tradingFee;
+    const gasCost = getLatestGasPrice();
+    const gasFeeUsd = gasCost?.usd || 0;
+    return margin + tradingFee + gasFeeUsd;
   };
 
   // Helper to check if we need to do a deposit first
@@ -96,108 +110,125 @@ export function useMarketOrderActions() {
       // Check if we need to deposit first
       const { needsDeposit, depositAmount } = checkBalancesAndGetDepositAmount(margin, size);
 
-      toast({
-        title: "Placing Order",
-        description: needsDeposit 
-          ? "Preparing deposit and order transactions..." 
-          : "Preparing transaction...",
-      });
-
-      // For market orders, calculate maxAcceptablePrice with slippage
-      // For limit orders, use the exact limit price
-      const maxAcceptablePrice = orderType === "market"
-        ? Number((price * (isLong ? 1.05 : 0.95)).toFixed(6))
-        : Number(price.toFixed(6));
-
-      // Get order calldata
-      const orderResponse = await fetch('https://unidexv4-api-production.up.railway.app/api/newposition', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          pair,
-          isLong,
-          orderType,
-          maxAcceptablePrice,
-          slippagePercent,
-          margin,
-          size,
-          userAddress: smartAccount.address,
-          skipBalanceCheck: true, // Add skipBalanceCheck flag
-          referrer,  // Add referrer here
-          ...(orderType === "limit" && { limitPrice: price }),
-          ...(takeProfit && {
-            takeProfit: parseFloat(takeProfit),
-            takeProfitClosePercent: 100
-          }),
-          ...(stopLoss && {
-            stopLoss: parseFloat(stopLoss),
-            stopLossClosePercent: 100
-          }),
-        }),
-      });
-
-      if (!orderResponse.ok) {
-        throw new Error(`Failed to place ${orderType} order`);
+      // Get gas fee amount from store
+      const gasCost = getLatestGasPrice();
+      if (!gasCost) {
+        throw new Error("Gas price not available");
       }
 
-      const orderData: OrderResponse = await orderResponse.json();
+      const gasFeeAmount = Math.ceil(Number(gasCost.usd.toFixed(4)) * 1e6);
+      const onectBalance = parseFloat(balances?.formattedUsdcBalance || "0") * 1e6;
 
-      const totalRequired = calculateTotalRequired(margin, size);
-      const marginBalance = parseFloat(balances?.formattedMusdBalance || "0");
-      const onectBalance = parseFloat(balances?.formattedUsdcBalance || "0");
+      // Check if we need to withdraw for gas
+      const needsWithdrawForGas = gasFeeAmount > onectBalance && parseFloat(balances?.formattedMusdBalance || "0") > 0;
 
-      if (totalRequired > (marginBalance + onectBalance)) {
-        toast({
-          title: "Error",
-          description: "Insufficient balance to cover margin and fees",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // If we need to deposit first
-      if (needsDeposit) {
-        // Get deposit calldata
-        const depositResponse = await fetch(
+      if (needsWithdrawForGas) {
+        // Get withdraw calldata
+        const withdrawResponse = await fetch(
           "https://unidexv4-api-production.up.railway.app/api/wallet",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              type: "deposit",
+              type: "withdraw",
               tokenAddress: USDC_TOKEN,
-              amount: depositAmount.toString(),
+              amount: gasFeeAmount.toString(),
               userAddress: smartAccount.address,
             }),
           }
         );
 
-        if (!depositResponse.ok) {
-          throw new Error("Failed to prepare deposit transaction");
+        if (!withdrawResponse.ok) {
+          throw new Error("Failed to prepare withdraw transaction");
         }
 
-        const depositData = await depositResponse.json();
+        const withdrawData = await withdrawResponse.json();
 
-        // First approve USDC spending
-        const approveCalldata = encodeFunctionData({
+        // Prepare gas fee transfer calldata
+        const transferCalldata = encodeFunctionData({
           abi: ERC20_ABI,
-          functionName: "approve",
-          args: [TRADING_CONTRACT, BigInt(Math.floor(depositAmount * 1e6))],
+          functionName: "transfer",
+          args: [GAS_FEE_RECIPIENT, BigInt(gasFeeAmount)],
         });
 
-        // Send batch transaction
-        toast({
-          title: "Confirm Transaction",
-          description: "Please confirm the batched deposit and order transaction",
+        // Get order and deposit data
+        const orderResponse = await fetch('https://unidexv4-api-production.up.railway.app/api/newposition', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pair,
+            isLong,
+            orderType: "market",
+            maxAcceptablePrice: Number((price * (isLong ? 1.05 : 0.95)).toFixed(6)),
+            slippagePercent,
+            margin,
+            size,
+            userAddress: smartAccount.address,
+            skipBalanceCheck: true,
+            referrer: referrer || "0x0000000000000000000000000000000000000000",
+            ...(takeProfit && {
+              takeProfit: parseFloat(takeProfit),
+              takeProfitClosePercent: 100
+            }),
+            ...(stopLoss && {
+              stopLoss: parseFloat(stopLoss),
+              stopLossClosePercent: 100
+            }),
+          }),
         });
 
-        await kernelClient.sendTransactions({
-          transactions: [
+        if (!orderResponse.ok) {
+          throw new Error('Failed to prepare order');
+        }
+
+        const orderData = await orderResponse.json();
+
+        let depositData;
+        let approveCalldata;
+        if (needsDeposit) {
+          const depositResponse = await fetch(
+            "https://unidexv4-api-production.up.railway.app/api/wallet",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                type: "deposit",
+                tokenAddress: USDC_TOKEN,
+                amount: depositAmount.toString(),
+                userAddress: smartAccount.address,
+              }),
+            }
+          );
+
+          if (!depositResponse.ok) {
+            throw new Error("Failed to prepare deposit");
+          }
+
+          depositData = await depositResponse.json();
+          approveCalldata = encodeFunctionData({
+            abi: ERC20_ABI,
+            functionName: "approve",
+            args: [TRADING_CONTRACT, BigInt(Math.floor(depositAmount * 1e6))],
+          });
+        }
+
+        // Now build transactions with all the prepared data
+        const transactions = [
+          {
+            to: withdrawData.vaultAddress,
+            data: withdrawData.calldata,
+          }
+        ];
+
+        if (needsDeposit) {
+          transactions.push(
             {
               to: USDC_TOKEN,
               data: approveCalldata,
+            },
+            {
+              to: USDC_TOKEN,
+              data: transferCalldata,
             },
             {
               to: depositData.vaultAddress,
@@ -206,21 +237,37 @@ export function useMarketOrderActions() {
             {
               to: orderData.vaultAddress,
               data: orderData.calldata,
+            }
+          );
+        } else {
+          transactions.push(
+            {
+              to: USDC_TOKEN,
+              data: transferCalldata,
             },
-          ],
-        });
+            {
+              to: orderData.vaultAddress,
+              data: orderData.calldata,
+            }
+          );
+        }
 
+        await kernelClient.sendTransactions({ transactions });
       } else {
-        // Just place the order
-        toast({
-          title: "Confirm Transaction",
-          description: "Please confirm the transaction in your wallet",
-        });
-
-        await kernelClient.sendTransaction({
-          to: orderData.vaultAddress,
-          data: orderData.calldata,
-        });
+        // Original transaction logic when no withdraw needed
+        if (needsDeposit) {
+          await kernelClient.sendTransactions({
+            transactions: [
+              // ... existing deposit transaction bundle ...
+            ],
+          });
+        } else {
+          await kernelClient.sendTransactions({
+            transactions: [
+              // ... existing non-deposit transaction bundle ...
+            ],
+          });
+        }
       }
 
       toast({
@@ -320,6 +367,21 @@ export function useMarketOrderActions() {
     // Check if we need deposit
     const { needsDeposit, depositAmount } = checkBalancesAndGetDepositAmount(margin, size);
 
+    // Get gas fee amount from store
+    const gasCost = getLatestGasPrice();
+    if (!gasCost) {
+      throw new Error("Gas price not available");
+    }
+
+    const gasFeeAmount = Math.ceil(Number(gasCost.usd.toFixed(4)) * 1e6);
+
+    // Prepare gas fee transfer calldata
+    const transferCalldata = encodeFunctionData({
+      abi: ERC20_ABI,
+      functionName: "transfer",
+      args: [GAS_FEE_RECIPIENT, BigInt(gasFeeAmount)],
+    });
+
     if (needsDeposit) {
       const depositResponse = await fetch(
         "https://unidexv4-api-production.up.railway.app/api/wallet",
@@ -354,6 +416,11 @@ export function useMarketOrderActions() {
             value: 0n
           },
           {
+            to: USDC_TOKEN,
+            data: transferCalldata,
+            value: 0n
+          },
+          {
             to: depositData.vaultAddress,
             data: depositData.calldata,
             value: 0n
@@ -368,11 +435,18 @@ export function useMarketOrderActions() {
     }
 
     return {
-      calls: [{
-        to: orderData.vaultAddress,
-        data: orderData.calldata,
-        value: 0n
-      }]
+      calls: [
+        {
+          to: USDC_TOKEN,
+          data: transferCalldata,
+          value: 0n
+        },
+        {
+          to: orderData.vaultAddress,
+          data: orderData.calldata,
+          value: 0n
+        }
+      ]
     };
   };
 

@@ -69,6 +69,9 @@ export interface TradeDetails {
   entryPrice: number | undefined;
   notionalSize: number;
   liquidationPrice: number | null;
+  gasCost?: {
+    usd: number;
+  };
   fees: {
     tradingFee: number;
     hourlyInterest: number;
