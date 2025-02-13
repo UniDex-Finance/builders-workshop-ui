@@ -56,11 +56,43 @@ interface OrderlyTradeMessage {
   data: OrderlyTrade;
 }
 
-interface TradeStreamContextType {
-  trades: Trade[];
+// Add new interfaces
+interface WsLevel {
+  px: string;
+  sz: string;
+  n: number;
 }
 
-const TradeStreamContext = createContext<TradeStreamContextType>({ trades: [] });
+interface WsBook {
+  coin: string;
+  levels: [WsLevel[], WsLevel[]];
+  time: number;
+}
+
+export interface OrderbookLevel {
+  price: number;
+  size: number;
+  total: number;
+  numOrders: number;
+}
+
+interface OrderbookData {
+  asks: OrderbookLevel[];
+  bids: OrderbookLevel[];
+  lastUpdateTime: number;
+}
+
+// Update the context type
+interface TradeStreamContextType {
+  trades: Trade[];
+  orderbook: OrderbookData | null;
+}
+
+// Update the context default value
+const TradeStreamContext = createContext<TradeStreamContextType>({ 
+  trades: [],
+  orderbook: null 
+});
 
 const MAX_TRADES_PER_SOURCE = 100;
 
@@ -79,13 +111,17 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
     orderly: []
   });
 
+  // Add orderbook state
+  const [orderbook, setOrderbook] = useState<OrderbookData | null>(null);
+
   useEffect(() => {
-    // Clear existing trades when pair changes
+    // Clear existing trades and orderbook when pair changes
     setTradesBySource({
       hyperliquid: [],
       dydx: [],
       orderly: []
     });
+    setOrderbook(null);
 
     const connections = {
       hyperliquid: new WebSocket('wss://api.hyperliquid.xyz/ws'),
@@ -109,12 +145,21 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
 
     // Subscribe to both streams
     const subscribeToStreams = () => {
-      // Hyperliquid subscription
       if (connections.hyperliquid.readyState === WebSocket.OPEN) {
         const coin = pair.split('/')[0];
+        // Subscribe to trades
         connections.hyperliquid.send(JSON.stringify({
           method: 'subscribe',
           subscription: { type: 'trades', coin }
+        }));
+        // Subscribe to orderbook with full precision
+        connections.hyperliquid.send(JSON.stringify({
+          method: 'subscribe',
+          subscription: { 
+            type: 'l2Book', 
+            coin,
+            nSigFigs: null  // Request full precision
+          }
         }));
       }
 
@@ -185,6 +230,43 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
           ...current,
           hyperliquid: [...newTrades, ...current.hyperliquid].slice(0, MAX_TRADES_PER_SOURCE)
         }));
+      }
+      
+      if (message.channel === 'l2Book' && message.data) {
+        console.log('Processing orderbook data:', message.data);
+        const bookData = message.data as WsBook;
+        
+        // Process asks and bids
+        const processLevels = (levels: WsLevel[]): OrderbookLevel[] => {
+          let total = 0;
+          return levels.map(level => {
+            const size = parseFloat(level.sz);
+            total += size;
+            return {
+              price: parseFloat(level.px),
+              size,
+              total,
+              numOrders: level.n
+            };
+          });
+        };
+
+        const [asks, bids] = bookData.levels;
+        
+        const processedOrderbook = {
+          asks: processLevels(asks),
+          bids: processLevels(bids),
+          lastUpdateTime: bookData.time
+        };
+        
+        console.log('Setting orderbook with:', processedOrderbook);
+        setOrderbook(prev => {
+          // Only update if the new data is more recent
+          if (!prev || processedOrderbook.lastUpdateTime > prev.lastUpdateTime) {
+            return processedOrderbook;
+          }
+          return prev;
+        });
       }
     };
 
@@ -266,8 +348,14 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
     return combined.sort((a, b) => b.timestamp - a.timestamp);
   }, [tradesBySource]);
 
+  // Create a memoized context value
+  const contextValue = useMemo(() => ({
+    trades: allTrades,
+    orderbook
+  }), [allTrades, orderbook]);
+
   return (
-    <TradeStreamContext.Provider value={{ trades: allTrades }}>
+    <TradeStreamContext.Provider value={contextValue}>
       {children}
     </TradeStreamContext.Provider>
   );
