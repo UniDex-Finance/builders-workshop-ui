@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { useTradeStream, OrderbookLevel } from "../../../../lib/trade-stream-context";
+import * as HoverCard from '@radix-ui/react-hover-card';
 
 type Order = {
   price: number;
@@ -98,40 +99,6 @@ export function Orderbook({ pair, height }: OrderbookProps) {
     return { asks: processedAsks, bids: processedBids, maxTotal };
   }, [groupedAsks, groupedBids]);
 
-  // Memoize render function
-  const renderOrders = useCallback((orders: Order[], type: "asks" | "bids") => {
-    return orders.map((order, i) => (
-      <div
-        key={`${type}-${order.price}`}
-        className="relative h-6 hover:bg-accent/5"
-      >
-        {/* Size visualization bar */}
-        <div
-          className={`absolute top-0 bottom-0 ${
-            type === "asks" ? "bg-red-500/10" : "bg-green-500/10"
-          }`}
-          style={{
-            width: `${(order.total / maxTotal) * 100}%`,
-            left: 0
-          }}
-        />
-
-        {/* Content */}
-        <div className="relative h-full grid grid-cols-3 text-right items-center">
-          <span className={`font-mono text-xs ${type === "asks" ? "text-red-400" : "text-green-400"} pr-4`}>
-            {order.price.toFixed(1)}
-          </span>
-          <span className="text-muted-foreground font-mono text-xs px-2">
-            {formatSize(order.size, order.price)}
-          </span>
-          <span className="text-muted-foreground font-mono text-xs px-3">
-            {formatTotal(order.total, order.price)}
-          </span>
-        </div>
-      </div>
-    ));
-  }, [denomination, maxTotal]);
-
   // Format number based on denomination
   const formatSize = (size: number, price: number) => {
     if (denomination === "usd") {
@@ -146,6 +113,141 @@ export function Orderbook({ pair, height }: OrderbookProps) {
     }
     return total.toFixed(3);
   };
+
+  // Add function to calculate price impact
+  const calculatePriceImpact = (price: number, midPrice: number) => {
+    return ((Math.abs(price - midPrice) / midPrice) * 100).toFixed(2);
+  };
+
+  // Add this helper function near the other calculation functions
+  const calculateAveragePrice = (orders: Order[], currentIndex: number, type: "asks" | "bids") => {
+    const relevantOrders = type === "asks" 
+      ? orders.slice(orders.length - currentIndex - 1) // For asks, take from bottom to current
+      : orders.slice(0, currentIndex + 1); // For bids, take from top to current
+      
+    const totalSize = relevantOrders.reduce((sum, o) => sum + o.size, 0);
+    const weightedSum = relevantOrders.reduce((sum, o) => sum + (o.price * o.size), 0);
+    
+    return totalSize > 0 ? weightedSum / totalSize : 0;
+  };
+
+  // Memoize render function
+  const renderOrders = useCallback((orders: Order[], type: "asks" | "bids") => {
+    const midPrice = (asks[asks.length - 1]?.price + bids[0]?.price) / 2;
+
+    return orders.map((order, i) => {
+      const dataAttr = `data-${type}-row`;
+      
+      return (
+        <div key={`${type}-${order.price}`}>
+          <HoverCard.Root>
+            <HoverCard.Trigger asChild>
+              <div
+                className="relative h-6 group hover:bg-accent/5"
+                data-price={order.price}
+                data-index={i}
+                {...{ [dataAttr]: true }}
+                onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
+                  const rows = document.querySelectorAll(`[${dataAttr}]`);
+                  const currentIndex = Array.from(rows).indexOf(e.currentTarget);
+                  
+                  rows.forEach((row, idx) => {
+                    if (type === 'asks' ? idx >= currentIndex : idx <= currentIndex) {
+                      const distance = Math.abs(idx - currentIndex);
+                      const opacity = Math.max(0.1, 0.4 - (distance * 0.03));
+                      row.classList.add('bg-accent/5');
+                      
+                      // Update the size visualization bar opacity
+                      const bar = row.querySelector('[data-viz-bar]');
+                      if (bar instanceof HTMLElement) {
+                        bar.style.opacity = opacity.toString();
+                      }
+                    }
+                  });
+                }}
+                onMouseLeave={() => {
+                  document.querySelectorAll(`[${dataAttr}]`).forEach(row => {
+                    row.classList.remove('bg-accent/5');
+                    const bar = row.querySelector('[data-viz-bar]');
+                    if (bar instanceof HTMLElement) {
+                      bar.style.opacity = '0.1'; // Reset to default opacity
+                    }
+                  });
+                }}
+              >
+                {/* Size visualization bar */}
+                <div
+                  data-viz-bar
+                  className={`absolute top-0 bottom-0 ${
+                    type === "asks" ? "bg-red-500" : "bg-green-500"
+                  } transition-all duration-200`}
+                  style={{
+                    width: `${(order.total / maxTotal) * 100}%`,
+                    left: 0,
+                    opacity: 0.1
+                  }}
+                />
+
+                {/* Content */}
+                <div className="relative h-full grid grid-cols-3 text-right items-center">
+                  <span className={`font-mono text-xs ${
+                    type === "asks" ? "text-red-400" : "text-green-400"
+                  } pr-4 group-hover:text-foreground transition-colors`}>
+                    {order.price.toFixed(1)}
+                  </span>
+                  <span className="text-muted-foreground font-mono text-xs px-2 group-hover:text-foreground transition-colors">
+                    {formatSize(order.size, order.price)}
+                  </span>
+                  <span className="text-muted-foreground font-mono text-xs px-3 group-hover:text-foreground transition-colors">
+                    {formatTotal(order.total, order.price)}
+                  </span>
+                </div>
+              </div>
+            </HoverCard.Trigger>
+
+            <HoverCard.Portal>
+              <HoverCard.Content
+                side="left"
+                align="center"
+                sideOffset={5}
+                className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-popover/80 backdrop-blur-md"
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className={`text-sm font-medium ${
+                      type === "asks" ? "text-red-400" : "text-green-400"
+                    }`}>
+                      {type === "asks" ? "Ask Order" : "Bid Order"}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-1 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Average Price</span>
+                      <span className="font-medium">
+                        {calculateAveragePrice(orders, i, type).toFixed(1)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Cumulative Size</span>
+                      <span>{formatTotal(order.total, order.price)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Price Impact</span>
+                      <span className={type === "asks" ? "text-red-400" : "text-green-400"}>
+                        {calculatePriceImpact(order.price, midPrice)}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <HoverCard.Arrow className="fill-popover/80" />
+              </HoverCard.Content>
+            </HoverCard.Portal>
+          </HoverCard.Root>
+        </div>
+      );
+    });
+  }, [asks, bids, denomination, maxTotal, formatSize, formatTotal]);
 
   // Calculate spread using the closest ask and bid
   const spread = Math.abs((asks[asks.length - 1]?.price || 0) - (bids[0]?.price || 0)).toFixed(1);
