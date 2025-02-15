@@ -100,18 +100,34 @@ export function Orderbook({ pair, height }: OrderbookProps) {
   }, [groupedAsks, groupedBids]);
 
   // Format number based on denomination
+  const formatNumber = (num: number, decimals: number = 1) => {
+    if (decimals === 2 && num >= 1) { // For USD values >= 1
+      return num.toLocaleString('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      });
+    }
+    return num.toLocaleString('en-US', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    });
+  };
+
+  // Update formatSize and formatTotal to use formatNumber
   const formatSize = (size: number, price: number) => {
     if (denomination === "usd") {
-      return (size * price).toFixed(2);
+      const value = size * price;
+      return formatNumber(value, value < 1 ? 2 : 0);
     }
-    return size.toFixed(3);
+    return formatNumber(size, 3);
   };
 
   const formatTotal = (total: number, price: number) => {
     if (denomination === "usd") {
-      return (total * price).toFixed(2);
+      const value = total * price;
+      return formatNumber(value, value < 1 ? 2 : 0);
     }
-    return total.toFixed(3);
+    return formatNumber(total, 3);
   };
 
   // Add function to calculate price impact
@@ -193,7 +209,7 @@ export function Orderbook({ pair, height }: OrderbookProps) {
                   <span className={`font-mono text-xs ${
                     type === "asks" ? "text-red-400" : "text-green-400"
                   } pr-4 group-hover:text-foreground transition-colors`}>
-                    {order.price.toFixed(1)}
+                    {formatNumber(order.price)}
                   </span>
                   <span className="text-muted-foreground font-mono text-xs px-2 group-hover:text-foreground transition-colors">
                     {formatSize(order.size, order.price)}
@@ -210,7 +226,7 @@ export function Orderbook({ pair, height }: OrderbookProps) {
                 side="left"
                 align="center"
                 sideOffset={5}
-                className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-popover/80 backdrop-blur-md"
+                className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -225,22 +241,22 @@ export function Orderbook({ pair, height }: OrderbookProps) {
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Average Price</span>
                       <span className="font-medium">
-                        {calculateAveragePrice(orders, i, type).toFixed(1)}
+                        {formatNumber(calculateAveragePrice(orders, i, type))}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Cumulative Size</span>
-                      <span>{formatTotal(order.total, order.price)}</span>
+                      <span>{formatNumber(order.total, denomination === "usd" ? 2 : 3)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Price Impact</span>
                       <span className={type === "asks" ? "text-red-400" : "text-green-400"}>
-                        {calculatePriceImpact(order.price, midPrice)}%
+                        {formatNumber(parseFloat(calculatePriceImpact(order.price, midPrice)), 2)}%
                       </span>
                     </div>
                   </div>
                 </div>
-                <HoverCard.Arrow className="fill-popover/80" />
+                <HoverCard.Arrow className="fill-[#17161d]/80" />
               </HoverCard.Content>
             </HoverCard.Portal>
           </HoverCard.Root>
@@ -249,9 +265,12 @@ export function Orderbook({ pair, height }: OrderbookProps) {
     });
   }, [asks, bids, denomination, maxTotal, formatSize, formatTotal]);
 
-  // Calculate spread using the closest ask and bid
-  const spread = Math.abs((asks[asks.length - 1]?.price || 0) - (bids[0]?.price || 0)).toFixed(1);
-  const spreadPercentage = Math.abs((((asks[asks.length - 1]?.price || 0) - (bids[0]?.price || 0)) / (asks[asks.length - 1]?.price || 1)) * 100).toFixed(2);
+  // Update spread display
+  const spread = formatNumber(Math.abs((asks[asks.length - 1]?.price || 0) - (bids[0]?.price || 0)));
+  const spreadPercentage = formatNumber(
+    Math.abs((((asks[asks.length - 1]?.price || 0) - (bids[0]?.price || 0)) / (asks[asks.length - 1]?.price || 1)) * 100),
+    2
+  );
 
   // Add ref for the scrollable container
   const scrollContainerRef = useRef<HTMLDivElement>(null);
