@@ -255,31 +255,36 @@ export function Orderbook({ pair, height }: OrderbookProps) {
 
   // Add ref for the scrollable container
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  
-  // Add ref to track if initial scroll has been set
-  const hasSetInitialScroll = useRef(false);
+  const prevMidPriceRef = useRef<number | null>(null);
 
-  // Add useEffect to handle centering on mid price
+  // Replace the existing useEffect with this updated version
   useEffect(() => {
-    if (!scrollContainerRef.current || !asks.length || !bids.length || hasSetInitialScroll.current) {
+    if (!scrollContainerRef.current || !asks.length || !bids.length) {
       return;
     }
 
-    // Calculate the mid point
-    const asksHeight = asks.length * 24; // 24px is the height of each order row
-    const midPoint = asksHeight - (scrollContainerRef.current.clientHeight / 2);
-    
-    // Set scroll position to center on the spread
-    scrollContainerRef.current.scrollTop = midPoint;
-    
-    // Mark that we've set the initial scroll
-    hasSetInitialScroll.current = true;
-  }, [asks, bids]);
+    const midPrice = (asks[asks.length - 1]?.price + bids[0]?.price) / 2;
+    const container = scrollContainerRef.current;
+    const rowHeight = 24; // height of each order row
 
-  // Reset the initial scroll flag when the pair changes
-  useEffect(() => {
-    hasSetInitialScroll.current = false;
-  }, [pair]);
+    // Calculate the position where mid price should be
+    const asksHeight = asks.length * rowHeight;
+    const midPoint = asksHeight - (container.clientHeight / 2);
+    
+    // If this is the first render or price changed significantly
+    if (prevMidPriceRef.current === null || 
+        Math.abs(midPrice - prevMidPriceRef.current) > parseFloat(grouping)) {
+      // Center immediately
+      container.scrollTop = midPoint;
+    } else {
+      // Smooth scroll to maintain relative position
+      const priceDiff = midPrice - prevMidPriceRef.current;
+      const scrollDiff = (priceDiff / parseFloat(grouping)) * rowHeight;
+      container.scrollTop = container.scrollTop + scrollDiff;
+    }
+
+    prevMidPriceRef.current = midPrice;
+  }, [asks, bids, grouping]);
 
   return (
     <div 
