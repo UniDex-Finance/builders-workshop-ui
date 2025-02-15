@@ -195,7 +195,7 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
         symbol: getFormattedSymbol(selectedPair),
         interval: "15" as ResolutionString,
         autosize: true,
-        debug: true,
+        debug: false,
         enabled_features: [
           "show_exchange_logos",
           "side_toolbar_in_fullscreen_mode",

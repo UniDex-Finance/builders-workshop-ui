@@ -14,6 +14,7 @@ import { loadSpace } from '@usersnap/browser';
 import { setUsersnapApi } from "../lib/usersnap";
 import { SideBar } from "../components/features/trading/SideBar/SideBar";
 import { TradeStreamProvider } from "../lib/trade-stream-context";
+import { Orderbook } from "../components/features/trading/Orderbook/Orderbook";
 
 export default function TradingInterface() {
   const { selectedPair, setPair } = usePairFromUrl();
@@ -79,30 +80,33 @@ export default function TradingInterface() {
         </aside>
 
         {/* Right Side - Chart and Positions Container */}
-        <div className="flex flex-col flex-1 min-w-0 px-2 space-y-1 overflow-x-auto md:pl-0">
-          <div className="hidden md:block">
-            <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
-          </div>
-          
-          <div className="flex flex-col flex-1">
-            <div className="flex">
-              <div className="flex-1">
-                <Chart 
-                  selectedPair={selectedPair} 
-                  height={chartHeight}
-                  onHeightChange={setChartHeight}
-                  positions={positionsLoading ? [] : positions}
-                />
-              </div>
-              <TradeStreamProvider pair={selectedPair}>
+        <TradeStreamProvider pair={selectedPair}>
+          <div className="flex flex-col flex-1 min-w-0 px-2 space-y-1 overflow-x-auto md:pl-0">
+            <div className="hidden md:block">
+              <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
+            </div>
+            
+            <div className="flex flex-col flex-1">
+              <div className="flex">
+                <div className="hidden md:block" style={{ height: `${chartHeight}px` }}>
+                  <Orderbook pair={selectedPair} height={chartHeight} />
+                </div>
+                <div className="flex-1">
+                  <Chart 
+                    selectedPair={selectedPair} 
+                    height={chartHeight}
+                    onHeightChange={setChartHeight}
+                    positions={positionsLoading ? [] : positions}
+                  />
+                </div>
                 <SideBar />
-              </TradeStreamProvider>
-            </div>
-            <div className="flex-1 mt-3 overflow-x-auto">
-              <PositionsTable address={address} />
+              </div>
+              <div className="flex-1 mt-3 overflow-x-auto">
+                <PositionsTable address={address} />
+              </div>
             </div>
           </div>
-        </div>
+        </TradeStreamProvider>
       </main>
     </div>
   );
