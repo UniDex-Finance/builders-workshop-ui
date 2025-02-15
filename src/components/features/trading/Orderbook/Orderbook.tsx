@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { useTradeStream, OrderbookLevel } from "../../../../lib/trade-stream-context";
 
@@ -151,6 +151,34 @@ export function Orderbook({ pair, height }: OrderbookProps) {
   const spread = Math.abs((asks[asks.length - 1]?.price || 0) - (bids[0]?.price || 0)).toFixed(1);
   const spreadPercentage = Math.abs((((asks[asks.length - 1]?.price || 0) - (bids[0]?.price || 0)) / (asks[asks.length - 1]?.price || 1)) * 100).toFixed(2);
 
+  // Add ref for the scrollable container
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Add ref to track if initial scroll has been set
+  const hasSetInitialScroll = useRef(false);
+
+  // Add useEffect to handle centering on mid price
+  useEffect(() => {
+    if (!scrollContainerRef.current || !asks.length || !bids.length || hasSetInitialScroll.current) {
+      return;
+    }
+
+    // Calculate the mid point
+    const asksHeight = asks.length * 24; // 24px is the height of each order row
+    const midPoint = asksHeight - (scrollContainerRef.current.clientHeight / 2);
+    
+    // Set scroll position to center on the spread
+    scrollContainerRef.current.scrollTop = midPoint;
+    
+    // Mark that we've set the initial scroll
+    hasSetInitialScroll.current = true;
+  }, [asks, bids]);
+
+  // Reset the initial scroll flag when the pair changes
+  useEffect(() => {
+    hasSetInitialScroll.current = false;
+  }, [pair]);
+
   return (
     <div 
       className="bg-card text-foreground w-[300px] rounded-lg overflow-hidden border border-border mr-2"
@@ -212,8 +240,11 @@ export function Orderbook({ pair, height }: OrderbookProps) {
           <span className="px-4">Total</span>
         </div>
 
-        {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto scrollbar-custom">
+        {/* Update the scrollable content div to use the ref */}
+        <div 
+          ref={scrollContainerRef}
+          className="flex-1 overflow-y-auto scrollbar-custom"
+        >
           {/* Asks (Sells) */}
           <div className="overflow-hidden border-b border-border/5">
             {renderOrders(asks, "asks")}
