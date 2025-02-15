@@ -289,16 +289,16 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
           });
         };
 
-        const [asks, bids] = bookData.levels;
+        // Fix the interpretation: levels[0] should be bids and levels[1] should be asks
+        const [rawBids, rawAsks] = bookData.levels;
         
         const processedOrderbook = {
-          asks: processLevels(asks),
-          bids: processLevels(bids),
+          asks: processLevels(rawAsks),
+          bids: processLevels(rawBids),
           lastUpdateTime: bookData.time
         };
         
         setOrderbook(prev => {
-          // Only update if the new data is more recent
           if (!prev || processedOrderbook.lastUpdateTime > prev.lastUpdateTime) {
             return processedOrderbook;
           }

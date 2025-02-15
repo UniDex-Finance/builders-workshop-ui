@@ -47,26 +47,48 @@ export function Orderbook({ pair, height }: OrderbookProps) {
   // Memoize grouped orders
   const { groupedAsks, groupedBids } = useMemo(() => {
     const groupSize = parseFloat(grouping);
-    const rawAsks = [...(orderbook?.asks ?? [])].sort((a, b) => b.price - a.price);
+    // Sort asks ascending (lowest to highest)
+    const rawAsks = [...(orderbook?.asks ?? [])].sort((a, b) => a.price - b.price);
+    // Sort bids descending (highest to lowest)
     const rawBids = [...(orderbook?.bids ?? [])].sort((a, b) => b.price - a.price);
     
-    return {
+    console.log('Raw Orderbook Data:', {
+      groupSize,
+      rawAsks: rawAsks.slice(0, 5).map(a => a.price), // First 5 ask prices
+      rawBids: rawBids.slice(0, 5).map(b => b.price)  // First 5 bid prices
+    });
+    
+    const grouped = {
       groupedAsks: groupOrders(rawAsks, groupSize),
       groupedBids: groupOrders(rawBids, groupSize)
     };
+
+    console.log('Grouped Orderbook Data:', {
+      groupedAsks: grouped.groupedAsks.slice(0, 5).map(a => a.price), // First 5 grouped ask prices
+      groupedBids: grouped.groupedBids.slice(0, 5).map(b => b.price)  // First 5 grouped bid prices
+    });
+
+    return grouped;
   }, [orderbook, grouping]);
 
   // Memoize processed orders
   const { asks, bids, maxTotal } = useMemo(() => {
-    const processedAsks = groupedAsks.map((order, index) => ({
+    // For asks, accumulate total from bottom to top
+    const processedAsks = [...groupedAsks].reverse().map((order, index) => ({
       ...order,
-      total: groupedAsks.slice(index).reduce((sum, o) => sum + o.size, 0)
+      total: groupedAsks.slice(0, groupedAsks.length - index).reduce((sum, o) => sum + o.size, 0)
     }));
 
+    // For bids, accumulate total from top to bottom
     const processedBids = groupedBids.map((order, index) => ({
       ...order,
       total: groupedBids.slice(0, index + 1).reduce((sum, o) => sum + o.size, 0)
     }));
+
+    console.log('Final Processed Orders:', {
+      asks: processedAsks.slice(0, 5).map(a => a.price), // First 5 processed ask prices
+      bids: processedBids.slice(0, 5).map(b => b.price)  // First 5 processed bid prices
+    });
 
     const maxTotal = Math.max(
       processedAsks[0]?.total ?? 0,
@@ -125,7 +147,7 @@ export function Orderbook({ pair, height }: OrderbookProps) {
     return total.toFixed(3);
   };
 
-  // Calculate spread correctly with absolute values
+  // Calculate spread using the closest ask and bid
   const spread = Math.abs((asks[asks.length - 1]?.price || 0) - (bids[0]?.price || 0)).toFixed(1);
   const spreadPercentage = Math.abs((((asks[asks.length - 1]?.price || 0) - (bids[0]?.price || 0)) / (asks[asks.length - 1]?.price || 1)) * 100).toFixed(2);
 
