@@ -1,6 +1,6 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useMemo, useRef, useCallback } from 'react';
 
-interface Trade {
+export interface Trade {
   id: string;
   pair: string;
   side: 'LONG' | 'SHORT';
@@ -95,6 +95,8 @@ const TradeStreamContext = createContext<TradeStreamContextType>({
 });
 
 const MAX_TRADES_PER_SOURCE = 100;
+const BATCH_INTERVAL = 100; // 100ms batching window
+const MAX_VISIBLE_TRADES = 100; // Limit total visible trades
 
 function shortenAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -113,6 +115,40 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
 
   // Add orderbook state
   const [orderbook, setOrderbook] = useState<OrderbookData | null>(null);
+
+  // Use useRef for batching trades
+  const tradesBatchRef = useRef<{
+    hyperliquid: Trade[];
+    dydx: Trade[];
+    orderly: Trade[];
+  }>({
+    hyperliquid: [],
+    dydx: [],
+    orderly: []
+  });
+
+  // Add batch update timeout ref
+  const batchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Add function to flush batched trades
+  const flushBatchedTrades = useCallback(() => {
+    setTradesBySource(current => {
+      const newTrades = {
+        hyperliquid: [...tradesBatchRef.current.hyperliquid, ...current.hyperliquid].slice(0, MAX_TRADES_PER_SOURCE),
+        dydx: [...tradesBatchRef.current.dydx, ...current.dydx].slice(0, MAX_TRADES_PER_SOURCE),
+        orderly: [...tradesBatchRef.current.orderly, ...current.orderly].slice(0, MAX_TRADES_PER_SOURCE)
+      };
+      
+      // Clear the batch
+      tradesBatchRef.current = {
+        hyperliquid: [],
+        dydx: [],
+        orderly: []
+      };
+      
+      return newTrades;
+    });
+  }, []);
 
   useEffect(() => {
     // Clear existing trades and orderbook when pair changes
@@ -226,14 +262,16 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
           user: trade.users[0] ? shortenAddress(trade.users[0]) : undefined
         }));
 
-        setTradesBySource(current => ({
-          ...current,
-          hyperliquid: [...newTrades, ...current.hyperliquid].slice(0, MAX_TRADES_PER_SOURCE)
-        }));
+        tradesBatchRef.current.hyperliquid.push(...newTrades);
+        
+        // Schedule a batch update
+        if (batchTimeoutRef.current) {
+          clearTimeout(batchTimeoutRef.current);
+        }
+        batchTimeoutRef.current = setTimeout(flushBatchedTrades, BATCH_INTERVAL);
       }
       
       if (message.channel === 'l2Book' && message.data) {
-        console.log('Processing orderbook data:', message.data);
         const bookData = message.data as WsBook;
         
         // Process asks and bids
@@ -259,13 +297,26 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
           lastUpdateTime: bookData.time
         };
         
-        console.log('Setting orderbook with:', processedOrderbook);
         setOrderbook(prev => {
           // Only update if the new data is more recent
           if (!prev || processedOrderbook.lastUpdateTime > prev.lastUpdateTime) {
             return processedOrderbook;
           }
           return prev;
+        });
+
+        // Only update if significant changes
+        setOrderbook(prev => {
+          if (!prev) return processedOrderbook;
+          
+          // Check if changes are significant enough
+          const significantChange = Math.abs(
+            processedOrderbook.bids[0]?.price - prev.bids[0]?.price
+          ) > 0.1 || Math.abs(
+            processedOrderbook.asks[0]?.price - prev.asks[0]?.price
+          ) > 0.1;
+          
+          return significantChange ? processedOrderbook : prev;
         });
       }
     };
@@ -285,10 +336,13 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
           isLiquidated: trade.type === 'LIQUIDATED',
         }));
 
-        setTradesBySource(current => ({
-          ...current,
-          dydx: [...newTrades, ...current.dydx].slice(0, MAX_TRADES_PER_SOURCE)
-        }));
+        tradesBatchRef.current.dydx.push(...newTrades);
+        
+        // Schedule a batch update
+        if (batchTimeoutRef.current) {
+          clearTimeout(batchTimeoutRef.current);
+        }
+        batchTimeoutRef.current = setTimeout(flushBatchedTrades, BATCH_INTERVAL);
       }
     };
 
@@ -312,21 +366,13 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
           isLiquidated: false,
         };
 
-        setTradesBySource(current => {
-          // Check if this trade already exists
-          const exists = current.orderly.some(t => t.id === tradeId);
-          if (exists) {
-            return current;
-          }
-
-          return {
-            ...current,
-            orderly: [newTrade, ...current.orderly]
-              .slice(0, MAX_TRADES_PER_SOURCE)
-              // Sort by timestamp to ensure proper ordering
-              .sort((a, b) => b.timestamp - a.timestamp)
-          };
-        });
+        tradesBatchRef.current.orderly.push(newTrade);
+        
+        // Schedule a batch update
+        if (batchTimeoutRef.current) {
+          clearTimeout(batchTimeoutRef.current);
+        }
+        batchTimeoutRef.current = setTimeout(flushBatchedTrades, BATCH_INTERVAL);
       }
     };
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { ChevronDown } from "lucide-react";
 import { useTradeStream, OrderbookLevel } from "../../../../lib/trade-stream-context";
 
@@ -44,65 +44,43 @@ export function Orderbook({ pair, height }: OrderbookProps) {
     return Array.from(grouped.values());
   };
 
-  // Process and group orders
-  const groupSize = parseFloat(grouping);
-  // Sort both asks and bids from highest to lowest price
-  const rawAsks = [...(orderbook?.asks ?? [])].sort((a, b) => b.price - a.price);
-  const rawBids = [...(orderbook?.bids ?? [])].sort((a, b) => b.price - a.price);
-  
-  const groupedAsks = groupOrders(rawAsks, groupSize);
-  const groupedBids = groupOrders(rawBids, groupSize);
-
-  // Process asks with totals calculated in reverse order
-  const asks = groupedAsks.map((order, index) => {
-    const total = groupedAsks
-      .slice(index)
-      .reduce((sum, o) => sum + o.size, 0);
+  // Memoize grouped orders
+  const { groupedAsks, groupedBids } = useMemo(() => {
+    const groupSize = parseFloat(grouping);
+    const rawAsks = [...(orderbook?.asks ?? [])].sort((a, b) => b.price - a.price);
+    const rawBids = [...(orderbook?.bids ?? [])].sort((a, b) => b.price - a.price);
     
     return {
-      ...order,
-      total
+      groupedAsks: groupOrders(rawAsks, groupSize),
+      groupedBids: groupOrders(rawBids, groupSize)
     };
-  });
+  }, [orderbook, grouping]);
 
-  // Process bids with totals
-  const bids = groupedBids.map((order, index) => {
-    const total = groupedBids
-      .slice(0, index + 1)
-      .reduce((sum, o) => sum + o.size, 0);
-    
-    return {
+  // Memoize processed orders
+  const { asks, bids, maxTotal } = useMemo(() => {
+    const processedAsks = groupedAsks.map((order, index) => ({
       ...order,
-      total
-    };
-  });
+      total: groupedAsks.slice(index).reduce((sum, o) => sum + o.size, 0)
+    }));
 
-  // Format number based on denomination
-  const formatSize = (size: number, price: number) => {
-    if (denomination === "usd") {
-      return (size * price).toFixed(2);
-    }
-    return size.toFixed(3);
-  };
+    const processedBids = groupedBids.map((order, index) => ({
+      ...order,
+      total: groupedBids.slice(0, index + 1).reduce((sum, o) => sum + o.size, 0)
+    }));
 
-  const formatTotal = (total: number, price: number) => {
-    if (denomination === "usd") {
-      return (total * price).toFixed(2);
-    }
-    return total.toFixed(3);
-  };
+    const maxTotal = Math.max(
+      processedAsks[0]?.total ?? 0,
+      processedBids[processedBids.length - 1]?.total ?? 0
+    );
 
-  // Find the maximum total from both sides
-  const maxTotal = Math.max(
-    asks[0]?.total ?? 0,
-    bids[bids.length - 1]?.total ?? 0
-  );
+    return { asks: processedAsks, bids: processedBids, maxTotal };
+  }, [groupedAsks, groupedBids]);
 
-  // Update renderOrders to use new formatting
-  const renderOrders = (orders: Order[], type: "asks" | "bids") => {
+  // Memoize render function
+  const renderOrders = useCallback((orders: Order[], type: "asks" | "bids") => {
     return orders.map((order, i) => (
       <div
-        key={i}
+        key={`${type}-${order.price}`}
         className="relative h-6 hover:bg-accent/5"
       >
         {/* Size visualization bar */}
@@ -130,6 +108,21 @@ export function Orderbook({ pair, height }: OrderbookProps) {
         </div>
       </div>
     ));
+  }, [denomination, maxTotal]);
+
+  // Format number based on denomination
+  const formatSize = (size: number, price: number) => {
+    if (denomination === "usd") {
+      return (size * price).toFixed(2);
+    }
+    return size.toFixed(3);
+  };
+
+  const formatTotal = (total: number, price: number) => {
+    if (denomination === "usd") {
+      return (total * price).toFixed(2);
+    }
+    return total.toFixed(3);
   };
 
   // Calculate spread correctly with absolute values
