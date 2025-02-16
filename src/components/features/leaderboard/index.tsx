@@ -3,18 +3,20 @@
 import { Header } from "../../shared/Header"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../ui/table"
 import { Badge } from "../../ui/badge"
-import { ChevronDown, Info, Trophy, Loader2 } from "lucide-react"
+import { ChevronDown, ChevronUp, Info, Trophy, Loader2 } from "lucide-react"
 import { useLeaderboardData } from '../../../hooks/useLeaderboardData'
 import { processLeaderboardData } from '../../../utils/leaderboardUtils'
 import { Button } from "../../ui/button"
 import { useState } from "react"
 import { useSmartAccount } from "@/hooks/use-smart-account"
+import { TRADING_PAIRS } from '@/hooks/use-market-data'
 
 export function LeaderboardDashboard() {
   const { data: rawData, loading, error } = useLeaderboardData()
   const processedData = processLeaderboardData(rawData)
   const [showPersonalStats, setShowPersonalStats] = useState(false)
   const { smartAccount } = useSmartAccount()
+  const [expandedTrader, setExpandedTrader] = useState<string | null>(null)
 
   const togglePersonalStats = () => {
     if (!smartAccount?.address) {
@@ -28,6 +30,16 @@ export function LeaderboardDashboard() {
   const userTrades = rawData.filter(trade => 
     trade.user.toLowerCase() === smartAccount?.address?.toLowerCase()
   )
+
+  const toggleTraderExpand = (trader: string) => {
+    setExpandedTrader(expandedTrader === trader ? null : trader)
+  }
+
+  const getTraderTrades = (trader: string) => {
+    return rawData.filter(trade => 
+      trade.user.toLowerCase() === trader.toLowerCase()
+    )
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
@@ -173,7 +185,8 @@ export function LeaderboardDashboard() {
                 <Table>
                   <TableHeader>
                     <TableRow className="hover:bg-[var(--deposit-card-background)] border-[var(--deposit-card-border)]">
-                      <TableHead className="text-muted-foreground">Trade</TableHead>
+                      <TableHead className="text-muted-foreground pl-8">Date</TableHead>
+                      <TableHead className="text-muted-foreground">Position</TableHead>
                       <TableHead className="text-muted-foreground text-right">PnL</TableHead>
                       <TableHead className="text-muted-foreground text-right">Size</TableHead>
                       <TableHead className="text-muted-foreground text-right">Collateral</TableHead>
@@ -182,15 +195,39 @@ export function LeaderboardDashboard() {
                   </TableHeader>
                   <TableBody>
                     {userTrades.length > 0 ? (
-                      userTrades.map((trade, index) => {
+                      userTrades.map((trade) => {
                         const pnl = Number(trade.pnl)
                         const size = Number(trade.size)
                         const collateral = Number(trade.collateral)
                         const returnPercentage = (pnl / collateral) * 100
+                        const leverage = (size / collateral).toFixed(1)
+                        const date = new Date(Number(trade.closedAt) * 1000)
+                        const formattedDate = date.toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })
+                        const pair = TRADING_PAIRS[trade.tokenAddress] || 'Unknown'
 
                         return (
-                          <TableRow key={trade.id} className="hover:bg-[var(--deposit-card-background)] border-[var(--deposit-card-border)]">
-                            <TableCell>#{index + 1}</TableCell>
+                          <TableRow 
+                            key={trade.id} 
+                            className="hover:bg-[var(--deposit-card-background)] border-[var(--deposit-card-border)]"
+                          >
+                            <TableCell className="pl-8">{formattedDate}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <span>{pair}</span>
+                                <span className={`${
+                                  trade.isLong 
+                                    ? "text-[var(--color-long)]" 
+                                    : "text-[var(--color-short)]"
+                                }`}>
+                                  {leverage}x
+                                </span>
+                              </div>
+                            </TableCell>
                             <TableCell 
                               className={`text-right ${
                                 pnl >= 0 
@@ -220,7 +257,7 @@ export function LeaderboardDashboard() {
                       })
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center text-muted-foreground">
+                        <TableCell colSpan={6} className="text-center text-muted-foreground">
                           No trades found
                         </TableCell>
                       </TableRow>
@@ -264,53 +301,150 @@ export function LeaderboardDashboard() {
                   </TableHeader>
                   <TableBody>
                     {processedData.map((row) => (
-                      <TableRow key={row.rank} className="hover:bg-[var(--deposit-card-background)] border-[var(--deposit-card-border)]">
-                        <TableCell className="font-medium">
-                          {row.rank <= 3 ? (
-                            <Badge
-                              variant="outline"
-                              className={`
-                                ${row.rank === 1 ? "border-yellow-500 text-yellow-500" : ""}
-                                ${row.rank === 2 ? "border-zinc-400 text-zinc-400" : ""}
-                                ${row.rank === 3 ? "border-amber-700 text-amber-700" : ""}
-                              `}
-                            >
-                              <Trophy className="w-3 h-3 mr-1" />
-                              {row.rank}
-                            </Badge>
-                          ) : (
-                            row.rank
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {row.trader}
-                            {row.prize && (
-                              <Badge variant="secondary" className="bg-[var(--color-long-dark)]/30 text-[var(--color-long)] border-[var(--color-long)]/50">
-                                ${row.prize.toLocaleString()}
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell 
-                          className={`text-right ${
-                            row.pnl >= 0 
-                              ? "text-[var(--color-long)]" 
-                              : "text-[var(--color-short)]"
-                          }`}
+                      <>
+                        <TableRow 
+                          key={row.rank} 
+                          className="hover:bg-[var(--deposit-card-background)] border-[var(--deposit-card-border)] cursor-pointer"
+                          onClick={() => toggleTraderExpand(row.trader)}
                         >
-                          ${row.pnl.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          <span className="text-muted-foreground ml-1">
-                            ({row.score.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          ${row.volume.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          ${row.avgCollateral.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </TableCell>
-                      </TableRow>
+                          <TableCell className="font-medium">
+                            {row.rank <= 3 ? (
+                              <Badge
+                                variant="outline"
+                                className={`
+                                  ${row.rank === 1 ? "border-yellow-500 text-yellow-500" : ""}
+                                  ${row.rank === 2 ? "border-zinc-400 text-zinc-400" : ""}
+                                  ${row.rank === 3 ? "border-amber-700 text-amber-700" : ""}
+                                `}
+                              >
+                                <Trophy className="w-3 h-3 mr-1" />
+                                {row.rank}
+                              </Badge>
+                            ) : (
+                              row.rank
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                {row.trader}
+                                {row.prize && (
+                                  <Badge variant="secondary" className="bg-[var(--color-long-dark)]/30 text-[var(--color-long)] border-[var(--color-long)]/50">
+                                    ${row.prize.toLocaleString()}
+                                  </Badge>
+                                )}
+                              </div>
+                              {expandedTrader === row.trader ? (
+                                <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell 
+                            className={`text-right ${
+                              row.pnl >= 0 
+                                ? "text-[var(--color-long)]" 
+                                : "text-[var(--color-short)]"
+                            }`}
+                          >
+                            ${row.pnl.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            <span className="text-muted-foreground ml-1">
+                              ({row.score.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            ${row.volume.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            ${row.avgCollateral.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </TableCell>
+                        </TableRow>
+
+                        {/* Expanded trades section */}
+                        {expandedTrader === row.trader && (
+                          <TableRow className="bg-[var(--deposit-card-background)]/50">
+                            <TableCell colSpan={5} className="p-0">
+                              <div className="border-t border-[var(--deposit-card-border)]">
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow className="hover:bg-[var(--deposit-card-background)] border-[var(--deposit-card-border)]">
+                                      <TableHead className="text-muted-foreground pl-8">Date</TableHead>
+                                      <TableHead className="text-muted-foreground">Position</TableHead>
+                                      <TableHead className="text-muted-foreground text-right">PnL</TableHead>
+                                      <TableHead className="text-muted-foreground text-right">Size</TableHead>
+                                      <TableHead className="text-muted-foreground text-right">Collateral</TableHead>
+                                      <TableHead className="text-muted-foreground text-right">Return %</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {getTraderTrades(row.trader).map((trade) => {
+                                      const pnl = Number(trade.pnl)
+                                      const size = Number(trade.size)
+                                      const collateral = Number(trade.collateral)
+                                      const returnPercentage = (pnl / collateral) * 100
+                                      const leverage = (size / collateral).toFixed(1)
+                                      const date = new Date(Number(trade.closedAt) * 1000)
+                                      const formattedDate = date.toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })
+                                      const pair = TRADING_PAIRS[trade.tokenAddress] || 'Unknown'
+
+                                      return (
+                                        <TableRow 
+                                          key={trade.id} 
+                                          className="hover:bg-[var(--deposit-card-background)] border-[var(--deposit-card-border)]"
+                                        >
+                                          <TableCell className="pl-8">{formattedDate}</TableCell>
+                                          <TableCell>
+                                            <div className="flex items-center gap-2">
+                                              <span>{pair}</span>
+                                              <span className={`${
+                                                trade.isLong 
+                                                  ? "text-[var(--color-long)]" 
+                                                  : "text-[var(--color-short)]"
+                                              }`}>
+                                                {leverage}x
+                                              </span>
+                                            </div>
+                                          </TableCell>
+                                          <TableCell 
+                                            className={`text-right ${
+                                              pnl >= 0 
+                                                ? "text-[var(--color-long)]" 
+                                                : "text-[var(--color-short)]"
+                                            }`}
+                                          >
+                                            ${pnl.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                                          </TableCell>
+                                          <TableCell className="text-right">
+                                            ${size.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                                          </TableCell>
+                                          <TableCell className="text-right">
+                                            ${collateral.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                                          </TableCell>
+                                          <TableCell 
+                                            className={`text-right ${
+                                              returnPercentage >= 0 
+                                                ? "text-[var(--color-long)]" 
+                                                : "text-[var(--color-short)]"
+                                            }`}
+                                          >
+                                            {returnPercentage.toFixed(2)}%
+                                          </TableCell>
+                                        </TableRow>
+                                      )
+                                    })}
+                                  </TableBody>
+                                </Table>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </>
                     ))}
                   </TableBody>
                 </Table>
