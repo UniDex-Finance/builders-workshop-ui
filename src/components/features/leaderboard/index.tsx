@@ -10,6 +10,12 @@ import { Button } from "../../ui/button"
 import { useState } from "react"
 import { useSmartAccount } from "@/hooks/use-smart-account"
 import { TRADING_PAIRS } from '@/hooks/use-market-data'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../../ui/tooltip"
 
 export function LeaderboardDashboard() {
   const { data: rawData, loading, error } = useLeaderboardData()
@@ -61,7 +67,60 @@ export function LeaderboardDashboard() {
               <p className="flex items-start gap-2">
                 <span className="text-muted-foreground/50 font-mono">•</span>
                 <span>
-                  <strong className="text-foreground">Score Formula:</strong> Average percentage return per trade, calculated as: (Sum of (Trade PnL / Trade Collateral)) / Number of Trades × 100
+                  <strong className="text-foreground">Scoring:</strong> Your PnL divided by your collateral per trade, averaged across all trades. Higher scores rank better.
+                </span>
+              </p>
+              <p className="flex items-start gap-2">
+                <span className="text-muted-foreground/50 font-mono">•</span>
+                <span className="flex items-center gap-2">
+                  <strong className="text-foreground">Percentage PnL Formula (Score):</strong> Average of (Trade PnL ÷ Trade Collateral) × 100
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Badge 
+                          variant="outline" 
+                          className="cursor-pointer hover:bg-muted/50 transition-colors"
+                        >
+                          See Example
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent 
+                        className="w-[420px] p-4 bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)]"
+                      >
+                        <div className="space-y-3 text-sm">
+                          <p><strong>Example Calculation:</strong></p>
+                          <div className="space-y-2">
+                            <p><strong>Trade 1:</strong></p>
+                            <p className="pl-4">
+                              Collateral: $1,000<br />
+                              PnL: +$150<br />
+                              Return = 150/1000 = 15%
+                            </p>
+                            
+                            <p><strong>Trade 2:</strong></p>
+                            <p className="pl-4">
+                              Collateral: $1,500<br />
+                              PnL: +$200<br />
+                              Return = 200/1500 = 13.3%
+                            </p>
+                            
+                            <p><strong>Trade 3:</strong></p>
+                            <p className="pl-4">
+                              Collateral: $800<br />
+                              PnL: -$120<br />
+                              Return = -120/800 = -15%
+                            </p>
+                            
+                            <p><strong>Final Score:</strong></p>
+                            <p className="pl-4">
+                              Sum returns: 15% + 13.3% + (-15%) = 13.3%<br />
+                              Average: 13.3% ÷ 3 = 4.43%
+                            </p>
+                          </div>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </span>
               </p>
               <p className="flex items-start gap-2">
@@ -76,7 +135,7 @@ export function LeaderboardDashboard() {
           {/* Duration and View Stats Button */}
           <div className="flex justify-between items-center">
             <div className="text-sm text-muted-foreground">
-              Duration: 5th August 2024 - 31st August 2024
+              Duration: 16th February - 28th February (UTC start & end)
             </div>
             <Button 
               variant="secondary" 
@@ -168,7 +227,7 @@ export function LeaderboardDashboard() {
                     ) : (
                       <TableRow>
                         <TableCell colSpan={5} className="text-center text-muted-foreground">
-                          No qualifying trades yet. Make at least 3 trades to appear on the leaderboard.
+                          You are not qualifying yet. Make at least 3 trades to appear on the leaderboard.
                         </TableCell>
                       </TableRow>
                     )}

@@ -31,7 +31,7 @@ export const useLeaderboardData = () => {
           body: JSON.stringify({
             query: `
               query GetLeaderboardData {
-                closedTrades(where: {closedAt_gt: "1739114000"}) {
+                closedTrades(where: {closedAt_gt: "1739614000"}) {
                   items {
                     user
                     tokenAddress
@@ -54,7 +54,7 @@ export const useLeaderboardData = () => {
         })
 
         const result = await response.json()
-        console.log('API Response:', result)
+        console.log('Subgraph Response:', result)
         
         if (result.errors) {
           console.error('Subgraph Errors:', result.errors)
