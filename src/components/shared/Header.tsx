@@ -60,6 +60,9 @@ export function Header() {
           <Link href="/">
             <Button variant="ghost">Trade</Button>
           </Link>
+          <Link href="/leaderboard">
+            <Button variant="ghost">Leaderboard</Button>
+          </Link>
           <Dropdown>
             <DropdownTrigger>
               <Button variant="ghost" className="gap-1">
@@ -278,6 +281,15 @@ export function Header() {
                       onClick={() => (window.location.href = "/")}
                     >
                       Trade
+                    </Button>
+
+                    {/* Leaderboard */}
+                    <Button
+                      variant="ghost"
+                      className="justify-start w-full"
+                      onClick={() => (window.location.href = "/leaderboard")}
+                    >
+                      Leaderboard
                     </Button>
 
                     {/* Earn Section */}
