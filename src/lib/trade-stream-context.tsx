@@ -1,6 +1,6 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useMemo, useRef, useCallback } from 'react';
 
-interface Trade {
+export interface Trade {
   id: string;
   pair: string;
   side: 'LONG' | 'SHORT';
@@ -56,13 +56,47 @@ interface OrderlyTradeMessage {
   data: OrderlyTrade;
 }
 
-interface TradeStreamContextType {
-  trades: Trade[];
+// Add new interfaces
+interface WsLevel {
+  px: string;
+  sz: string;
+  n: number;
 }
 
-const TradeStreamContext = createContext<TradeStreamContextType>({ trades: [] });
+interface WsBook {
+  coin: string;
+  levels: [WsLevel[], WsLevel[]];
+  time: number;
+}
+
+export interface OrderbookLevel {
+  price: number;
+  size: number;
+  total: number;
+  numOrders: number;
+}
+
+interface OrderbookData {
+  asks: OrderbookLevel[];
+  bids: OrderbookLevel[];
+  lastUpdateTime: number;
+}
+
+// Update the context type
+interface TradeStreamContextType {
+  trades: Trade[];
+  orderbook: OrderbookData | null;
+}
+
+// Update the context default value
+const TradeStreamContext = createContext<TradeStreamContextType>({ 
+  trades: [],
+  orderbook: null 
+});
 
 const MAX_TRADES_PER_SOURCE = 100;
+const BATCH_INTERVAL = 100; // 100ms batching window
+const MAX_VISIBLE_TRADES = 100; // Limit total visible trades
 
 function shortenAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -79,13 +113,51 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
     orderly: []
   });
 
+  // Add orderbook state
+  const [orderbook, setOrderbook] = useState<OrderbookData | null>(null);
+
+  // Use useRef for batching trades
+  const tradesBatchRef = useRef<{
+    hyperliquid: Trade[];
+    dydx: Trade[];
+    orderly: Trade[];
+  }>({
+    hyperliquid: [],
+    dydx: [],
+    orderly: []
+  });
+
+  // Add batch update timeout ref
+  const batchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Add function to flush batched trades
+  const flushBatchedTrades = useCallback(() => {
+    setTradesBySource(current => {
+      const newTrades = {
+        hyperliquid: [...tradesBatchRef.current.hyperliquid, ...current.hyperliquid].slice(0, MAX_TRADES_PER_SOURCE),
+        dydx: [...tradesBatchRef.current.dydx, ...current.dydx].slice(0, MAX_TRADES_PER_SOURCE),
+        orderly: [...tradesBatchRef.current.orderly, ...current.orderly].slice(0, MAX_TRADES_PER_SOURCE)
+      };
+      
+      // Clear the batch
+      tradesBatchRef.current = {
+        hyperliquid: [],
+        dydx: [],
+        orderly: []
+      };
+      
+      return newTrades;
+    });
+  }, []);
+
   useEffect(() => {
-    // Clear existing trades when pair changes
+    // Clear existing trades and orderbook when pair changes
     setTradesBySource({
       hyperliquid: [],
       dydx: [],
       orderly: []
     });
+    setOrderbook(null);
 
     const connections = {
       hyperliquid: new WebSocket('wss://api.hyperliquid.xyz/ws'),
@@ -109,12 +181,21 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
 
     // Subscribe to both streams
     const subscribeToStreams = () => {
-      // Hyperliquid subscription
       if (connections.hyperliquid.readyState === WebSocket.OPEN) {
         const coin = pair.split('/')[0];
+        // Subscribe to trades
         connections.hyperliquid.send(JSON.stringify({
           method: 'subscribe',
           subscription: { type: 'trades', coin }
+        }));
+        // Subscribe to orderbook with full precision
+        connections.hyperliquid.send(JSON.stringify({
+          method: 'subscribe',
+          subscription: { 
+            type: 'l2Book', 
+            coin,
+            nSigFigs: null  // Request full precision
+          }
         }));
       }
 
@@ -181,10 +262,62 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
           user: trade.users[0] ? shortenAddress(trade.users[0]) : undefined
         }));
 
-        setTradesBySource(current => ({
-          ...current,
-          hyperliquid: [...newTrades, ...current.hyperliquid].slice(0, MAX_TRADES_PER_SOURCE)
-        }));
+        tradesBatchRef.current.hyperliquid.push(...newTrades);
+        
+        // Schedule a batch update
+        if (batchTimeoutRef.current) {
+          clearTimeout(batchTimeoutRef.current);
+        }
+        batchTimeoutRef.current = setTimeout(flushBatchedTrades, BATCH_INTERVAL);
+      }
+      
+      if (message.channel === 'l2Book' && message.data) {
+        const bookData = message.data as WsBook;
+        
+        // Process asks and bids
+        const processLevels = (levels: WsLevel[]): OrderbookLevel[] => {
+          let total = 0;
+          return levels.map(level => {
+            const size = parseFloat(level.sz);
+            total += size;
+            return {
+              price: parseFloat(level.px),
+              size,
+              total,
+              numOrders: level.n
+            };
+          });
+        };
+
+        // Fix the interpretation: levels[0] should be bids and levels[1] should be asks
+        const [rawBids, rawAsks] = bookData.levels;
+        
+        const processedOrderbook = {
+          asks: processLevels(rawAsks),
+          bids: processLevels(rawBids),
+          lastUpdateTime: bookData.time
+        };
+        
+        setOrderbook(prev => {
+          if (!prev || processedOrderbook.lastUpdateTime > prev.lastUpdateTime) {
+            return processedOrderbook;
+          }
+          return prev;
+        });
+
+        // Only update if significant changes
+        setOrderbook(prev => {
+          if (!prev) return processedOrderbook;
+          
+          // Check if changes are significant enough
+          const significantChange = Math.abs(
+            processedOrderbook.bids[0]?.price - prev.bids[0]?.price
+          ) > 0.1 || Math.abs(
+            processedOrderbook.asks[0]?.price - prev.asks[0]?.price
+          ) > 0.1;
+          
+          return significantChange ? processedOrderbook : prev;
+        });
       }
     };
 
@@ -203,10 +336,13 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
           isLiquidated: trade.type === 'LIQUIDATED',
         }));
 
-        setTradesBySource(current => ({
-          ...current,
-          dydx: [...newTrades, ...current.dydx].slice(0, MAX_TRADES_PER_SOURCE)
-        }));
+        tradesBatchRef.current.dydx.push(...newTrades);
+        
+        // Schedule a batch update
+        if (batchTimeoutRef.current) {
+          clearTimeout(batchTimeoutRef.current);
+        }
+        batchTimeoutRef.current = setTimeout(flushBatchedTrades, BATCH_INTERVAL);
       }
     };
 
@@ -230,21 +366,13 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
           isLiquidated: false,
         };
 
-        setTradesBySource(current => {
-          // Check if this trade already exists
-          const exists = current.orderly.some(t => t.id === tradeId);
-          if (exists) {
-            return current;
-          }
-
-          return {
-            ...current,
-            orderly: [newTrade, ...current.orderly]
-              .slice(0, MAX_TRADES_PER_SOURCE)
-              // Sort by timestamp to ensure proper ordering
-              .sort((a, b) => b.timestamp - a.timestamp)
-          };
-        });
+        tradesBatchRef.current.orderly.push(newTrade);
+        
+        // Schedule a batch update
+        if (batchTimeoutRef.current) {
+          clearTimeout(batchTimeoutRef.current);
+        }
+        batchTimeoutRef.current = setTimeout(flushBatchedTrades, BATCH_INTERVAL);
       }
     };
 
@@ -266,8 +394,14 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
     return combined.sort((a, b) => b.timestamp - a.timestamp);
   }, [tradesBySource]);
 
+  // Create a memoized context value
+  const contextValue = useMemo(() => ({
+    trades: allTrades,
+    orderbook
+  }), [allTrades, orderbook]);
+
   return (
-    <TradeStreamContext.Provider value={{ trades: allTrades }}>
+    <TradeStreamContext.Provider value={contextValue}>
       {children}
     </TradeStreamContext.Provider>
   );

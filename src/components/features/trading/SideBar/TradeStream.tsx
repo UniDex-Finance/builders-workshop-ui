@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback, useRef, useEffect } from 'react';
 import * as HoverCard from '@radix-ui/react-hover-card';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { useTradeStream } from '@/lib/trade-stream-context';
+import { useTradeStream, Trade } from '@/lib/trade-stream-context';
 import Image from 'next/image';
 import { Pencil, Filter } from 'lucide-react';
 
@@ -114,24 +114,26 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
   const { trades } = useTradeStream();
 
   const filteredTrades = useMemo(() => {
-    return trades.filter(trade => {
-      const meetsMinSize = trade.sizeUSD >= minSize;
-      const meetsSource = selectedSources.includes('all') || 
-        (selectedSources.includes('hyperliquid') && trade.id.startsWith('hl-')) ||
-        (selectedSources.includes('dydx') && trade.id.startsWith('dydx-')) ||
-        (selectedSources.includes('orderly') && trade.id.startsWith('orderly-'));
-      return meetsMinSize && meetsSource;
-    });
+    return trades
+      .filter(trade => {
+        const meetsMinSize = trade.sizeUSD >= minSize;
+        const meetsSource = selectedSources.includes('all') || 
+          (selectedSources.includes('hyperliquid') && trade.id.startsWith('hl-')) ||
+          (selectedSources.includes('dydx') && trade.id.startsWith('dydx-')) ||
+          (selectedSources.includes('orderly') && trade.id.startsWith('orderly-'));
+        return meetsMinSize && meetsSource;
+      })
+      .slice(0, 100); // Only show last 100 trades
   }, [trades, minSize, selectedSources]);
 
-  const formatTime = (timestamp: number) => {
+  const formatTime = useCallback((timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString([], { 
       hour: '2-digit', 
       minute: '2-digit',
       second: '2-digit',
       hour12: false
     });
-  };
+  }, []);
 
   const formatFullTime = (timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString([], { 
@@ -166,6 +168,25 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
     }
     return null;
   };
+
+  // Use RAF for smooth animations
+  const rafRef = useRef<number>();
+  const [visibleTrades, setVisibleTrades] = useState<Trade[]>([]);
+
+  useEffect(() => {
+    const updateVisibleTrades = () => {
+      setVisibleTrades(filteredTrades);
+      rafRef.current = requestAnimationFrame(updateVisibleTrades);
+    };
+
+    rafRef.current = requestAnimationFrame(updateVisibleTrades);
+
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, [filteredTrades]);
 
   return (
     <div className="absolute inset-0 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
@@ -207,7 +228,7 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
         </div>
       )}
       
-      {filteredTrades.map((trade) => (
+      {visibleTrades.map((trade) => (
         <HoverCard.Root key={trade.id} openDelay={0} closeDelay={0}>
           <HoverCard.Trigger asChild>
             <div className="group relative px-2 py-1.5 transition-colors border-b border-border hover:bg-accent/50">
