@@ -31,7 +31,7 @@ export const useLeaderboardData = () => {
           body: JSON.stringify({
             query: `
               query GetLeaderboardData {
-                closedTrades(where: {closedAt_gt: "1739614000"}) {
+                closedTrades(where: {closedAt_gt: "1739664000"}) {
                   items {
                     user
                     tokenAddress
