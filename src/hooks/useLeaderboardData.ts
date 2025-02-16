@@ -54,7 +54,7 @@ export const useLeaderboardData = () => {
         })
 
         const result = await response.json()
-        console.log('Subgraph Response:', result)
+        console.log('API Response:', result)
         
         if (result.errors) {
           console.error('Subgraph Errors:', result.errors)
