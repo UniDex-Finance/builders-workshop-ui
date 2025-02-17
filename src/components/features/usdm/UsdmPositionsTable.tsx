@@ -103,7 +103,8 @@ export function UsdmPositionsTable() {
                   isLong: position.isLong,
                   entryPrice: parseFloat(position.entryPrice),
                   leverage: cleanNumberString(position.positionValue) / cleanNumberString(position.margin),
-                  marginValue: cleanNumberString(position.margin)
+                  marginValue: cleanNumberString(position.margin),
+                  totalFees: position.funding.isNegative ? cleanNumberString(position.funding.value) : -cleanNumberString(position.funding.value)
                 })
 
                 const currentPnlPct = parseFloat(position.pnl.percentage.replace('%', ''))
