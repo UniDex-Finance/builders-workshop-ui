@@ -53,21 +53,13 @@ export function Orderbook({ pair, height }: OrderbookProps) {
     // Sort bids descending (highest to lowest)
     const rawBids = [...(orderbook?.bids ?? [])].sort((a, b) => b.price - a.price);
     
-    console.log('Raw Orderbook Data:', {
-      groupSize,
-      rawAsks: rawAsks.slice(0, 5).map(a => a.price), // First 5 ask prices
-      rawBids: rawBids.slice(0, 5).map(b => b.price)  // First 5 bid prices
-    });
+
     
     const grouped = {
       groupedAsks: groupOrders(rawAsks, groupSize),
       groupedBids: groupOrders(rawBids, groupSize)
     };
 
-    console.log('Grouped Orderbook Data:', {
-      groupedAsks: grouped.groupedAsks.slice(0, 5).map(a => a.price), // First 5 grouped ask prices
-      groupedBids: grouped.groupedBids.slice(0, 5).map(b => b.price)  // First 5 grouped bid prices
-    });
 
     return grouped;
   }, [orderbook, grouping]);
@@ -86,10 +78,6 @@ export function Orderbook({ pair, height }: OrderbookProps) {
       total: groupedBids.slice(0, index + 1).reduce((sum, o) => sum + o.size, 0)
     }));
 
-    console.log('Final Processed Orders:', {
-      asks: processedAsks.slice(0, 5).map(a => a.price), // First 5 processed ask prices
-      bids: processedBids.slice(0, 5).map(b => b.price)  // First 5 processed bid prices
-    });
 
     const maxTotal = Math.max(
       processedAsks[0]?.total ?? 0,

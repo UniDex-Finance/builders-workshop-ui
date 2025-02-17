@@ -71,9 +71,7 @@ const formatPosition = (position: PlatformPosition): FormattedPosition => {
   const pnlPercentage = ((pnlNum / collateralNum) * 100).toFixed(2)
   const leverage = Math.round(sizeNum / collateralNum)
   
-  // Add borrow fee and funding fee
-  // If funding fee is negative, it reduces the total cost
-  // Total can be positive (user receives) or negative (user pays)
+  // Calculate total fees (both funding and borrow)
   const totalFees = fundingFeeNum + borrowFeeNum
 
   return {
@@ -95,8 +93,8 @@ const formatPosition = (position: PlatformPosition): FormattedPosition => {
     ),
     margin: `$${formatter.format(collateralNum)}`,
     funding: {
-      value: `$${formatter.format(Math.abs(totalFees))}`,
-      isNegative: totalFees > 0 // Negative when user pays (positive total), positive when user receives (negative total)
+      value: formatter.format(Math.abs(totalFees)),
+      isNegative: totalFees > 0 // Positive total means user pays (negative for their balance)
     }
   }
 }
