@@ -41,29 +41,29 @@ export const processLeaderboardData = (rawData: TradeItem[]): ProcessedTraderDat
     // Parse values
     const pnl = Number(trade.pnl)
     const size = Number(trade.size)
-    const collateral = Number(trade.collateral)
+    const maxCollateral = Number(trade.maxCollateral)
 
     console.log(`Processing trade for ${user}:`, {
       pnl,
       size,
-      collateral
+      maxCollateral
     });
 
     // Track all trades for score calculation
     acc[user].validTrades.push({
       pnl,
-      collateral,
-      returnPercentage: (pnl / collateral) * 100
+      maxCollateral,
+      returnPercentage: (pnl / maxCollateral) * 100
     })
 
     // Accumulate stats
     acc[user].pnl += pnl
     acc[user].volume += size
     acc[user].trades += 1
-    acc[user].totalCollateral += collateral
-    acc[user].maxCollateral = Math.max(acc[user].maxCollateral, collateral)
+    acc[user].totalCollateral += maxCollateral
+    acc[user].maxCollateral = Math.max(acc[user].maxCollateral, maxCollateral)
     acc[user].tradeCount += 1
-    acc[user].collateralSum += collateral
+    acc[user].collateralSum += maxCollateral
 
     return acc
   }, {} as Record<string, {
@@ -77,7 +77,7 @@ export const processLeaderboardData = (rawData: TradeItem[]): ProcessedTraderDat
     collateralSum: number
     validTrades: Array<{
       pnl: number
-      collateral: number
+      maxCollateral: number
       returnPercentage: number
     }>
   }>)

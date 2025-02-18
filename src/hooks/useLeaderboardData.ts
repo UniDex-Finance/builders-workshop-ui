@@ -12,6 +12,7 @@ export interface TradeItem {
   closedAt: string
   entryFundingRate: string
   collateral: string
+  maxCollateral: string
   averagePrice: string
   closePrice: string
 }
@@ -31,7 +32,7 @@ export const useLeaderboardData = () => {
           body: JSON.stringify({
             query: `
               query GetLeaderboardData {
-                closedTrades(where: {closedAt_gt: "1739664000"}) {
+                closedTrades(where: {createdAt_gte: "1739664000"}) {
                   items {
                     user
                     tokenAddress
@@ -44,6 +45,7 @@ export const useLeaderboardData = () => {
                     closedAt
                     entryFundingRate
                     collateral
+                    maxCollateral
                     averagePrice
                     closePrice
                   }
