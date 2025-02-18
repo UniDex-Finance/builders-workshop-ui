@@ -248,7 +248,7 @@ export function LeaderboardDashboard() {
                       <TableHead className="text-muted-foreground">Position</TableHead>
                       <TableHead className="text-muted-foreground text-right">PnL</TableHead>
                       <TableHead className="text-muted-foreground text-right">Size</TableHead>
-                      <TableHead className="text-muted-foreground text-right">Collateral</TableHead>
+                      <TableHead className="text-muted-foreground text-right">Max Collateral</TableHead>
                       <TableHead className="text-muted-foreground text-right">Return %</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -257,9 +257,9 @@ export function LeaderboardDashboard() {
                       userTrades.map((trade) => {
                         const pnl = Number(trade.pnl)
                         const size = Number(trade.size)
-                        const collateral = Number(trade.collateral)
-                        const returnPercentage = (pnl / collateral) * 100
-                        const leverage = (size / collateral).toFixed(1)
+                        const maxCollateral = Number(trade.maxCollateral)
+                        const returnPercentage = (pnl / maxCollateral) * 100
+                        const leverage = (size / maxCollateral).toFixed(1)
                         const date = new Date(Number(trade.closedAt) * 1000)
                         const formattedDate = date.toLocaleDateString('en-US', {
                           month: 'short',
@@ -300,7 +300,7 @@ export function LeaderboardDashboard() {
                               ${size.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                             </TableCell>
                             <TableCell className="text-right">
-                              ${collateral.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                              ${maxCollateral.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                             </TableCell>
                             <TableCell 
                               className={`text-right ${
@@ -432,7 +432,7 @@ export function LeaderboardDashboard() {
                                       <TableHead className="text-muted-foreground">Position</TableHead>
                                       <TableHead className="text-muted-foreground text-right">PnL</TableHead>
                                       <TableHead className="text-muted-foreground text-right">Size</TableHead>
-                                      <TableHead className="text-muted-foreground text-right">Collateral</TableHead>
+                                      <TableHead className="text-muted-foreground text-right">Max Collateral</TableHead>
                                       <TableHead className="text-muted-foreground text-right">Return %</TableHead>
                                     </TableRow>
                                   </TableHeader>
@@ -440,9 +440,9 @@ export function LeaderboardDashboard() {
                                     {getTraderTrades(row.trader).map((trade) => {
                                       const pnl = Number(trade.pnl)
                                       const size = Number(trade.size)
-                                      const collateral = Number(trade.collateral)
-                                      const returnPercentage = (pnl / collateral) * 100
-                                      const leverage = (size / collateral).toFixed(1)
+                                      const maxCollateral = Number(trade.maxCollateral)
+                                      const returnPercentage = (pnl / maxCollateral) * 100
+                                      const leverage = (size / maxCollateral).toFixed(1)
                                       const date = new Date(Number(trade.closedAt) * 1000)
                                       const formattedDate = date.toLocaleDateString('en-US', {
                                         month: 'short',
@@ -483,7 +483,7 @@ export function LeaderboardDashboard() {
                                             ${size.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                                           </TableCell>
                                           <TableCell className="text-right">
-                                            ${collateral.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                                            ${maxCollateral.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                                           </TableCell>
                                           <TableCell 
                                             className={`text-right ${
