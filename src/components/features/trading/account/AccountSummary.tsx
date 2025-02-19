@@ -20,6 +20,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { AddressLookupCard } from "./AddressLookupCard";
 
 interface BalanceItemProps {
   title: string;
@@ -32,7 +33,7 @@ interface BalanceItemProps {
 function BalanceItem({ title, balance, isLoading, suffix = "USDC", className }: BalanceItemProps) {
   const tooltipContent = {
     "Trading Account": "The trading account balance is the sum of the 1ct wallet and any margin account balances. This is the amount that you have which can be used to open trades.",
-    "1CT Wallet Balance": "This is the main wallet address that is placing trades across various platforms. Only you have permission to manage this address",
+    "Emilia's Wallet Balance": "This is the main wallet address that is placing trades across various platforms. Only you have permission to manage this address",
     "UniDex Margin Balance": "This is the margin balance of the aggregated source \"UniDex V4\". This balance can be used to place orders on other exchanges, but we show it so you can micro manage if you wanted"
   }[title];
 
@@ -65,9 +66,21 @@ interface AddressDisplayProps {
   explorerUrl?: string;
   onRevoke?: () => void;
   showRevoke?: boolean;
+  onLookupClick?: () => void;
+  showLookup?: boolean;
+  isLookupExpanded?: boolean;
 }
 
-function AddressDisplay({ label, address, explorerUrl, onRevoke, showRevoke }: AddressDisplayProps) {
+function AddressDisplay({ 
+  label, 
+  address, 
+  explorerUrl, 
+  onRevoke, 
+  showRevoke,
+  onLookupClick,
+  showLookup,
+  isLookupExpanded
+}: AddressDisplayProps) {
   const { toast } = useToast();
 
   const handleCopy = () => {
@@ -134,6 +147,28 @@ function AddressDisplay({ label, address, explorerUrl, onRevoke, showRevoke }: A
               </TooltipContent>
             </Tooltip>
 
+            {showLookup && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onLookupClick}
+                    className="p-0 h-7 w-7 text-muted-foreground hover:text-muted-foreground/80"
+                  >
+                    <ChevronDown 
+                      className={`w-3.5 h-3.5 transition-transform ${
+                        isLookupExpanded ? 'transform rotate-180' : ''
+                      }`}
+                    />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Address Lookup</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+
             {showRevoke && onRevoke && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -170,11 +205,19 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
   const [selectedChain, setSelectedChain] = useState<"arbitrum" | "optimism">("arbitrum");
   const [amount, setAmount] = useState("");
   const summaryRef = useRef<HTMLDivElement>(null);
-  const { smartAccount, setupSessionKey, isSigningSessionKey, revokeCurrentSession } = useSmartAccount();
+  const { 
+    smartAccount, 
+    setupSessionKey, 
+    isSigningSessionKey, 
+    revokeCurrentSession,
+    predictedAddress 
+  } = useSmartAccount();
   const { address: eoaAddress, isConnected } = useAccount();
   const { balances, isLoading } = useBalances("arbitrum");
   const { positions, loading: positionsLoading } = usePositions();
   const { toast } = useToast();
+  const [isLookupExpanded, setIsLookupExpanded] = useState(false);
+  const [isAgentLookupExpanded, setIsAgentLookupExpanded] = useState(false);
 
   const handleSetupSmartAccount = async () => {
     try {
@@ -319,7 +362,7 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
             {/* Address Section */}
             <div className="space-y-3">
               <AddressDisplay
-                label="Source Address"
+                label="Your Wallet Address"
                 address={eoaAddress}
                 explorerUrl={eoaAddress ? getExplorerUrl(eoaAddress) : undefined}
               />
@@ -347,11 +390,34 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
                 <>
                   <div className="my-4 border-t border-zinc-800" />
                   <div className="space-y-4">
-                    <p className="text-sm text-zinc-400">
-                      To start trading, you need to setup a trading account.
-                      <br /><br />
-                      Every trading account address is unique to the wallet address used to setup the account.
-                    </p>
+                    <div className="space-y-2">
+                      <p className="text-sm text-zinc-400">
+                        To start trading, you need to setup a trading account.
+                        <br /><br />
+                        Every trading account address is unique to the wallet address used to setup the account.
+                      </p>
+                      {predictedAddress && (
+                        <>
+                          <div 
+                            className="p-3 rounded-md bg-zinc-900/50 border border-zinc-800 cursor-pointer hover:bg-zinc-900/70 transition-colors"
+                            onClick={() => setIsLookupExpanded(!isLookupExpanded)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm text-zinc-400">Address no longer the same?</p>
+                              <ChevronDown 
+                                className={`w-4 h-4 text-zinc-400 transition-transform ${
+                                  isLookupExpanded ? 'transform rotate-180' : ''
+                                }`}
+                              />
+                            </div>
+                          </div>
+                          <AddressLookupCard 
+                            isExpanded={isLookupExpanded}
+                            onClose={() => setIsLookupExpanded(false)}
+                          />
+                        </>
+                      )}
+                    </div>
                     <Button
                       className="w-full h-[52px] bg-[var(--main-accent)] hover:bg-[var(--main-accent)]/80 text-white"
                       onClick={handleSetupSmartAccount}
@@ -370,14 +436,26 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
                 </>
               ) : (
                 <>
-                  <AddressDisplay
-                    label="Trading Address"
-                    address={smartAccount?.address}
-                    explorerUrl={smartAccount?.address ? getExplorerUrl(smartAccount.address) : undefined}
-                    onRevoke={handleRevoke}
-                    showRevoke={true}
-                  />
-
+                  <div className="relative">
+                    <AddressDisplay
+                      label="Trading Address"
+                      address={smartAccount?.address}
+                      explorerUrl={smartAccount?.address ? getExplorerUrl(smartAccount.address) : undefined}
+                      onRevoke={handleRevoke}
+                      showRevoke={true}
+                      onLookupClick={() => setIsAgentLookupExpanded(!isAgentLookupExpanded)}
+                      showLookup={true}
+                      isLookupExpanded={isAgentLookupExpanded}
+                    />
+                  </div>
+                  {isAgentLookupExpanded && (
+                    <div className="mt-2">
+                      <AddressLookupCard 
+                        isExpanded={isAgentLookupExpanded}
+                        onClose={() => setIsAgentLookupExpanded(false)}
+                      />
+                    </div>
+                  )}
                   <div className="h-px bg-border" />
 
                   {/* Net Worth and Trading Account Section */}
@@ -390,7 +468,7 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger className="text-sm text-muted-foreground">
-                            Trading Account
+                            Emilia's Balance
                           </TooltipTrigger>
                           <TooltipContent>
                             <p className="max-w-[300px]">
@@ -400,7 +478,7 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
                         </Tooltip>
                       </TooltipProvider>
                       <div className="text-lg">
-                        ${parseFloat(balances?.formattedMusdBalance || "0").toFixed(2)}
+                        ${(parseFloat(balances?.formattedMusdBalance || "0") + parseFloat(balances?.formattedUsdcBalance || "0")).toFixed(2)}
                       </div>
                     </div>
                   </div>
