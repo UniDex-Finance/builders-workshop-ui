@@ -47,6 +47,13 @@ export function LeaderboardDashboard() {
     )
   }
 
+  const shortenAddress = (address: string): string => {
+    if (!address) return ""
+    // Take 0x + first 4 (after prefix) and last 4 characters.
+      return address.slice(0, 6) + '...' + address.slice(-4)
+    
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header />
@@ -386,7 +393,7 @@ export function LeaderboardDashboard() {
                           <TableCell>
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                {row.trader}
+                                {shortenAddress(row.trader)}
                                 {row.prize && (
                                   <Badge variant="secondary" className="bg-[var(--color-long-dark)]/30 text-[var(--color-long)] border-[var(--color-long)]/50">
                                     ${row.prize.toLocaleString()}
