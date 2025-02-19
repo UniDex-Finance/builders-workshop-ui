@@ -16,6 +16,8 @@ import {
 import { toSudoPolicy } from "@zerodev/permissions/policies";
 import { arbitrum } from 'viem/chains';
 import { ensureArbitrumNetwork } from './use-network-switch';
+import { getValidatorAddress } from "@zerodev/ecdsa-validator";
+import { getContract } from "viem";
 
 const bundlerRpcUrl = process.env.NEXT_PUBLIC_BUNDLER_RPC_URL;
 const PAYMASTER_RPC = process.env.NEXT_PUBLIC_PAYMASTER_RPC;
@@ -39,6 +41,7 @@ export function useSmartAccount() {
   const [isSigningSessionKey, setIsSigningSessionKey] = useState(false);
   const [sessionKeyAddress, setSessionKeyAddress] = useState<string | null>(null);
   const [isNetworkSwitching, setIsNetworkSwitching] = useState(false);
+  const [predictedAddress, setPredictedAddress] = useState<string | null>(null);
 
   // Use Arbitrum chain and client regardless of connected chain
   const getChainConfig = useCallback(() => {
@@ -295,6 +298,42 @@ export function useSmartAccount() {
     }
   }, []);
 
+  const predictSmartAccountAddress = useCallback(async () => {
+    if (!walletClient) return null;
+    const { publicClient } = getChainConfig();
+
+    try {
+      const smartAccountSigner = walletClientToSmartAccountSigner(walletClient);
+      
+      const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
+        signer: smartAccountSigner,
+        entryPoint: ENTRYPOINT_ADDRESS_V07,
+        kernelVersion: KERNEL_V3_1
+      });
+
+      const kernelAccount = await createKernelAccount(publicClient, {
+        plugins: {
+          sudo: ecdsaValidator
+        },
+        entryPoint: ENTRYPOINT_ADDRESS_V07,
+        kernelVersion: KERNEL_V3_1
+      });
+
+      return kernelAccount.address;
+    } catch (err) {
+      console.error('Failed to predict address:', err);
+      return null;
+    }
+  }, [walletClient, getChainConfig]);
+
+  useEffect(() => {
+    if (walletClient && !smartAccount) {
+      predictSmartAccountAddress().then(address => {
+        setPredictedAddress(address);
+      });
+    }
+  }, [walletClient, smartAccount, predictSmartAccountAddress]);
+
   return {
     smartAccount,
     kernelClient,
@@ -306,6 +345,7 @@ export function useSmartAccount() {
     isInitialized,
     isInitializing,
     isNetworkSwitching,
-    revokeCurrentSession
+    revokeCurrentSession,
+    predictedAddress
   };
 }
