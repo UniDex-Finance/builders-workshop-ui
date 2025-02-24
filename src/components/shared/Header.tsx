@@ -4,7 +4,7 @@ import { useTheme } from "next-themes";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownSection, DropdownItem } from "@nextui-org/react";
-import { Menu, ChevronDown, Wallet, Coins, DollarSign, PiggyBank, Users2, MessageCircle, Send, Twitter, X, Settings } from "lucide-react";
+import { Menu, ChevronDown, Wallet, Coins, DollarSign, PiggyBank, Users2, MessageCircle, Send, Twitter, X, Settings, UnfoldHorizontal  } from "lucide-react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { 
@@ -246,8 +246,8 @@ export function Header() {
               </DropdownItem>
               <DropdownItem
                 key="bridge"
-                description="Transfer assets between chains"
-                startContent={<FontAwesomeIcon icon={faChartLine} />}
+                description="Bridge your MOLTEN to other chains"
+                startContent={<UnfoldHorizontal className="w-4 h-4" />}
                 onClick={() => (window.location.href = "/bridge")}
               >
                 Bridge
@@ -440,6 +440,7 @@ export function Header() {
                         className="justify-start w-full gap-2"
                         onClick={() => (window.location.href = "/bridge")}
                       >
+                        <UnfoldHorizontal className="w-4 h-4" />
                         Bridge
                       </Button>
                     </div>
