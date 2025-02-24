@@ -56,8 +56,8 @@ export function BridgeDashboard() {
   const { address, isConnected } = useAccount();
   const { chains } = useConfig();
   const { switchChain } = useSwitchChain();
-  const [fromNetwork, setFromNetwork] = useState<string | undefined>(chain?.name.toLowerCase());
-  const [toNetwork, setToNetwork] = useState<string | undefined>(getAvailableToNetworks(chain?.name.toLowerCase())[0]?.name.toLowerCase());
+  const [fromNetwork, setFromNetwork] = useState<string>("base");
+  const [toNetwork, setToNetwork] = useState<string>("ethereum");
   const { data: walletClient } = useWalletClient();
 
   const fromChain = supportedChains.find(c => c.name.toLowerCase() === fromNetwork);
@@ -71,12 +71,11 @@ export function BridgeDashboard() {
     userAddress: address
   });
 
-  // Update fromNetwork when connected chain changes
   useEffect(() => {
-    if (chain) {
+    if (chain && isConnected) {
       setFromNetwork(chain.name.toLowerCase());
     }
-  }, [chain]);
+  }, [chain, isConnected]);
 
   const availableToNetworks = getAvailableToNetworks(fromNetwork);
 
@@ -89,7 +88,6 @@ export function BridgeDashboard() {
     }
   }, [fromNetwork])
 
-  // Refetch balance when fromNetwork changes
   useEffect(() => {
     if (fromChain) {
       refetchFromBalance();
@@ -137,7 +135,16 @@ export function BridgeDashboard() {
   const getButton = () => {
     if (!isConnected) {
       return (
-        <ConnectButton />
+        <ConnectButton.Custom>
+          {({ openConnectModal }) => (
+            <Button
+              onClick={openConnectModal}
+              className="w-full h-12 bg-[var(--color-long-short-button)] hover:bg-[var(--color-long-short-button-hover)] text-white font-medium rounded"
+            >
+              Connect Wallet
+            </Button>
+          )}
+        </ConnectButton.Custom>
       );
     }
 
@@ -162,7 +169,6 @@ export function BridgeDashboard() {
     );
   };
 
-  // Calculate Fee and Receive Amount
   const fee = 0.32;
   const receiveAmount = amount ? (parseFloat(amount) * 0.999).toFixed(3) : '0.000';
 
@@ -172,7 +178,6 @@ export function BridgeDashboard() {
     setFromNetwork(currentTo);
     setToNetwork(currentFrom);
     
-    // If we need to switch the chain when rotating
     if (currentTo) {
       const newFromChain = supportedChains.find(c => c.name.toLowerCase() === currentTo);
       if (newFromChain) {
@@ -183,7 +188,6 @@ export function BridgeDashboard() {
 
   const handleMaxClick = () => {
     if (fromBalance) {
-      // Convert from wei (1e18) to regular number and round down to 6 decimal places
       const rawAmount = Number(fromBalance) / 1e18;
       const formattedAmount = Math.floor(rawAmount * 1e6) / 1e6;
       setAmount(formattedAmount.toString());
@@ -200,7 +204,6 @@ export function BridgeDashboard() {
 
           </div>
 
-          {/* Network Selector - Flex Layout */}
           <div className="flex items-center space-x-4">
             <div className="flex-1 bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)] rounded p-4">
               <div className="flex items-center gap-3">
@@ -252,7 +255,6 @@ export function BridgeDashboard() {
               </div>
             </div>
             
-            {/* Rotate Button */}
             <button
               onClick={handleRotateNetworks}
               className="flex items-center justify-center w-8 h-8 rounded-full bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)] hover:bg-[var(--deposit-card-border)] transition-colors"
