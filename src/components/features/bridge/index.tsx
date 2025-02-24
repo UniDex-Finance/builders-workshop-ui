@@ -21,20 +21,25 @@ import SonicLogo from "@/../../public/static/images/chain-logos/sonic.svg"
 const supportedChains = [mainnet, arbitrum, optimism, base, sonic];
 
 const getChainLogo = (chainName: string | undefined) => {
-  switch (chainName) {
-    case "arbitrum":
-      return ArbLogo;
-    case "optimism":
-      return OpLogo;
-    case "base":
-      return BaseLogo;
-    case "ethereum":
-      return EthLogo;
-    case "sonic":
-      return SonicLogo;
-    default:
-      return null; // Or a default placeholder logo
+  // Convert chain name to lowercase for consistent comparison
+  const name = chainName?.toLowerCase() || '';
+  
+  if (name.includes('arbitrum')) {
+    return ArbLogo;
   }
+  if (name.includes('optimism') || name.includes('op')) {
+    return OpLogo;
+  }
+  if (name === 'base') {
+    return BaseLogo;
+  }
+  if (name === 'ethereum') {
+    return EthLogo;
+  }
+  if (name === 'sonic') {
+    return SonicLogo;
+  }
+  return EthLogo; // Fallback to Ethereum logo though this shouldn't happen with our supported chains
 };
 
 const getAvailableToNetworks = (fromNetwork: string | undefined) => {
@@ -50,10 +55,10 @@ export function BridgeDashboard() {
   const { chain } = useAccount();
   const { address, isConnected } = useAccount();
   const { chains } = useConfig();
+  const { switchChain } = useSwitchChain();
   const [fromNetwork, setFromNetwork] = useState<string | undefined>(chain?.name.toLowerCase());
   const [toNetwork, setToNetwork] = useState<string | undefined>(getAvailableToNetworks(chain?.name.toLowerCase())[0]?.name.toLowerCase());
   const { data: walletClient } = useWalletClient();
-  const { switchChain } = useSwitchChain();
 
   const fromChain = supportedChains.find(c => c.name.toLowerCase() === fromNetwork);
   const toChain = supportedChains.find(c => c.name.toLowerCase() === toNetwork);
@@ -92,7 +97,8 @@ export function BridgeDashboard() {
   }, [fromChain, refetchFromBalance]);
 
   const handleTransfer = async () => {
-    if (!walletClient) {
+    if (!walletClient || !fromChain || !toChain || !address) {
+      console.error("Missing required data for transfer");
       return;
     }
     const sendFromData = getSendFromData();
@@ -103,10 +109,10 @@ export function BridgeDashboard() {
     }
 
     try {
-      const { abi, address, functionName, args, value } = sendFromData;
+      const { abi, address: contractAddress, functionName, args, value } = sendFromData;
       const request = {
         abi,
-        address,
+        address: contractAddress,
         functionName,
         args,
         value,
@@ -118,21 +124,71 @@ export function BridgeDashboard() {
     }
   }
 
+  const handleSwitchNetwork = () => {
+    if (fromChain) {
+      switchChain({ chainId: fromChain.id });
+    }
+  };
+
+  const isOnCorrectChain = () => {
+    return chain?.id === fromChain?.id;
+  };
+
   const getButton = () => {
     if (!isConnected) {
       return (
         <ConnectButton />
-      )
+      );
+    }
+
+    if (!isOnCorrectChain()) {
+      return (
+        <Button
+          onClick={handleSwitchNetwork}
+          className="w-full h-12 bg-[var(--color-long-short-button)] hover:bg-[var(--color-long-short-button-hover)] text-white font-medium rounded"
+        >
+          Switch to {fromChain?.name}
+        </Button>
+      );
     }
 
     return (
-      <Button onClick={handleTransfer} className="w-full h-12 bg-[var(--color-long-short-button)] hover:bg-[var(--color-long-short-button-hover)] text-white font-medium rounded">Transfer</Button>
-    )
-  }
+      <Button
+        onClick={handleTransfer}
+        className="w-full h-12 bg-[var(--color-long-short-button)] hover:bg-[var(--color-long-short-button-hover)] text-white font-medium rounded"
+      >
+        Bridge MOLTEN
+      </Button>
+    );
+  };
 
   // Calculate Fee and Receive Amount
   const fee = 0.32;
   const receiveAmount = amount ? (parseFloat(amount) * 0.999).toFixed(3) : '0.000';
+
+  const handleRotateNetworks = () => {
+    const currentFrom = fromNetwork;
+    const currentTo = toNetwork;
+    setFromNetwork(currentTo);
+    setToNetwork(currentFrom);
+    
+    // If we need to switch the chain when rotating
+    if (currentTo) {
+      const newFromChain = supportedChains.find(c => c.name.toLowerCase() === currentTo);
+      if (newFromChain) {
+        switchChain({ chainId: newFromChain.id });
+      }
+    }
+  };
+
+  const handleMaxClick = () => {
+    if (fromBalance) {
+      // Convert from wei (1e18) to regular number and round down to 6 decimal places
+      const rawAmount = Number(fromBalance) / 1e18;
+      const formattedAmount = Math.floor(rawAmount * 1e6) / 1e6;
+      setAmount(formattedAmount.toString());
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
@@ -141,16 +197,14 @@ export function BridgeDashboard() {
         <div className="max-w-md w-full space-y-6">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-lg font-mono">Bridge MOLTEN</h1>
-            <div className="text-sm font-mono">
-              Gas Price: <span className="text-green-500">0</span>
-            </div>
+
           </div>
 
           {/* Network Selector - Flex Layout */}
-          <div className="flex space-x-4">
+          <div className="flex items-center space-x-4">
             <div className="flex-1 bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)] rounded p-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center">
                   {getChainLogo(fromNetwork) ? (
                     <Image
                       src={getChainLogo(fromNetwork)}
@@ -169,6 +223,7 @@ export function BridgeDashboard() {
                   <Select
                     value={fromNetwork}
                     onValueChange={(value) => {
+                      console.log("Setting fromNetwork to:", value);
                       setFromNetwork(value);
                     }}
                   >
@@ -196,9 +251,34 @@ export function BridgeDashboard() {
                 </div>
               </div>
             </div>
+            
+            {/* Rotate Button */}
+            <button
+              onClick={handleRotateNetworks}
+              className="flex items-center justify-center w-8 h-8 rounded-full bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)] hover:bg-[var(--deposit-card-border)] transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="rotate-90"
+              >
+                <path d="M17 1l4 4-4 4"></path>
+                <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                <path d="M7 23l-4-4 4-4"></path>
+                <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+              </svg>
+            </button>
+            
             <div className="flex-1 bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)] rounded p-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-[#d1ff1a] rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center">
                   {getChainLogo(toNetwork) ? (
                     <Image
                       src={getChainLogo(toNetwork)}
@@ -246,7 +326,8 @@ export function BridgeDashboard() {
             <div className="flex items-center">
               <Badge
                 variant="outline"
-                className="text-xs text-muted-foreground hover:text-foreground/80 px-2 py-1 rounded-md mr-2"
+                className="text-xs text-muted-foreground hover:text-foreground/80 px-2 py-1 rounded-md mr-2 cursor-pointer"
+                onClick={handleMaxClick}
               >
                 Max
               </Badge>
@@ -265,10 +346,6 @@ export function BridgeDashboard() {
           </div>
 
           <div className="space-y-2 text-sm font-mono">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Gas on destination</span>
-              <span className="text-blue-400 cursor-pointer">Add</span>
-            </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">You will receive</span>
               <span>{receiveAmount}</span>
