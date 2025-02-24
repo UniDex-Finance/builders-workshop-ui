@@ -244,6 +244,14 @@ export function Header() {
               >
                 Stats
               </DropdownItem>
+              <DropdownItem
+                key="bridge"
+                description="Transfer assets between chains"
+                startContent={<FontAwesomeIcon icon={faChartLine} />}
+                onClick={() => (window.location.href = "/bridge")}
+              >
+                Bridge
+              </DropdownItem>
             </DropdownMenu>
           </Dropdown>
         </nav>
@@ -426,6 +434,13 @@ export function Header() {
                           className="w-4 h-4"
                         />
                         Stats
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2"
+                        onClick={() => (window.location.href = "/bridge")}
+                      >
+                        Bridge
                       </Button>
                     </div>
                   </div>

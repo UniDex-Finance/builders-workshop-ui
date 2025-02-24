@@ -1,6 +1,26 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { http } from 'viem';
 import { arbitrum, optimism, sepolia, base, mainnet } from 'wagmi/chains';
+import { type Chain } from 'viem'
+
+// Define custom chain
+export const sonic = {
+  id: 146,
+  name: 'Sonic',
+  nativeCurrency: { name: 'S', symbol: 'S', decimals: 18 },
+  rpcUrls: {
+    default: { http: ['https://rpc.soniclabs.com'] },
+  },
+  blockExplorers: {
+    default: { name: 'Sonic Explorer', url: 'https://sonicscan.org' },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 60, //double check this
+    },
+  },
+} as const satisfies Chain
 
 // Define chains
 const chains = [
@@ -8,6 +28,7 @@ const chains = [
   arbitrum,
   optimism,
   base,
+  sonic,
   ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [sepolia] : []),
 ] as const;
 
@@ -21,6 +42,7 @@ export const config = getDefaultConfig({
     [arbitrum.id]: http(process.env.NEXT_PUBLIC_ARBITRUM_RPC || 'https://rpc.ankr.com/arbitrum'),
     [optimism.id]: http(process.env.NEXT_PUBLIC_OPTIMISM_RPC || 'https://rpc.ankr.com/optimism'),
     [base.id]: http(process.env.NEXT_PUBLIC_BASE_RPC || 'https://rpc.ankr.com/base'),
+    [sonic.id]: http(process.env.NEXT_PUBLIC_SONIC_RPC || 'https://rpc.soniclabs.com'),
   },
   ssr: true,
 });
