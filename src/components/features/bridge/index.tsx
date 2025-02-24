@@ -166,6 +166,30 @@ export function BridgeDashboard() {
   const fee = 0.32;
   const receiveAmount = amount ? (parseFloat(amount) * 0.999).toFixed(3) : '0.000';
 
+  const handleRotateNetworks = () => {
+    const currentFrom = fromNetwork;
+    const currentTo = toNetwork;
+    setFromNetwork(currentTo);
+    setToNetwork(currentFrom);
+    
+    // If we need to switch the chain when rotating
+    if (currentTo) {
+      const newFromChain = supportedChains.find(c => c.name.toLowerCase() === currentTo);
+      if (newFromChain) {
+        switchChain({ chainId: newFromChain.id });
+      }
+    }
+  };
+
+  const handleMaxClick = () => {
+    if (fromBalance) {
+      // Convert from wei (1e18) to regular number and round down to 6 decimal places
+      const rawAmount = Number(fromBalance) / 1e18;
+      const formattedAmount = Math.floor(rawAmount * 1e6) / 1e6;
+      setAmount(formattedAmount.toString());
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header />
@@ -177,7 +201,7 @@ export function BridgeDashboard() {
           </div>
 
           {/* Network Selector - Flex Layout */}
-          <div className="flex space-x-4">
+          <div className="flex items-center space-x-4">
             <div className="flex-1 bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)] rounded p-4">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center">
@@ -227,6 +251,31 @@ export function BridgeDashboard() {
                 </div>
               </div>
             </div>
+            
+            {/* Rotate Button */}
+            <button
+              onClick={handleRotateNetworks}
+              className="flex items-center justify-center w-8 h-8 rounded-full bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)] hover:bg-[var(--deposit-card-border)] transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="rotate-90"
+              >
+                <path d="M17 1l4 4-4 4"></path>
+                <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                <path d="M7 23l-4-4 4-4"></path>
+                <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+              </svg>
+            </button>
+            
             <div className="flex-1 bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)] rounded p-4">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center">
@@ -277,7 +326,8 @@ export function BridgeDashboard() {
             <div className="flex items-center">
               <Badge
                 variant="outline"
-                className="text-xs text-muted-foreground hover:text-foreground/80 px-2 py-1 rounded-md mr-2"
+                className="text-xs text-muted-foreground hover:text-foreground/80 px-2 py-1 rounded-md mr-2 cursor-pointer"
+                onClick={handleMaxClick}
               >
                 Max
               </Badge>
