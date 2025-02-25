@@ -257,7 +257,7 @@ export function LeaderboardDashboard() {
                       <TableHead className="text-muted-foreground">Rank</TableHead>
                       <TableHead className="text-muted-foreground">Trader</TableHead>
                       <TableHead className="text-muted-foreground text-right">
-                        PnL (Score)
+                        Score (PnL)
                         <ChevronDown className="ml-2 h-4 w-4 inline" />
                       </TableHead>
                       <TableHead className="text-muted-foreground text-right">
@@ -300,16 +300,18 @@ export function LeaderboardDashboard() {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell 
-                          className={`text-right ${
+                        <TableCell className="text-right">
+                          <span className={`font-medium ${
+                            userStats.score >= 0 
+                              ? "text-[var(--color-long)]" 
+                              : "text-[var(--color-short)]"
+                          }`}>{userStats.score.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
+                          <span className={`ml-1 opacity-75 ${
                             userStats.pnl >= 0 
                               ? "text-[var(--color-long)]" 
                               : "text-[var(--color-short)]"
-                          }`}
-                        >
-                          {formatDollarAmount(userStats.pnl)}
-                          <span className="text-muted-foreground ml-1">
-                            ({userStats.score.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)
+                          }`}>
+                            ({formatDollarAmount(userStats.pnl)})
                           </span>
                         </TableCell>
                         <TableCell className="text-right">
@@ -343,7 +345,7 @@ export function LeaderboardDashboard() {
                       <TableHead className="text-muted-foreground">Position</TableHead>
                       <TableHead className="text-muted-foreground text-right">PnL</TableHead>
                       <TableHead className="text-muted-foreground text-right">Size</TableHead>
-                      <TableHead className="text-muted-foreground text-right">Max Collateral</TableHead>
+                      <TableHead className="text-muted-foreground text-right">Collateral</TableHead>
                       <TableHead className="text-muted-foreground text-right">Return %</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -436,7 +438,7 @@ export function LeaderboardDashboard() {
                           <TableHead className="text-muted-foreground">Rank</TableHead>
                           <TableHead className="text-muted-foreground">Trader</TableHead>
                           <TableHead className="text-muted-foreground text-right">
-                            PnL (Score)
+                            Score (PnL)
                             <ChevronDown className="ml-2 h-4 w-4 inline" />
                           </TableHead>
                           <TableHead className="text-muted-foreground text-right">
@@ -487,16 +489,18 @@ export function LeaderboardDashboard() {
                                   )}
                                 </div>
                               </TableCell>
-                              <TableCell 
-                                className={`text-right ${
+                              <TableCell className="text-right">
+                                <span className={`font-medium ${
+                                  row.score >= 0 
+                                    ? "text-[var(--color-long)]" 
+                                    : "text-[var(--color-short)]"
+                                }`}>{row.score.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
+                                <span className={`ml-1 opacity-50 ${
                                   row.pnl >= 0 
                                     ? "text-[var(--color-long)]" 
                                     : "text-[var(--color-short)]"
-                                }`}
-                              >
-                                {formatDollarAmount(row.pnl)}
-                                <span className="text-muted-foreground ml-1">
-                                  ({row.score.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)
+                                }`}>
+                                  ({formatDollarAmount(row.pnl)})
                                 </span>
                               </TableCell>
                               <TableCell className="text-right">
@@ -519,7 +523,7 @@ export function LeaderboardDashboard() {
                                           <TableHead className="text-muted-foreground">Position</TableHead>
                                           <TableHead className="text-muted-foreground text-right">PnL</TableHead>
                                           <TableHead className="text-muted-foreground text-right">Size</TableHead>
-                                          <TableHead className="text-muted-foreground text-right">Max Collateral</TableHead>
+                                          <TableHead className="text-muted-foreground text-right">Collateral</TableHead>
                                           <TableHead className="text-muted-foreground text-right">Return %</TableHead>
                                         </TableRow>
                                       </TableHeader>
@@ -621,7 +625,7 @@ export function LeaderboardDashboard() {
                           <TableHead className="text-muted-foreground">Rank</TableHead>
                           <TableHead className="text-muted-foreground">Trader</TableHead>
                           <TableHead className="text-muted-foreground text-right">
-                            PnL (Score)
+                            Score (PnL)
                             <ChevronDown className="ml-2 h-4 w-4 inline" />
                           </TableHead>
                           <TableHead className="text-muted-foreground text-right">
@@ -666,16 +670,18 @@ export function LeaderboardDashboard() {
                                   )}
                                 </div>
                               </TableCell>
-                              <TableCell 
-                                className={`text-right ${
+                              <TableCell className="text-right">
+                                <span className={`font-medium ${
+                                  row.score >= 0 
+                                    ? "text-[var(--color-long)]" 
+                                    : "text-[var(--color-short)]"
+                                }`}>{row.score.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
+                                <span className={`ml-1 opacity-50 ${
                                   row.pnl >= 0 
                                     ? "text-[var(--color-long)]" 
                                     : "text-[var(--color-short)]"
-                                }`}
-                              >
-                                {formatDollarAmount(row.pnl)}
-                                <span className="text-muted-foreground ml-1">
-                                  ({row.score.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)
+                                }`}>
+                                  ({formatDollarAmount(row.pnl)})
                                 </span>
                               </TableCell>
                               <TableCell className="text-right">
@@ -698,7 +704,7 @@ export function LeaderboardDashboard() {
                                           <TableHead className="text-muted-foreground">Position</TableHead>
                                           <TableHead className="text-muted-foreground text-right">PnL</TableHead>
                                           <TableHead className="text-muted-foreground text-right">Size</TableHead>
-                                          <TableHead className="text-muted-foreground text-right">Max Collateral</TableHead>
+                                          <TableHead className="text-muted-foreground text-right">Collateral</TableHead>
                                           <TableHead className="text-muted-foreground text-right">Return %</TableHead>
                                         </TableRow>
                                       </TableHeader>
