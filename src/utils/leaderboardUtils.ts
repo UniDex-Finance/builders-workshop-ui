@@ -20,6 +20,22 @@ export interface LeaderboardStats {
   totalPnl: number
 }
 
+// Helper function to format dollar amounts with proper handling of negative values
+export const formatDollarAmount = (amount: number, options?: Intl.NumberFormatOptions): string => {
+  const defaultOptions = { 
+    minimumFractionDigits: 2, 
+    maximumFractionDigits: 2,
+    ...options
+  };
+  
+  // Handle negative numbers differently to place $ after the negative sign
+  if (amount < 0) {
+    return `-$${Math.abs(amount).toLocaleString('en-US', defaultOptions)}`;
+  }
+  
+  return `$${amount.toLocaleString('en-US', defaultOptions)}`;
+};
+
 const PRIZE_DISTRIBUTION = {
   1: 3500,
   2: 1000,
