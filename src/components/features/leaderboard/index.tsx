@@ -3,9 +3,9 @@
 import { Header } from "../../shared/Header"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../ui/table"
 import { Badge } from "../../ui/badge"
-import { ChevronDown, ChevronUp, Info, Trophy, Loader2 } from "lucide-react"
+import { ChevronDown, ChevronUp, Info, Trophy, Loader2, BarChart4, Users, LineChart, DollarSign } from "lucide-react"
 import { useLeaderboardData } from '../../../hooks/useLeaderboardData'
-import { processLeaderboardData } from '../../../utils/leaderboardUtils'
+import { processLeaderboardData, calculateLeaderboardStats } from '../../../utils/leaderboardUtils'
 import { Button } from "../../ui/button"
 import { useState } from "react"
 import { useSmartAccount } from "@/hooks/use-smart-account"
@@ -20,6 +20,7 @@ import {
 export function LeaderboardDashboard() {
   const { data: rawData, loading, error } = useLeaderboardData()
   const processedData = processLeaderboardData(rawData)
+  const leaderboardStats = calculateLeaderboardStats(rawData)
   const [showPersonalStats, setShowPersonalStats] = useState(false)
   const [showAllTraders, setShowAllTraders] = useState(true)
   const { smartAccount } = useSmartAccount()
@@ -139,6 +140,73 @@ export function LeaderboardDashboard() {
                   <strong className="text-foreground">Minimum Requirements:</strong> At least 3 trades and minimum $50 total PnL
                 </span>
               </p>
+            </div>
+          </div>
+
+          {/* Stats Counter Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Total Volume */}
+            <div className="bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)] rounded-lg p-6 flex items-center justify-between">
+              <div>
+                <p className="text-muted-foreground text-sm">Total Volume</p>
+                <h3 className="text-2xl font-bold mt-1">
+                  ${leaderboardStats.totalVolume.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </h3>
+              </div>
+              <div className="bg-blue-500/10 p-3 rounded-full">
+                <BarChart4 className="h-5 w-5 text-blue-500" />
+              </div>
+            </div>
+
+            {/* Total Traders */}
+            <div className="bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)] rounded-lg p-6 flex items-center justify-between">
+              <div>
+                <p className="text-muted-foreground text-sm">Unique Traders</p>
+                <h3 className="text-2xl font-bold mt-1">
+                  {leaderboardStats.totalTraders.toLocaleString()}
+                </h3>
+              </div>
+              <div className="bg-violet-500/10 p-3 rounded-full">
+                <Users className="h-5 w-5 text-violet-500" />
+              </div>
+            </div>
+
+            {/* Total Trades */}
+            <div className="bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)] rounded-lg p-6 flex items-center justify-between">
+              <div>
+                <p className="text-muted-foreground text-sm">Total Trades</p>
+                <h3 className="text-2xl font-bold mt-1">
+                  {leaderboardStats.totalTrades.toLocaleString()}
+                </h3>
+              </div>
+              <div className="bg-amber-500/10 p-3 rounded-full">
+                <LineChart className="h-5 w-5 text-amber-500" />
+              </div>
+            </div>
+
+            {/* Total PnL */}
+            <div className="bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)] rounded-lg p-6 flex items-center justify-between">
+              <div>
+                <p className="text-muted-foreground text-sm">Total PnL</p>
+                <h3 className={`text-2xl font-bold mt-1 ${
+                  leaderboardStats.totalPnl >= 0 
+                    ? "text-[var(--color-long)]" 
+                    : "text-[var(--color-short)]"
+                }`}>
+                  ${leaderboardStats.totalPnl.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </h3>
+              </div>
+              <div className={`${
+                leaderboardStats.totalPnl >= 0 
+                  ? "bg-[var(--color-long)]/10" 
+                  : "bg-[var(--color-short)]/10"
+              } p-3 rounded-full`}>
+                <DollarSign className={`h-5 w-5 ${
+                  leaderboardStats.totalPnl >= 0 
+                    ? "text-[var(--color-long)]" 
+                    : "text-[var(--color-short)]"
+                }`} />
+              </div>
             </div>
           </div>
 

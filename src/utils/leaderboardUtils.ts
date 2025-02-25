@@ -13,11 +13,37 @@ export interface ProcessedTraderData {
   isQualifying: boolean
 }
 
+export interface LeaderboardStats {
+  totalVolume: number
+  totalTraders: number
+  totalTrades: number
+  totalPnl: number
+}
+
 const PRIZE_DISTRIBUTION = {
   1: 3500,
   2: 1000,
   3: 500,
 }
+
+export const calculateLeaderboardStats = (rawData: TradeItem[]): LeaderboardStats => {
+  // Calculate total volume and total PnL across all trades
+  const totalVolume = rawData.reduce((sum, trade) => sum + Number(trade.size), 0);
+  const totalPnl = rawData.reduce((sum, trade) => sum + Number(trade.pnl), 0);
+  
+  // Get unique traders count
+  const uniqueTraders = new Set(rawData.map(trade => trade.user)).size;
+  
+  // Total trades is simply the length of the raw data array
+  const totalTrades = rawData.length;
+  
+  return {
+    totalVolume: Number(totalVolume.toFixed(2)),
+    totalTraders: uniqueTraders,
+    totalTrades: totalTrades,
+    totalPnl: Number(totalPnl.toFixed(2))
+  };
+};
 
 export const processLeaderboardData = (rawData: TradeItem[]): ProcessedTraderData[] => {
   console.log('Raw data received:', rawData);
