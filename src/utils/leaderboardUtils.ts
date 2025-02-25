@@ -22,18 +22,50 @@ export interface LeaderboardStats {
 
 // Helper function to format dollar amounts with proper handling of negative values
 export const formatDollarAmount = (amount: number, options?: Intl.NumberFormatOptions): string => {
-  const defaultOptions = { 
-    minimumFractionDigits: 2, 
-    maximumFractionDigits: 2,
-    ...options
+  // Ensure we have a valid number to format
+  if (isNaN(amount)) {
+    return '$0.00';
+  }
+  
+  // Create a safe options object with validated properties
+  const safeOptions: Intl.NumberFormatOptions = {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
   };
+  
+  // Apply custom options, but enforce valid ranges
+  if (options) {
+    if (typeof options.minimumFractionDigits === 'number') {
+      safeOptions.minimumFractionDigits = Math.max(0, Math.min(20, options.minimumFractionDigits));
+    }
+    
+    if (typeof options.maximumFractionDigits === 'number') {
+      safeOptions.maximumFractionDigits = Math.max(0, Math.min(20, options.maximumFractionDigits));
+    }
+    
+    // Ensure minimumFractionDigits ≤ maximumFractionDigits
+    const min = safeOptions.minimumFractionDigits ?? 0;
+    const max = safeOptions.maximumFractionDigits ?? 0;
+    
+    if (min > max) {
+      safeOptions.minimumFractionDigits = max;
+    }
+    
+    // Copy any other options
+    for (const key in options) {
+      if (key !== 'minimumFractionDigits' && key !== 'maximumFractionDigits') {
+        // @ts-ignore - dynamic property assignment
+        safeOptions[key] = options[key];
+      }
+    }
+  }
   
   // Handle negative numbers differently to place $ after the negative sign
   if (amount < 0) {
-    return `-$${Math.abs(amount).toLocaleString('en-US', defaultOptions)}`;
+    return `-$${Math.abs(amount).toLocaleString('en-US', safeOptions)}`;
   }
   
-  return `$${amount.toLocaleString('en-US', defaultOptions)}`;
+  return `$${amount.toLocaleString('en-US', safeOptions)}`;
 };
 
 const PRIZE_DISTRIBUTION = {

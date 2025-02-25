@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Badge } from "../../ui/badge"
 import { ChevronDown, ChevronUp, Info, Trophy, Loader2, BarChart4, Users, LineChart, DollarSign } from "lucide-react"
 import { useLeaderboardData } from '../../../hooks/useLeaderboardData'
-import { processLeaderboardData, calculateLeaderboardStats } from '../../../utils/leaderboardUtils'
+import { processLeaderboardData, calculateLeaderboardStats, formatDollarAmount } from '../../../utils/leaderboardUtils'
 import { Button } from "../../ui/button"
 import { useState } from "react"
 import { useSmartAccount } from "@/hooks/use-smart-account"
@@ -150,7 +150,7 @@ export function LeaderboardDashboard() {
               <div>
                 <p className="text-muted-foreground text-sm">Total Volume</p>
                 <h3 className="text-2xl font-bold mt-1">
-                  ${leaderboardStats.totalVolume.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {formatDollarAmount(leaderboardStats.totalVolume)}
                 </h3>
               </div>
               <div className="bg-blue-500/10 p-3 rounded-full">
@@ -193,7 +193,7 @@ export function LeaderboardDashboard() {
                     ? "text-[var(--color-long)]" 
                     : "text-[var(--color-short)]"
                 }`}>
-                  ${leaderboardStats.totalPnl.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {formatDollarAmount(leaderboardStats.totalPnl)}
                 </h3>
               </div>
               <div className={`${
@@ -295,7 +295,7 @@ export function LeaderboardDashboard() {
                             {userStats.trader}
                             {userStats.prize && (
                               <Badge variant="secondary" className="bg-[var(--color-long-dark)]/30 text-[var(--color-long)] border-[var(--color-long)]/50">
-                                ${userStats.prize.toLocaleString()}
+                                {formatDollarAmount(userStats.prize, { maximumFractionDigits: 0 })}
                               </Badge>
                             )}
                           </div>
@@ -307,16 +307,16 @@ export function LeaderboardDashboard() {
                               : "text-[var(--color-short)]"
                           }`}
                         >
-                          ${userStats.pnl.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {formatDollarAmount(userStats.pnl)}
                           <span className="text-muted-foreground ml-1">
                             ({userStats.score.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)
                           </span>
                         </TableCell>
                         <TableCell className="text-right">
-                          ${userStats.volume.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {formatDollarAmount(userStats.volume)}
                         </TableCell>
                         <TableCell className="text-right">
-                          ${userStats.avgCollateral.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {formatDollarAmount(userStats.avgCollateral)}
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -389,13 +389,13 @@ export function LeaderboardDashboard() {
                                   : "text-[var(--color-short)]"
                               }`}
                             >
-                              ${pnl.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                              {formatDollarAmount(pnl)}
                             </TableCell>
                             <TableCell className="text-right">
-                              ${size.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                              {formatDollarAmount(size)}
                             </TableCell>
                             <TableCell className="text-right">
-                              ${maxCollateral.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                              {formatDollarAmount(maxCollateral)}
                             </TableCell>
                             <TableCell 
                               className={`text-right ${
@@ -476,7 +476,7 @@ export function LeaderboardDashboard() {
                                     {row.trader}
                                     {row.prize && (
                                       <Badge variant="secondary" className="bg-[var(--color-long-dark)]/30 text-[var(--color-long)] border-[var(--color-long)]/50">
-                                        ${row.prize.toLocaleString()}
+                                        {formatDollarAmount(row.prize, { maximumFractionDigits: 0 })}
                                       </Badge>
                                     )}
                                   </div>
@@ -494,16 +494,16 @@ export function LeaderboardDashboard() {
                                     : "text-[var(--color-short)]"
                                 }`}
                               >
-                                ${row.pnl.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                {formatDollarAmount(row.pnl)}
                                 <span className="text-muted-foreground ml-1">
                                   ({row.score.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)
                                 </span>
                               </TableCell>
                               <TableCell className="text-right">
-                                ${row.volume.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                {formatDollarAmount(row.volume)}
                               </TableCell>
                               <TableCell className="text-right">
-                                ${row.avgCollateral.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                {formatDollarAmount(row.avgCollateral)}
                               </TableCell>
                             </TableRow>
 
@@ -564,13 +564,13 @@ export function LeaderboardDashboard() {
                                                     : "text-[var(--color-short)]"
                                                 }`}
                                               >
-                                                ${pnl.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                                                {formatDollarAmount(pnl)}
                                               </TableCell>
                                               <TableCell className="text-right">
-                                                ${size.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                                                {formatDollarAmount(size)}
                                               </TableCell>
                                               <TableCell className="text-right">
-                                                ${maxCollateral.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                                                {formatDollarAmount(maxCollateral)}
                                               </TableCell>
                                               <TableCell 
                                                 className={`text-right ${
@@ -655,7 +655,7 @@ export function LeaderboardDashboard() {
                                     {row.trader}
                                     {row.prize && (
                                       <Badge variant="secondary" className="bg-[var(--color-long-dark)]/30 text-[var(--color-long)] border-[var(--color-long)]/50">
-                                        ${row.prize.toLocaleString()}
+                                        {formatDollarAmount(row.prize, { maximumFractionDigits: 0 })}
                                       </Badge>
                                     )}
                                   </div>
@@ -673,16 +673,16 @@ export function LeaderboardDashboard() {
                                     : "text-[var(--color-short)]"
                                 }`}
                               >
-                                ${row.pnl.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                {formatDollarAmount(row.pnl)}
                                 <span className="text-muted-foreground ml-1">
                                   ({row.score.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)
                                 </span>
                               </TableCell>
                               <TableCell className="text-right">
-                                ${row.volume.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                {formatDollarAmount(row.volume)}
                               </TableCell>
                               <TableCell className="text-right">
-                                ${row.avgCollateral.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                {formatDollarAmount(row.avgCollateral)}
                               </TableCell>
                             </TableRow>
 
@@ -743,13 +743,13 @@ export function LeaderboardDashboard() {
                                                     : "text-[var(--color-short)]"
                                                 }`}
                                               >
-                                                ${pnl.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                                                {formatDollarAmount(pnl)}
                                               </TableCell>
                                               <TableCell className="text-right">
-                                                ${size.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                                                {formatDollarAmount(size)}
                                               </TableCell>
                                               <TableCell className="text-right">
-                                                ${maxCollateral.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                                                {formatDollarAmount(maxCollateral)}
                                               </TableCell>
                                               <TableCell 
                                                 className={`text-right ${
