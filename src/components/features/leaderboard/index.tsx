@@ -3,9 +3,9 @@
 import { Header } from "../../shared/Header"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../ui/table"
 import { Badge } from "../../ui/badge"
-import { ChevronDown, ChevronUp, Info, Trophy, Loader2, BarChart4, Users, LineChart, DollarSign } from "lucide-react"
+import { ChevronDown, ChevronUp, Info, Trophy, Loader2, BarChart4, Users, LineChart, DollarSign, X } from "lucide-react"
 import { useLeaderboardData } from '../../../hooks/useLeaderboardData'
-import { processLeaderboardData, calculateLeaderboardStats, formatDollarAmount } from '../../../utils/leaderboardUtils'
+import { processLeaderboardData, calculateLeaderboardStats, formatDollarAmount, getTradeValidityReason } from '../../../utils/leaderboardUtils'
 import { Button } from "../../ui/button"
 import { useState } from "react"
 import { useSmartAccount } from "@/hooks/use-smart-account"
@@ -137,7 +137,7 @@ export function LeaderboardDashboard() {
               <p className="flex items-start gap-2">
                 <span className="text-muted-foreground/50 font-mono">•</span>
                 <span>
-                  <strong className="text-foreground">Minimum Requirements:</strong> At least 3 trades and minimum $50 total PnL
+                  <strong className="text-foreground">Minimum Requirements:</strong> At least 3 trades, minimum $50 total PnL, minimum 5 minute duration, and minimum $10 collateral.
                 </span>
               </p>
             </div>
@@ -365,11 +365,12 @@ export function LeaderboardDashboard() {
                           minute: '2-digit'
                         })
                         const pair = TRADING_PAIRS[trade.tokenAddress] || 'Unknown'
+                        const { isValid, reason } = getTradeValidityReason(trade)
 
                         return (
                           <TableRow 
                             key={trade.id} 
-                            className="hover:bg-[var(--deposit-card-background)] border-[var(--deposit-card-border)]"
+                            className={`hover:bg-[var(--deposit-card-background)] border-[var(--deposit-card-border)] ${!isValid ? 'opacity-70' : ''}`}
                           >
                             <TableCell className="pl-8">{formattedDate}</TableCell>
                             <TableCell>
@@ -382,6 +383,18 @@ export function LeaderboardDashboard() {
                                 }`}>
                                   {leverage}x
                                 </span>
+                                {!isValid && (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger>
+                                        <X className="h-4 w-4 text-red-500" />
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>{reason}</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                )}
                               </div>
                             </TableCell>
                             <TableCell 
@@ -542,11 +555,12 @@ export function LeaderboardDashboard() {
                                             minute: '2-digit'
                                           })
                                           const pair = TRADING_PAIRS[trade.tokenAddress] || 'Unknown'
+                                          const { isValid, reason } = getTradeValidityReason(trade)
 
                                           return (
                                             <TableRow 
                                               key={trade.id} 
-                                              className="hover:bg-[var(--deposit-card-background)] border-[var(--deposit-card-border)]"
+                                              className={`hover:bg-[var(--deposit-card-background)] border-[var(--deposit-card-border)] ${!isValid ? 'opacity-70' : ''}`}
                                             >
                                               <TableCell className="pl-8">{formattedDate}</TableCell>
                                               <TableCell>
@@ -559,6 +573,18 @@ export function LeaderboardDashboard() {
                                                   }`}>
                                                     {leverage}x
                                                   </span>
+                                                  {!isValid && (
+                                                    <TooltipProvider>
+                                                      <Tooltip>
+                                                        <TooltipTrigger>
+                                                          <X className="h-4 w-4 text-red-500" />
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                          <p>{reason}</p>
+                                                        </TooltipContent>
+                                                      </Tooltip>
+                                                    </TooltipProvider>
+                                                  )}
                                                 </div>
                                               </TableCell>
                                               <TableCell 
@@ -723,11 +749,12 @@ export function LeaderboardDashboard() {
                                             minute: '2-digit'
                                           })
                                           const pair = TRADING_PAIRS[trade.tokenAddress] || 'Unknown'
+                                          const { isValid, reason } = getTradeValidityReason(trade)
 
                                           return (
                                             <TableRow 
                                               key={trade.id} 
-                                              className="hover:bg-[var(--deposit-card-background)] border-[var(--deposit-card-border)]"
+                                              className={`hover:bg-[var(--deposit-card-background)] border-[var(--deposit-card-border)] ${!isValid ? 'opacity-70' : ''}`}
                                             >
                                               <TableCell className="pl-8">{formattedDate}</TableCell>
                                               <TableCell>
@@ -740,6 +767,18 @@ export function LeaderboardDashboard() {
                                                   }`}>
                                                     {leverage}x
                                                   </span>
+                                                  {!isValid && (
+                                                    <TooltipProvider>
+                                                      <Tooltip>
+                                                        <TooltipTrigger>
+                                                          <X className="h-4 w-4 text-red-500" />
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                          <p>{reason}</p>
+                                                        </TooltipContent>
+                                                      </Tooltip>
+                                                    </TooltipProvider>
+                                                  )}
                                                 </div>
                                               </TableCell>
                                               <TableCell 

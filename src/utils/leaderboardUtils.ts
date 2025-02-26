@@ -74,16 +74,105 @@ const PRIZE_DISTRIBUTION = {
   3: 500,
 }
 
+// Helper function to count trades by duration thresholds and collateral
+const logTradesByDurationThresholds = (trades: TradeItem[]): void => {
+  const under1min = trades.filter(trade => {
+    const openTime = Number(trade.createdAt);
+    const closeTime = Number(trade.closedAt);
+    return (closeTime - openTime) < 60; // less than 1 minute
+  }).length;
+  
+  const under5min = trades.filter(trade => {
+    const openTime = Number(trade.createdAt);
+    const closeTime = Number(trade.closedAt);
+    return (closeTime - openTime) < 5 * 60; // less than 5 minutes
+  }).length;
+  
+  const under10min = trades.filter(trade => {
+    const openTime = Number(trade.createdAt);
+    const closeTime = Number(trade.closedAt);
+    return (closeTime - openTime) < 10 * 60; // less than 10 minutes
+  }).length;
+  
+  const under15min = trades.filter(trade => {
+    const openTime = Number(trade.createdAt);
+    const closeTime = Number(trade.closedAt);
+    return (closeTime - openTime) < 15 * 60; // less than 15 minutes
+  }).length;
+  
+  const under10Collateral = trades.filter(trade => {
+    return Number(trade.maxCollateral) < 10;
+  }).length;
+  
+  console.log('Trade duration statistics:');
+  console.log(`- Under 1 minute: ${under1min} trades (${((under1min / trades.length) * 100).toFixed(2)}%)`);
+  console.log(`- Under 5 minutes: ${under5min} trades (${((under5min / trades.length) * 100).toFixed(2)}%)`);
+  console.log(`- Under 10 minutes: ${under10min} trades (${((under10min / trades.length) * 100).toFixed(2)}%)`);
+  console.log(`- Under 15 minutes: ${under15min} trades (${((under15min / trades.length) * 100).toFixed(2)}%)`);
+  console.log(`- Under $10 collateral: ${under10Collateral} trades (${((under10Collateral / trades.length) * 100).toFixed(2)}%)`);
+  console.log(`- Total trades: ${trades.length}`);
+};
+
+// Helper to determine if a trade is valid and why it might be invalid
+export const getTradeValidityReason = (trade: TradeItem): { isValid: boolean; reason?: string } => {
+  const openTime = Number(trade.createdAt);
+  const closeTime = Number(trade.closedAt);
+  const durationInMinutes = (closeTime - openTime) / 60;
+  const maxCollateral = Number(trade.maxCollateral);
+  
+  if (durationInMinutes < 5) {
+    return { isValid: false, reason: "Trade duration under 5 minutes" };
+  }
+  
+  if (maxCollateral < 10) {
+    return { isValid: false, reason: "Collateral under $10" };
+  }
+  
+  return { isValid: true };
+};
+
+// Helper function to filter trades by minimum duration and minimum collateral
+const filterTrades = (trades: TradeItem[]): TradeItem[] => {  
+  const filteredTrades = trades.filter(trade => {
+    const { isValid } = getTradeValidityReason(trade);
+    return isValid;
+  });
+  
+  const removedDueToTime = trades.filter(trade => {
+    const openTime = Number(trade.createdAt);
+    const closeTime = Number(trade.closedAt);
+    const durationInMinutes = (closeTime - openTime) / 60;
+    return durationInMinutes < 5;
+  }).length;
+  
+  const removedDueToCollateral = trades.filter(trade => {
+    const maxCollateral = Number(trade.maxCollateral);
+    return maxCollateral < 10;
+  }).length;
+  
+  console.log(`Filtered out ${trades.length - filteredTrades.length} trades`);
+  console.log(`- ${removedDueToTime} trades removed due to duration under 5 minutes`);
+  console.log(`- ${removedDueToCollateral} trades removed due to collateral under $10`);
+  
+  return filteredTrades;
+}
+
 export const calculateLeaderboardStats = (rawData: TradeItem[]): LeaderboardStats => {
+  // Log trade duration statistics before filtering
+  logTradesByDurationThresholds(rawData);
+  
+  // Apply filters
+  const filteredData = filterTrades(rawData);
+
   // Calculate total volume and total PnL across all trades
-  const totalVolume = rawData.reduce((sum, trade) => sum + Number(trade.size), 0);
-  const totalPnl = rawData.reduce((sum, trade) => sum + Number(trade.pnl), 0);
+  const totalVolume = filteredData.reduce((sum, trade) => sum + Number(trade.size), 0);
+  const totalPnl = filteredData.reduce((sum, trade) => sum + Number(trade.pnl), 0);
   
   // Get unique traders count
-  const uniqueTraders = new Set(rawData.map(trade => trade.user)).size;
+  const uniqueTraders = new Set(filteredData.map(trade => trade.user)).size;
   
-  // Total trades is simply the length of the raw data array
-  const totalTrades = rawData.length;
+  // Total trades is simply the length of the filtered data array
+  const totalTrades = filteredData.length;
   
   return {
     totalVolume: Number(totalVolume.toFixed(2)),
@@ -95,9 +184,15 @@ export const calculateLeaderboardStats = (rawData: TradeItem[]): LeaderboardStat
 
 export const processLeaderboardData = (rawData: TradeItem[]): ProcessedTraderData[] => {
   console.log('Raw data received:', rawData);
+  
+  // Log trade duration statistics before filtering
+  logTradesByDurationThresholds(rawData);
 
+  // Apply filters
+  const filteredData = filterTrades(rawData);
+  
   // Group trades by user and track individual trade performances
-  const traderStats = rawData.reduce((acc, trade) => {
+  const traderStats = filteredData.reduce((acc, trade) => {
     const user = trade.user
     if (!acc[user]) {
       acc[user] = {
@@ -157,7 +252,6 @@ export const processLeaderboardData = (rawData: TradeItem[]): ProcessedTraderDat
     }>
   }>)
 
-  console.log('Trader stats after processing:', traderStats);
 
   // Process all traders
   const allTraders = Object.values(traderStats)
@@ -172,13 +266,6 @@ export const processLeaderboardData = (rawData: TradeItem[]): ProcessedTraderDat
       // Check if trader qualifies (at least 3 trades AND $50+ positive PnL)
       const isQualifying = trader.validTrades.length >= 3 && trader.pnl >= 50;
 
-      console.log(`Processed trader ${trader.trader}:`, {
-        trades: trader.validTrades.length,
-        totalPnl: trader.pnl,
-        avgCollateral,
-        score,
-        isQualifying
-      });
 
       return {
         trader: trader.trader,

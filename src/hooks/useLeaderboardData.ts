@@ -15,6 +15,7 @@ export interface TradeItem {
   maxCollateral: string;
   averagePrice: string;
   closePrice: string;
+  createdAt: string;
 }
 
 export const useLeaderboardData = () => {
@@ -61,6 +62,7 @@ query GetLeaderboardData($after: String) {
       maxCollateral
       averagePrice
       closePrice
+      createdAt
     }
     pageInfo {
       endCursor
