@@ -62,7 +62,13 @@ export function PositionsTable({ address }: PositionsTableProps) {
   };
 
   const handleClosePosition = (position: Position) => {
-    const positionSize = parseFloat(position.size);
+    // Safely parse the position size with a fallback to 0
+    const positionSize = parseFloat(position.size || "0");
+    if (isNaN(positionSize)) {
+      console.error("Invalid position size:", position.size);
+      return;
+    }
+    
     const basePair = position.market.split("/")[0].toLowerCase();
     const currentPrice = prices[basePair]?.price;
     
