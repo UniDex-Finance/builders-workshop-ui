@@ -238,12 +238,8 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
   // Calculate total unrealized PnL
   const totalUnrealizedPnl = positions?.reduce((total, position) => {
     if (!position?.pnl) return total;
-    const pnlWithoutFees = parseFloat(position.pnl.replace(/[^0-9.-]/g, ""));
-    const totalFees =
-      parseFloat(position.fees.positionFee || "0") +
-      parseFloat(position.fees.borrowFee || "0") +
-      parseFloat(position.fees.fundingFee || "0");
-    return total + (pnlWithoutFees - totalFees);
+    // position.pnl already has fees deducted, so we just need to parse it
+    return total + parseFloat(position.pnl.replace(/[^0-9.-]/g, ""));
   }, 0);
 
   // Calculate total equity

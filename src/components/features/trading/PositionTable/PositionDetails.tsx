@@ -42,12 +42,7 @@ export function PositionDetails({
   const currentPrice = prices[basePair]?.price;
 
   const calculateFinalPnl = () => {
-    const pnlWithoutFees = parseFloat(position.pnl.replace(/[^0-9.-]/g, ""));
-    const totalFees =
-      parseFloat(position.fees.positionFee) +
-      parseFloat(position.fees.borrowFee) +
-      parseFloat(position.fees.fundingFee);
-    return (pnlWithoutFees - totalFees).toFixed(2);
+    return parseFloat(position.pnl.replace(/[^0-9.-]/g, "")).toFixed(2);
   };
 
   const calculateLeverage = () => {
