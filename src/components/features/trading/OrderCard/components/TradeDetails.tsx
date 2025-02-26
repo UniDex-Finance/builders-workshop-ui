@@ -131,13 +131,13 @@ export function TradeDetails({
         ) : (
           <div className="flex items-center gap-1">
             <Image 
-              src="/static/images/logo-small.png"
-              alt="UniDex"
+              src={getRouteLogo(routingInfo.selectedRoute)}
+              alt={routingInfo.routeNames[routingInfo.selectedRoute]}
               width={16}
               height={16}
             />
             <span className="text-sm text-foreground">
-              UniDex
+              {routingInfo.routeNames[routingInfo.selectedRoute]}
             </span>
           </div>
         )}

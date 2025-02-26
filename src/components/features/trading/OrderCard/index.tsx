@@ -132,18 +132,26 @@ export function OrderCard({
     ? parseFloat(formState.amount) / parseFloat(leverage)
     : 0;
 
-// Update the trading fee calculation
-const calculatedSize = formState.amount ? parseFloat(formState.amount) : 0;
-const tradingFee = calculatedSize * (isValidRoutes(routes) && bestRoute ? routes[bestRoute].tradingFee : 0);
-const totalRequired = calculatedMargin + tradingFee;
-
   const marginWalletBalance = parseFloat(balances?.formattedMusdBalance || "0");
   const onectWalletBalance = parseFloat(balances?.formattedUsdcBalance || "0");
   const combinedBalance = marginWalletBalance + onectWalletBalance;
-  const hasInsufficientBalance = totalRequired > combinedBalance;
-  const needsDeposit = totalRequired > marginWalletBalance && totalRequired <= combinedBalance;
-
   
+  const calculatedSize = formState.amount ? parseFloat(formState.amount) : 0;
+  const tradingFee = calculatedSize * (isValidRoutes(routes) && bestRoute ? routes[bestRoute].tradingFee : 0);
+  const totalRequired = calculatedMargin + tradingFee;
+  
+  const hasInsufficientBalance = totalRequired > combinedBalance;
+  
+  const needsDeposit = activeTab === "market" && 
+    routingInfo.selectedRoute === 'unidexv4' && 
+    totalRequired > marginWalletBalance && 
+    totalRequired <= combinedBalance;
+  
+  const needsWithdrawal = activeTab === "market" && 
+    routingInfo.selectedRoute === 'gtrade' && 
+    calculatedMargin > onectWalletBalance && 
+    totalRequired <= combinedBalance;
+
   const tradeDetails = useTradeCalculations({
     amount: formState.amount,
     leverage,
@@ -330,13 +338,22 @@ const totalRequired = calculatedMargin + tradingFee;
       return `Place Limit ${formState.isLong ? "Long" : "Short"}`;
     }
 
-    // Existing market order validation...
-    const selectedRoute = routingInfo.routes[routingInfo.selectedRoute];
-    if (calculatedMargin < selectedRoute.minMargin) {
-      return `Minimum Margin: ${selectedRoute.minMargin} USD`;
+    // Market order validation - check based on available routes
+    const minMargin = routingInfo.routes[routingInfo.selectedRoute].minMargin;
+    if (calculatedMargin < minMargin) {
+      return `Minimum Margin: ${minMargin} USD`;
     }
 
-    // Rest of the existing market order checks...
+    // Check if we have any available route
+    if (!routingInfo.routes.unidexv4.available && !routingInfo.routes.gtrade.available) {
+      // Get reason for the selected route
+      const reason = routingInfo.routes[routingInfo.selectedRoute].reason;
+      if (reason && reason.includes("liquidity")) {
+        return "Not Enough Liquidity";
+      }
+      return "No Available Route";
+    }
+
     return `Place ${activeTab === "market" ? "Market" : "Limit"} ${
       formState.isLong ? "Long" : "Short"
     }`;
@@ -497,18 +514,9 @@ const totalRequired = calculatedMargin + tradingFee;
                      hasInsufficientBalance ||
                      !isValid(formState.amount) ||
                      (() => {
-                       // Check liquidity based on selected route
-                       if (routingInfo.selectedRoute === 'unidexv4') {
-                         const availableLiquidity = formState.isLong
-                           ? market?.availableLiquidity?.long
-                           : market?.availableLiquidity?.short;
-                         return (
-                           availableLiquidity !== undefined &&
-                           calculatedSize > availableLiquidity &&
-                           !routingInfo.routes.gtrade.available
-                         );
-                       }
-                       return false;
+                       // Check if any route is available
+                       const hasAvailableRoute = routingInfo.routes.unidexv4.available || routingInfo.routes.gtrade.available;
+                       return !hasAvailableRoute;
                      })())
                   : false // Not disabled when showing "Establish Connection"
               }
