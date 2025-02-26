@@ -47,6 +47,12 @@ export function PositionSizeDialog({
   const basePair = position.market.split("/")[0].toLowerCase();
   const currentPrice = prices[basePair]?.price || parseFloat(position.entryPrice);
   
+  // Find current market data
+  const currentMarket = allMarkets.find(m => m.pair === position.market);
+  const availableLiquidity = currentMarket 
+    ? (position.isLong ? currentMarket.availableLiquidity.long : currentMarket.availableLiquidity.short)
+    : 0;
+  
   // Calculate values based on whether increasing or decreasing
   const sizeToModify = collateralAmount ? parseFloat(collateralAmount) : 0;
   const collateralDelta = isIncrease ? sizeToModify : 0; // Only used for increase
@@ -73,15 +79,22 @@ export function PositionSizeDialog({
     totalNotional
   );
 
-  // Calculate new liquidation price (-90% from entry)
+  // Calculate new liquidation price properly based on leverage
+  const remainingMarginAtLiq = newMargin * 0.1;  // Liquidation at 10% remaining margin
+  const marginToLiq = newMargin - remainingMarginAtLiq;
+  const requiredPriceMovement = marginToLiq / newTotalSize;
+  
   const newLiquidationPrice = position.isLong
-    ? newAverageEntry * 0.1  // Long position liquidates at 90% loss
-    : newAverageEntry * 1.9; // Short position liquidates at 90% loss
+    ? newAverageEntry * (1 - requiredPriceMovement)
+    : newAverageEntry * (1 + requiredPriceMovement);
 
   // Calculate fees
   const positionFee = Math.max(newTotalSize * 0.001, 0.8); // 0.1% fee with 0.8 USDC minimum
   const borrowFee = position.fees.borrowFee; // Keep existing borrow fee
   const fundingFee = position.fees.fundingFee; // Keep existing funding fee
+
+  // Validation for OI limits
+  const exceedsOILimit = isIncrease && sizeDelta > availableLiquidity;
 
   // Validation
   const maxCollateral = 7493.47; // This should come from your balance/wallet
@@ -153,8 +166,16 @@ export function PositionSizeDialog({
 
   // Validation
   const isValid = isIncrease
-    ? collateralDelta <= maxCollateral && leverage >= 1 && leverage <= 100
+    ? collateralDelta <= maxCollateral && leverage >= 1 && leverage <= 100 && !exceedsOILimit
     : sizeDelta > 0 && sizeDelta <= currentSize;
+
+  const buttonText = () => {
+    if (isLoading) return "Processing...";
+    if (exceedsOILimit) return "Max OI Reached";
+    return isIncrease 
+      ? `Increase by ${sizeDelta.toFixed(2)} USD` 
+      : `Decrease by ${sizeDelta.toFixed(2)} USD`;
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -295,10 +316,7 @@ export function PositionSizeDialog({
               disabled={!isValid || isLoading || !collateralAmount}
               onClick={handleSubmit}
             >
-              {isLoading 
-                ? "Processing..." 
-                : `${isIncrease ? 'Increase' : 'Decrease'} by ${Math.abs(sizeDelta).toFixed(2)} USD`
-              }
+              {buttonText()}
             </Button>
           </CardFooter>
         </Card>

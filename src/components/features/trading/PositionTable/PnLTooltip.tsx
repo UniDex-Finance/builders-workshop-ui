@@ -13,13 +13,23 @@ export function PnLTooltip({ position, rect }: PnLTooltipProps) {
       : `-$${Math.abs(numValue).toFixed(2)}`;
   };
 
-  const finalPnl = parseFloat(position.pnl.replace(/[^0-9.-]/g, ""));
+  // Safely parse the PnL value
+  const finalPnl = parseFloat(position.pnl?.replace(/[^0-9.-]/g, "") || "0");
+  
+  // Safely parse fee values with fallbacks to 0 if missing
+  const positionFee = parseFloat(position.fees?.positionFee || "0");
+  const borrowFee = parseFloat(position.fees?.borrowFee || "0");
+  const fundingFee = parseFloat(position.fees?.fundingFee || "0");
+  
+  // Calculate total fees with safeguards against NaN
   const totalFees = (
-    parseFloat(position.fees.positionFee) +
-    parseFloat(position.fees.borrowFee) +
-    parseFloat(position.fees.fundingFee)
+    (isNaN(positionFee) ? 0 : positionFee) +
+    (isNaN(borrowFee) ? 0 : borrowFee) +
+    (isNaN(fundingFee) ? 0 : fundingFee)
   );
-  const marketPnl = finalPnl + totalFees;
+  
+  // Calculate market PnL with safeguard against NaN
+  const marketPnl = isNaN(finalPnl) ? 0 : finalPnl + totalFees;
 
   return (
     <div
@@ -45,24 +55,24 @@ export function PnLTooltip({ position, rect }: PnLTooltipProps) {
         <div className="pt-2 mt-2 border-t border-gray-700">
           <div className="flex justify-between">
             <span>Position Fee:</span>
-            <span className="text-short">-${position.fees.positionFee}</span>
+            <span className="text-short">-${position.fees?.positionFee || "0.00"}</span>
           </div>
           <div className="flex justify-between">
             <span>Borrow Fee:</span>
-            <span className="text-short">-${position.fees.borrowFee}</span>
+            <span className="text-short">-${position.fees?.borrowFee || "0.00"}</span>
           </div>
           <div className="flex justify-between">
             <span>Funding Fee:</span>
             <span
               className={
-                position.fees.fundingFee.startsWith("-")
+                (position.fees?.fundingFee || "0").startsWith("-")
                   ? "text-long"
                   : "text-short"
               }
             >
-              {position.fees.fundingFee.startsWith("-")
-                ? `-$${position.fees.fundingFee.substring(1)}`
-                : `$${position.fees.fundingFee}`}
+              {(position.fees?.fundingFee || "0").startsWith("-")
+                ? `-$${(position.fees?.fundingFee || "0").substring(1)}`
+                : `$${position.fees?.fundingFee || "0"}`}
             </span>
           </div>
         </div>

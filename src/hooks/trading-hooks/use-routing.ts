@@ -82,6 +82,14 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
             available: false,
             minMargin: MIN_MARGIN.unidexv4,
             reason: 'Market not found'
+          },
+          gtrade: {
+            id: 'gtrade',
+            name: 'gTrade',
+            tradingFee: 0.0006,
+            available: false,
+            minMargin: MIN_MARGIN.gtrade,
+            reason: 'Market not found'
           }
         }
       };
@@ -96,7 +104,7 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
       : market.availableLiquidity?.short || 0;
 
     // Check if UniDex has enough liquidity for the specific direction
-    const hasUnidexLiquidity = orderSize <= relevantLiquidity;
+    const hasUnidexLiquidity = orderSize <= relevantLiquidity && relevantLiquidity > 0;
 
     // Check margin requirements
     const meetsUnidexMargin = currentMargin >= MIN_MARGIN.unidexv4;
@@ -105,8 +113,14 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
     // UniDex should be available if it has liquidity AND meets minimum margin
     const unidexAvailable = hasUnidexLiquidity && meetsUnidexMargin;
     
-    // gTrade should only be available if UniDex doesn't have liquidity
-    const gTradeAvailable = isGTradeSupported && meetsGTradeMargin && !hasUnidexLiquidity;
+    // gTrade should be available if:
+    // 1. The pair is supported on gTrade AND
+    // 2. It meets the minimum margin requirement AND
+    // 3. EITHER:
+    //    a. UniDex has no liquidity, OR
+    //    b. The order size exceeds UniDex's available liquidity
+    const gTradeAvailable = isGTradeSupported && meetsGTradeMargin && 
+                           (!hasUnidexLiquidity || orderSize > relevantLiquidity);
 
     const routes: Record<RouteId, RouteInfo> = {
       unidexv4: {
@@ -115,7 +129,7 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
         tradingFee: market.longTradingFee / 100,
         available: unidexAvailable,
         minMargin: MIN_MARGIN.unidexv4,
-        reason: !hasUnidexLiquidity 
+        reason: relevantLiquidity <= 0 || orderSize > relevantLiquidity
           ? 'Insufficient liquidity on UniDex'
           : !meetsUnidexMargin 
           ? 'Minimum margin requirement not met'
@@ -129,7 +143,7 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
         minMargin: MIN_MARGIN.gtrade,
         reason: !isGTradeSupported 
           ? 'Pair not supported on gTrade'
-          : hasUnidexLiquidity
+          : hasUnidexLiquidity && orderSize <= relevantLiquidity
           ? 'Using UniDex liquidity'
           : !meetsGTradeMargin
           ? 'Minimum margin requirement not met'
@@ -137,9 +151,10 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
       }
     };
 
-    // Simplified routing logic:
-    // If UniDex has liquidity and meets margin requirements, use it
-    // Otherwise, fall back to gTrade if available
+    // Improved routing logic:
+    // 1. First try UniDex if it's available
+    // 2. If no UniDex, try gTrade
+    // 3. Default to UniDex if neither is available (with proper reason)
     let bestRoute: RouteId = 'unidexv4';
     
     if (unidexAvailable) {
@@ -166,6 +181,17 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
       : market.availableLiquidity?.short || 0;
 
     const isGTradeSupported = GTRADE_PAIR_MAPPING[market.pair] !== undefined;
+    
+    // If UniDex has no liquidity, send everything to gTrade
+    if (relevantLiquidity <= 0) {
+      const gtradeMargin = roundDownTo6Decimals(orderSize / parseFloat(leverage || '1'));
+      return {
+        unidex: null,
+        gtrade: gtradeMargin >= MIN_MARGIN.gtrade && isGTradeSupported
+          ? { size: orderSize, margin: gtradeMargin }
+          : null
+      };
+    }
     
     // Round down unidex size
     let unidexSize = roundDownTo6Decimals(Math.min(orderSize, relevantLiquidity));
@@ -315,7 +341,20 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
         size: roundDownTo6Decimals(split.unidex.size).toFixed(6),
         expectedMarginWalletAfter: marginWalletBalance.toFixed(6)
       });
+      
+      return placeMarketOrder(
+        params.pair,
+        params.isLong,
+        params.price,
+        params.slippagePercent,
+        roundDownTo6Decimals(split.unidex.margin),
+        roundDownTo6Decimals(split.unidex.size),
+        params.takeProfit,
+        params.stopLoss,
+        params.referrer
+      );
     } else if (split.gtrade) {
+      const marginWalletBalance = parseFloat(balances?.formattedMusdBalance || "0");
       const onectBalance = parseFloat(balances?.formattedUsdcBalance || "0");
       console.log('=== gTrade Only Order ===', {
         margin: roundDownTo6Decimals(split.gtrade.margin).toFixed(6),
@@ -323,33 +362,93 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
         tradingFee: roundDownTo6Decimals(split.gtrade.size * 0.0006).toFixed(6),
         expectedOnectWalletAfter: (onectBalance - roundDownTo6Decimals(split.gtrade.margin)).toFixed(6)
       });
-    }
+      
+      // Check if we need to withdraw from margin wallet first
+      const shortfall = roundDownTo6Decimals(Math.max(0, split.gtrade.margin - onectBalance));
+      
+      if (shortfall > 0 && marginWalletBalance >= shortfall) {
+        console.log('=== Withdrawing from margin wallet for gTrade ===', {
+          shortfall: shortfall.toFixed(6),
+          marginWalletBalance: marginWalletBalance.toFixed(6),
+          onectBalance: onectBalance.toFixed(6)
+        });
+        
+        // Prepare withdrawal from margin wallet
+        const withdrawalResponse = await fetch(
+          "https://unidexv4-api-production.up.railway.app/api/wallet",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              type: "withdraw",
+              tokenAddress: "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              amount: shortfall.toString(),
+              userAddress: smartAccount.address,
+            }),
+          }
+        );
 
-    // Single order - use default behavior
-    if (split.unidex) {
-      return placeMarketOrder(
-        params.pair,
-        params.isLong,
-        params.price,
-        params.slippagePercent,
-        params.margin,
-        params.size,
-        params.takeProfit,
-        params.stopLoss,
-        params.referrer
-      );
-    } else {
+        if (!withdrawalResponse.ok) {
+          throw new Error("Failed to prepare withdrawal");
+        }
+
+        const withdrawalData = await withdrawalResponse.json();
+        
+        // Prepare gTrade order
+        const gtradeOrder = await prepareGTrade(
+          params.pair,
+          params.isLong,
+          params.price,
+          params.slippagePercent,
+          roundDownTo6Decimals(split.gtrade.margin),
+          roundDownTo6Decimals(split.gtrade.size),
+          params.orderType,
+          params.takeProfit,
+          params.stopLoss
+        );
+        
+        // Combine withdrawal and gTrade transactions
+        const allCalls = [
+          {
+            to: withdrawalData.vaultAddress as `0x${string}`,
+            data: withdrawalData.calldata as `0x${string}`,
+            value: 0n
+          },
+          ...gtradeOrder.calls
+        ];
+        
+        console.log('=== Combined gTrade with withdrawal ===', {
+          numTransactions: allCalls.length
+        });
+        
+        return kernelClient.sendTransactions({
+          transactions: allCalls.map(call => ({
+            to: call.to as `0x${string}`,
+            data: call.data as `0x${string}`,
+            value: call.value || 0n
+          }))
+        });
+      } else if (shortfall > 0) {
+        // Not enough balance even with margin wallet
+        throw new Error(`Insufficient balance. Need ${shortfall.toFixed(2)} more USDC to place this order.`);
+      }
+      
+      // If no withdrawal needed, just place the gTrade order
       return placeGTradeOrder(
         params.pair,
         params.isLong,
         params.price,
         params.slippagePercent,
-        params.margin,
-        params.size,
+        roundDownTo6Decimals(split.gtrade.margin),
+        roundDownTo6Decimals(split.gtrade.size),
         params.orderType,
         params.takeProfit,
         params.stopLoss
       );
+    } else {
+      // If we get here, we're likely dealing with an unsupported pair or insufficient margin
+      console.log('=== No valid route found ===', { splitOrderInfo: split });
+      throw new Error("No valid route found for this order");
     }
   };
 

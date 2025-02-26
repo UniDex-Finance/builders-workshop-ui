@@ -54,7 +54,10 @@ export function PositionsContent({
   };
 
   const calculateFinalPnl = (position: Position) => {
-    return parseFloat(position.pnl.replace(/[^0-9.-]/g, "")).toFixed(2);
+    if (!position.pnl) return "0.00";
+    
+    const pnlValue = parseFloat(position.pnl.replace(/[^0-9.-]/g, ""));
+    return isNaN(pnlValue) ? "0.00" : pnlValue.toFixed(2);
   };
 
   const formatPnL = (value: string | number) => {
@@ -65,13 +68,22 @@ export function PositionsContent({
   };
 
   const calculatePnLPercentage = (pnl: number, margin: string) => {
+    if (!margin) return "0.00";
+    
     const marginValue = parseFloat(margin.replace(/[^0-9.-]/g, ""));
+    if (isNaN(marginValue) || marginValue === 0) return "0.00";
+    
     return ((pnl / marginValue) * 100).toFixed(2);
   };
 
   const calculateLeverage = (size: string, margin: string) => {
+    if (!size || !margin) return "0.0";
+    
     const sizeValue = parseFloat(size.replace(/[^0-9.-]/g, ""));
     const marginValue = parseFloat(margin.replace(/[^0-9.-]/g, ""));
+    
+    if (isNaN(sizeValue) || isNaN(marginValue) || marginValue === 0) return "0.0";
+    
     return (sizeValue / marginValue).toFixed(1);
   };
 
@@ -221,6 +233,20 @@ export function PositionsContent({
             const triggerOrder = triggerOrders.find(
               (order) => order.positionId === position.positionId
             );
+            
+            const isGtrade = position.positionId.toString().startsWith("g");
+            if (isGtrade && (isNaN(pnlValue) || pnlValue === 0)) {
+              console.debug("Gtrade position with NaN or zero PnL:", {
+                positionId: position.positionId,
+                pnl: position.pnl,
+                finalPnl,
+                pnlValue,
+                fees: position.fees,
+                size: position.size,
+                margin: position.margin,
+                fullPosition: {...position}
+              });
+            }
 
             return (
               <TableRow 
