@@ -1,19 +1,12 @@
 import { useEffect, useState } from 'react'
 
-interface DuneResponse {
-  result: {
-    rows: Array<{
-      cumulative_vaultReturn: number
-      vaultDailyReturn: number
-    }>
-  }
-}
-
 export interface DuneData {
   cumulativeReturn: number
   vaultApr: number
   isLoading: boolean
   error: Error | null
+  cacheAge?: number
+  nextRefresh?: number
 }
 
 // Cache storage outside the hook to persist between renders
@@ -73,40 +66,24 @@ export function useDuneData(tvl: string | number) {
       // Create promise for this request
       const fetchPromise = (async () => {
         try {
-          const apiKey = process.env.NEXT_PUBLIC_DUNE_API_KEY
-          console.log(`[${new Date().toISOString()}] API Key status:`, apiKey ? 'Present' : 'Missing')
+          const apiUrl = `https://dune-api-production-b08f.up.railway.app/api/dune-data?tvl=${parsedTvl}`
+          console.log(`[${new Date().toISOString()}] Fetching data from:`, apiUrl)
 
-          const response = await fetch('https://api.dune.com/api/v1/query/4086143/results?limit=7', {
-            headers: { 'X-Dune-API-Key': apiKey || '' }
-          })
+          const response = await fetch(apiUrl)
 
           if (!response.ok) {
             console.error(`[${new Date().toISOString()}] Dune API response not OK:`, response.status, response.statusText)
             throw new Error('Failed to fetch vault return data')
           }
 
-          const duneData: DuneResponse = await response.json()
-          console.log(`[${new Date().toISOString()}] Received Dune API response`)
-
-          // Calculate cumulative return
-          const latestReturn = duneData.result.rows[0]?.cumulative_vaultReturn || 0
-          
-          // Calculate vault APR
-          const totalDailyReturns = duneData.result.rows.reduce((sum, row) => {
-            return sum + (row.vaultDailyReturn || 0)
-          }, 0)
-          const yearlyReturn = totalDailyReturns * 52
-          const calculatedVaultApr = parsedTvl > 0 ? (yearlyReturn / parsedTvl) * 100 : 0
-
-          console.log(`[${new Date().toISOString()}] Calculated values:`, {
-            latestReturn,
-            calculatedVaultApr,
-            tvl: parsedTvl
-          })
+          const duneData = await response.json()
+          console.log(`[${new Date().toISOString()}] Received Dune API response:`, duneData)
 
           const newData: DuneData = {
-            cumulativeReturn: latestReturn,
-            vaultApr: calculatedVaultApr,
+            cumulativeReturn: duneData.cumulativeReturn || 0,
+            vaultApr: duneData.vaultApr || 0,
+            cacheAge: duneData.cacheAge,
+            nextRefresh: duneData.nextRefresh,
             isLoading: false,
             error: null
           }
