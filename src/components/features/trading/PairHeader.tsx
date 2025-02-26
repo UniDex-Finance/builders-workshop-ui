@@ -73,7 +73,25 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
   const gtradeMarket = gtradeMarkets.find(m => m.name === selectedPair);
 
   const combinedData = useMemo(() => {
-    if (!unidexMarketData || !gtradeMarket) return null;
+    // Default values when no data is available
+    const defaultData = {
+      longOpenInterest: 0,
+      shortOpenInterest: 0,
+      maxLongOpenInterest: 0,
+      maxShortOpenInterest: 0,
+      longShortRatio: {
+        longPercentage: 50,
+        shortPercentage: 50,
+      },
+      borrowRateForLong: 0,
+      borrowRateForShort: 0,
+      fundingRate: 0,
+    };
+
+    // If both data sources are missing, return default data
+    if (!unidexMarketData && !gtradeMarket) {
+      return defaultData;
+    }
 
     const formatBorrowRate = (rate: number) => {
       return rate < 0.0001 ? 0 : Number(rate.toFixed(4));
@@ -102,42 +120,104 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
       return ((formattedRate1 * weight1) + (formattedRate2 * weight2)) / totalWeight;
     };
 
+    // If only UniDex data is available
+    if (unidexMarketData && !gtradeMarket) {
+      const totalOI = unidexMarketData.longOpenInterest + unidexMarketData.shortOpenInterest;
+      const longPercentage = totalOI > 0 
+        ? (unidexMarketData.longOpenInterest / totalOI) * 100 
+        : 50;
+      const shortPercentage = totalOI > 0 
+        ? (unidexMarketData.shortOpenInterest / totalOI) * 100 
+        : 50;
+        
+      return {
+        longOpenInterest: unidexMarketData.longOpenInterest,
+        shortOpenInterest: unidexMarketData.shortOpenInterest,
+        maxLongOpenInterest: unidexMarketData.maxLongOpenInterest,
+        maxShortOpenInterest: unidexMarketData.maxShortOpenInterest,
+        longShortRatio: {
+          longPercentage,
+          shortPercentage,
+        },
+        borrowRateForLong: unidexMarketData.borrowRateForLong,
+        borrowRateForShort: unidexMarketData.borrowRateForShort,
+        fundingRate: unidexMarketData.fundingRate,
+      };
+    }
+
+    // If only GTrade data is available
+    if (!unidexMarketData && gtradeMarket) {
+      const totalOI = gtradeMarket.openInterest.long + gtradeMarket.openInterest.short;
+      const longPercentage = totalOI > 0 
+        ? (gtradeMarket.openInterest.long / totalOI) * 100 
+        : 50;
+      const shortPercentage = totalOI > 0 
+        ? (gtradeMarket.openInterest.short / totalOI) * 100 
+        : 50;
+        
+      return {
+        longOpenInterest: gtradeMarket.openInterest.long,
+        shortOpenInterest: gtradeMarket.openInterest.short,
+        maxLongOpenInterest: gtradeMarket.openInterest.max,
+        maxShortOpenInterest: gtradeMarket.openInterest.max,
+        longShortRatio: {
+          longPercentage,
+          shortPercentage,
+        },
+        borrowRateForLong: gtradeMarket.borrowingFees.borrowRateForLong,
+        borrowRateForShort: gtradeMarket.borrowingFees.borrowRateForShort,
+        fundingRate: 0, // GTrade might not have funding rate, defaulting to 0
+      };
+    }
+
+    // Both data sources are available
+    // At this point, both unidexMarketData and gtradeMarket are guaranteed to exist
+    const unidexData = unidexMarketData!;
+    const gtradeData = gtradeMarket!;
+    
+    const totalOI = unidexData.longOpenInterest + unidexData.shortOpenInterest + 
+                     gtradeData.openInterest.long + gtradeData.openInterest.short;
+    
+    const longPercentage = totalOI > 0 
+      ? ((unidexData.longOpenInterest + gtradeData.openInterest.long) / totalOI) * 100 
+      : 50;
+    
+    const shortPercentage = totalOI > 0 
+      ? ((unidexData.shortOpenInterest + gtradeData.openInterest.short) / totalOI) * 100 
+      : 50;
+      
     const avgBorrowRateLong = calculateWeightedBorrowRate(
-      unidexMarketData.borrowRateForLong,
-      gtradeMarket.borrowingFees.borrowRateForLong,
-      unidexMarketData.maxLongOpenInterest - unidexMarketData.longOpenInterest,
-      gtradeMarket.openInterest.max - gtradeMarket.openInterest.long
+      unidexData.borrowRateForLong,
+      gtradeData.borrowingFees.borrowRateForLong,
+      unidexData.maxLongOpenInterest - unidexData.longOpenInterest,
+      gtradeData.openInterest.max - gtradeData.openInterest.long
     );
 
     const avgBorrowRateShort = calculateWeightedBorrowRate(
-      unidexMarketData.borrowRateForShort,
-      gtradeMarket.borrowingFees.borrowRateForShort,
-      unidexMarketData.maxShortOpenInterest - unidexMarketData.shortOpenInterest,
-      gtradeMarket.openInterest.max - gtradeMarket.openInterest.short
+      unidexData.borrowRateForShort,
+      gtradeData.borrowingFees.borrowRateForShort,
+      unidexData.maxShortOpenInterest - unidexData.shortOpenInterest,
+      gtradeData.openInterest.max - gtradeData.openInterest.short
     );
 
     return {
-      longOpenInterest: unidexMarketData.longOpenInterest + gtradeMarket.openInterest.long,
-      shortOpenInterest: unidexMarketData.shortOpenInterest + gtradeMarket.openInterest.short,
-      maxLongOpenInterest: unidexMarketData.maxLongOpenInterest + gtradeMarket.openInterest.max,
-      maxShortOpenInterest: unidexMarketData.maxShortOpenInterest + gtradeMarket.openInterest.max,
+      longOpenInterest: unidexData.longOpenInterest + gtradeData.openInterest.long,
+      shortOpenInterest: unidexData.shortOpenInterest + gtradeData.openInterest.short,
+      maxLongOpenInterest: unidexData.maxLongOpenInterest + gtradeData.openInterest.max,
+      maxShortOpenInterest: unidexData.maxShortOpenInterest + gtradeData.openInterest.max,
       longShortRatio: {
-        longPercentage: ((unidexMarketData.longOpenInterest + gtradeMarket.openInterest.long) / 
-          (unidexMarketData.longOpenInterest + unidexMarketData.shortOpenInterest + 
-           gtradeMarket.openInterest.long + gtradeMarket.openInterest.short)) * 100,
-        shortPercentage: ((unidexMarketData.shortOpenInterest + gtradeMarket.openInterest.short) / 
-          (unidexMarketData.longOpenInterest + unidexMarketData.shortOpenInterest + 
-           gtradeMarket.openInterest.long + gtradeMarket.openInterest.short)) * 100,
+        longPercentage,
+        shortPercentage,
       },
       borrowRateForLong: avgBorrowRateLong,
       borrowRateForShort: avgBorrowRateShort,
-      fundingRate: unidexMarketData.fundingRate,
+      fundingRate: unidexData.fundingRate,
     };
   }, [unidexMarketData, gtradeMarket]);
 
   const { absoluteChange, percentageChange, loading: changeLoading, error: changeError } = use24hChange(selectedPair);
 
-  if (unidexError || gtradeError) {
+  if (unidexError && gtradeError) {
     return (
       <div className="flex items-center justify-center p-4 text-short">
         Error loading market data: {unidexError?.message || gtradeError?.message}
@@ -145,18 +225,10 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
     );
   }
 
-  if (unidexLoading || gtradeLoading) {
+  if (unidexLoading && gtradeLoading) {
     return (
       <div className="flex items-center justify-center p-4">
         Loading market data...
-      </div>
-    );
-  }
-
-  if (!combinedData) {
-    return (
-      <div className="flex items-center justify-center p-4">
-        No market data available for {selectedPair}
       </div>
     );
   }
