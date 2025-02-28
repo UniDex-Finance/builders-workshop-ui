@@ -82,7 +82,7 @@ export function ActionsCard({
   balances
 }: ActionsCardProps) {
   const [amount, setAmount] = React.useState("")
-  const [isOpen, setIsOpen] = React.useState(true)
+  const [isOpen, setIsOpen] = React.useState(false)
   const [action, setAction] = React.useState<'mint' | 'burn'>('mint')
   const [selectedAsset, setSelectedAsset] = React.useState("arbitrum-usdc")
   const [approvalState, setApprovalState] = React.useState<{ needsApproval: boolean } | null>(null)
@@ -388,31 +388,24 @@ export function ActionsCard({
     return action === 'mint' ? 'Mint USD.m' : 'Redeem USD.m'
   }
 
-  // Fix: Update getAvailableBalance to use correct balance
+  // Updated getAvailableBalance to return JSX that will be displayed differently in the UI
   const getAvailableBalance = () => {
-    const prefix = (
-      <span>
-        <span className="md:hidden">Balance: </span>
-        <span className="hidden md:inline">Available Balance: </span>
-      </span>
-    );
-
     if (action === 'mint') {
-      if (!balances) return <>{prefix}0.0000 USDC</>;
+      if (!balances) return { label: "Available", value: "0.0000 USDC" };
       switch (selectedAsset) {
         case "arbitrum-usdc":
-          return <>{prefix}{balances.formattedEoaUsdcBalance} USDC</>;
+          return { label: "Available", value: `${balances.formattedEoaUsdcBalance} USDC` };
         case "optimism-usdc":
-          return <>{prefix}{balances.formattedEoaOptimismUsdcBalance} USDC</>;
+          return { label: "Available", value: `${balances.formattedEoaOptimismUsdcBalance} USDC` };
         case "base-usdc":
-          return <>{prefix}{balances.formattedEoaBaseUsdcBalance} USDC</>;
+          return { label: "Available", value: `${balances.formattedEoaBaseUsdcBalance} USDC` };
         case "ethereum-usdc":
-          return <>{prefix}{balances.formattedEoaEthUsdcBalance} USDC</>;
+          return { label: "Available", value: `${balances.formattedEoaEthUsdcBalance} USDC` };
         default:
-          return <>{prefix}0.0000 USDC</>;
+          return { label: "Available", value: "0.0000 USDC" };
       }
     }
-    return <>{prefix}{usdmData?.displayUsdmBalance || '0.00'} USD.m</>
+    return { label: "Available", value: `${usdmData?.displayUsdmBalance || '0.00'} USD.m` };
   }
 
   // Update handleMaxClick to use correct balance
@@ -435,35 +428,6 @@ export function ActionsCard({
       }
     } else {
       setAmount(usdmData?.displayUsdmBalance || '0')
-    }
-  }
-
-  // Update handlePercentageClick to use correct balance
-  const handlePercentageClick = (percentage: number) => {
-    if (action === 'mint') {
-      if (!balances) return;
-      let baseBalance: string;
-      switch (selectedAsset) {
-        case "arbitrum-usdc":
-          baseBalance = balances.formattedEoaUsdcBalance;
-          break;
-        case "optimism-usdc":
-          baseBalance = balances.formattedEoaOptimismUsdcBalance;
-          break;
-        case "base-usdc":
-          baseBalance = balances.formattedEoaBaseUsdcBalance;
-          break;
-        case "ethereum-usdc":
-          baseBalance = balances.formattedEoaEthUsdcBalance;
-          break;
-        default:
-          baseBalance = '0';
-      }
-      const value = (Number(baseBalance) * percentage).toFixed(6);
-      setAmount(value);
-    } else {
-      const value = (Number(usdmData?.formattedUsdmBalance || 0) * percentage).toFixed(6);
-      setAmount(value);
     }
   }
 
@@ -717,27 +681,25 @@ export function ActionsCard({
             </div>
           </div>
 
-          <div className="text-sm text-[#A0AEC0]">
-            {getAvailableBalance()}
-          </div>
-
-          <div className="grid grid-cols-4 gap-2">
-            {["25", "50", "75", "100"].map((percent) => (
-              <Button
-                key={percent}
-                variant="outline"
-                className="bg-[#272734] border-0 hover:bg-[#373745]"
-                onClick={() => handlePercentageClick(Number(percent) / 100)}
-              >
-                {percent}%
-              </Button>
-            ))}
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-[#A0AEC0]">{getAvailableBalance().label}</span>
+            <button 
+              className="text-[#A0AEC0] hover:text-white transition-colors cursor-pointer"
+              onClick={handleMaxClick}
+              type="button"
+            >
+              {getAvailableBalance().value}
+            </button>
           </div>
 
           <Collapsible open={isOpen} onOpenChange={setIsOpen}>
             <CollapsibleTrigger className="flex items-center justify-between w-full p-3 sm:p-4 bg-[#272734] rounded-lg text-sm">
-              <span className="text-[#A0AEC0]">Summary</span>
-              <ChevronDown className={`h-4 w-4 sm:h-5 sm:w-5 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+              <span className="text-[#A0AEC0]">You will receive</span>
+              <div className="flex items-center gap-2">
+                <span>{amount ? calculateOutputAmount(amount) : '0.00'}</span>
+                <span className="text-[#A0AEC0]">{action === 'mint' ? 'USD.m' : 'USDC'}</span>
+                <ChevronDown className={`ml-1 h-4 w-4 sm:h-5 sm:w-5 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+              </div>
             </CollapsibleTrigger>
             <CollapsibleContent className="bg-[#272734] rounded-lg mt-px p-3 sm:p-4">
               <div className="flex flex-col gap-2">

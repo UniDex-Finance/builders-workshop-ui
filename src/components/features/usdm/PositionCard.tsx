@@ -65,15 +65,6 @@ export function PositionCard({ balances, isLoading }: Props) {
             </span>
           </div>
           <div className="flex justify-between text-xs md:text-sm">
-            <span className="text-[#A0AEC0]">Combined Balance</span>
-            <span className="text-white">
-              {calculateCombinedBalance()} USD.m {' '}
-              <span className="text-[#A0AEC0]">
-                {formatUsdmValue(calculateCombinedBalance())}
-              </span>
-            </span>
-          </div>
-          <div className="flex justify-between text-xs md:text-sm">
             <span className="text-[#A0AEC0]">Share of the Vault</span>
             <span className="text-white">{calculateShareOfPool()}%</span>
           </div>
