@@ -43,7 +43,7 @@ export const useLeaderboardData = () => {
                 query: `
 query GetLeaderboardData($after: String) {
   closedTrades(
-    where: {createdAt_gte: "1739664000"}
+    where: {createdAt_gte: "1739664000", closedAt_lte: "1740787200"}
     limit: 50
     after: $after
   ) {
