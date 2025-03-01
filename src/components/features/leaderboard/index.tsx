@@ -68,77 +68,19 @@ export function LeaderboardDashboard() {
             <h1 className="text-3xl font-semibold">Leaderboard</h1>
           </div>
 
-          {/* Rules Section */}
+          {/* Rules Section - REPLACED WITH THANK YOU BANNER */}
           <div className="bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)] rounded-lg p-6 space-y-4">
             <h2 className="text-xl font-semibold flex items-center gap-2">
-              <Info className="w-5 h-5" />
-              Competition Rules
+              <Trophy className="w-5 h-5 text-yellow-500" />
+              Trading Competition Complete
             </h2>
             <div className="space-y-3 text-muted-foreground">
-              <p className="flex items-start gap-2">
-                <span className="text-muted-foreground/50 font-mono">•</span>
-                <span>
-                  <strong className="text-foreground">Scoring:</strong> Your PnL divided by your collateral per trade, averaged across all trades. Higher scores rank better.
-                </span>
+              <p>
+                Thank you to everyone who participated in our trading competition! The competition period has now ended.
               </p>
-              <p className="flex items-start gap-2">
-                <span className="text-muted-foreground/50 font-mono">•</span>
-                <span className="flex items-center gap-2">
-                  <strong className="text-foreground">Percentage PnL Formula (Score):</strong> Average of (Trade PnL ÷ Trade Collateral) × 100
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <Badge 
-                          variant="outline" 
-                          className="cursor-pointer hover:bg-muted/50 transition-colors"
-                        >
-                          See Example
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent 
-                        className="w-[420px] p-4 bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)]"
-                      >
-                        <div className="space-y-3 text-sm">
-                          <p><strong>Example Calculation:</strong></p>
-                          <div className="space-y-2">
-                            <p><strong>Trade 1:</strong></p>
-                            <p className="pl-4">
-                              Collateral: $1,000<br />
-                              PnL: +$150<br />
-                              Return = 150/1000 = 15%
-                            </p>
-                            
-                            <p><strong>Trade 2:</strong></p>
-                            <p className="pl-4">
-                              Collateral: $1,500<br />
-                              PnL: +$200<br />
-                              Return = 200/1500 = 13.3%
-                            </p>
-                            
-                            <p><strong>Trade 3:</strong></p>
-                            <p className="pl-4">
-                              Collateral: $800<br />
-                              PnL: -$120<br />
-                              Return = -120/800 = -15%
-                            </p>
-                            
-                            <p><strong>Final Score:</strong></p>
-                            <p className="pl-4">
-                              Sum returns: 15% + 13.3% + (-15%) = 13.3%<br />
-                              Average: 13.3% ÷ 3 = 4.43%
-                            </p>
-                          </div>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </span>
-              </p>
-              <p className="flex items-start gap-2">
-                <span className="text-muted-foreground/50 font-mono">•</span>
-                <span>
-                  <strong className="text-foreground">Minimum Requirements:</strong> At least 3 trades, minimum $50 total PnL, minimum 5 minute duration, and minimum $10 collateral.
-                </span>
+              <p>
+                We're currently reviewing the results to ensure all winners competed fairly, and will be distributing rewards to the winners soon. 
+                Stay tuned for announcements regarding prize distribution.
               </p>
             </div>
           </div>
