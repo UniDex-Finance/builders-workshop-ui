@@ -19,9 +19,76 @@ export const TRADING_PAIRS: { [key: string]: string } = {
   '56': 'QQQ/USD', '57': 'SPY/USD'
 };
 
+// Map of trading pairs to their full names
+export const PAIR_FULL_NAMES: { [key: string]: string } = {
+  'BTC/USD': 'Bitcoin to US Dollar',
+  'ETH/USD': 'Ethereum to US Dollar',
+  'S/USD': 'Solana to US Dollar',
+  'SOL/USD': 'Solana to US Dollar',
+  'DOGE/USD': 'Dogecoin to US Dollar',
+  'AVAX/USD': 'Avalanche to US Dollar',
+  'BNB/USD': 'Binance Coin to US Dollar',
+  'ADA/USD': 'Cardano to US Dollar',
+  'LINK/USD': 'Chainlink to US Dollar',
+  'ATOM/USD': 'Cosmos to US Dollar',
+  'NEAR/USD': 'Near Protocol to US Dollar',
+  'ARB/USD': 'Arbitrum to US Dollar',
+  'OP/USD': 'Optimism to US Dollar',
+  'LTC/USD': 'Litecoin to US Dollar',
+  'GMX/USD': 'GMX to US Dollar',
+  'EUR/USD': 'Euro to US Dollar',
+  'GBP/USD': 'British Pound to US Dollar',
+  'INJ/USD': 'Injective to US Dollar',
+  'TIA/USD': 'Celestia to US Dollar',
+  'AERO/USD': 'Aerodrome to US Dollar',
+  'MERL/USD': 'Merlin to US Dollar',
+  'SAFE/USD': 'Safe to US Dollar',
+  'OMNI/USD': 'Omni Network to US Dollar',
+  'REZ/USD': 'Rezoro to US Dollar',
+  'ETHFI/USD': 'ETHFI to US Dollar',
+  'BOME/USD': 'Book of Meme to US Dollar',
+  'ORDI/USD': 'Ordinals to US Dollar',
+  'DYM/USD': 'Dymension to US Dollar',
+  'TAO/USD': 'Bittensor to US Dollar',
+  'WLD/USD': 'Worldcoin to US Dollar',
+  'POPCAT/USD': 'Popcat to US Dollar',
+  'ZRO/USD': 'Zero to US Dollar',
+  'RUNE/USD': 'THORChain to US Dollar',
+  'MEW/USD': 'MEW to US Dollar',
+  'BEAM/USD': 'Beam to US Dollar',
+  'STRK/USD': 'Starknet to US Dollar',
+  'AAVE/USD': 'Aave to US Dollar',
+  'XRP/USD': 'Ripple to US Dollar',
+  'TON/USD': 'Toncoin to US Dollar',
+  'NOT/USD': 'Notation to US Dollar',
+  'RLB/USD': 'Rollbit to US Dollar',
+  'ALICE/USD': 'My Neighbor Alice to US Dollar',
+  'APE/USD': 'ApeCoin to US Dollar',
+  'APT/USD': 'Aptos to US Dollar',
+  'AVAIL/USD': 'Avail to US Dollar',
+  'DEGEN/USD': 'Degen to US Dollar',
+  'RDNT/USD': 'Radiant Capital to US Dollar',
+  'SUI/USD': 'Sui to US Dollar',
+  'PEPE/USD': 'Pepe to US Dollar',
+  'EIGEN/USD': 'Eigen Layer to US Dollar',
+  'XAU/USD': 'Gold to US Dollar',
+  'XAG/USD': 'Silver to US Dollar',
+  'GMCI30/USD': 'GMCI30 Index to US Dollar',
+  'GMCL2/USD': 'GMCL2 Index to US Dollar',
+  'GMMEME/USD': 'GMMEME Index to US Dollar',
+  'QQQ/USD': 'Nasdaq-100 ETF to US Dollar',
+  'SPY/USD': 'S&P 500 ETF to US Dollar'
+};
+
+// Helper function to get the full name for a pair
+export function getPairFullName(pair: string): string {
+  return PAIR_FULL_NAMES[pair] || pair;
+}
+
 export interface Market {
   assetId: string;
   pair: string;
+  pairFullName: string;
   fundingRate: number;
   borrowRateForLong: number;
   borrowRateForShort: number;
@@ -54,6 +121,7 @@ interface UseMarketDataResult {
   loading: boolean;
   error: Error | null;
   refetch: () => Promise<void>;
+  getPairFullName: (pair: string) => string;
 }
 
 const LENS_CONTRACT_ADDRESS = '0xeae57c7bce5caf160343a83440e98bc976ab7274' as `0x${string}`;
@@ -125,9 +193,12 @@ export function useMarketData({
         const longPercentage = totalOI > 0 ? (longOI / totalOI) * 100 : 50;
         const shortPercentage = totalOI > 0 ? (shortOI / totalOI) * 100 : 50;
 
+        const pair = TRADING_PAIRS[assetId];
+
         return {
           assetId: assetId,
-          pair: TRADING_PAIRS[assetId],
+          pair: pair,
+          pairFullName: getPairFullName(pair),
           fundingRate: Number(formatUnits(data[0], 13)),
           borrowRateForLong: Number(formatUnits(data[1], 4)),
           borrowRateForShort: Number(formatUnits(data[2], 4)),
@@ -179,6 +250,7 @@ export function useMarketData({
     refetch: async function () {
       await refetch();
       processMarketData();
-    }
+    },
+    getPairFullName
   };
 }

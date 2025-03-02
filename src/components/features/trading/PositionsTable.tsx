@@ -98,7 +98,7 @@ export function PositionsTable({ address }: PositionsTableProps) {
 
   return (
     <div className="w-full bg-[hsl(var(--component-background))] border-border">
-      <div className="flex items-center px-4 py-2 border-b">
+      <div className="flex items-center px-4 py-1 border-b">
         <Button
           variant="ghost"
           size="sm"

@@ -64,6 +64,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
 }) => {
   const [rateTimeframe, setRateTimeframe] = useState<TimeframeRate>("1h");
   const { formatPairPrice } = usePairPrecision();
+  const { prices } = usePrices();
   
   const { marketData: unidexMarketData, loading: unidexLoading, error: unidexError } = useMarketData({
     selectedPair,
@@ -71,6 +72,8 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
   const { markets: gtradeMarkets, loading: gtradeLoading, error: gtradeError } = useGTradeMarketData();
 
   const gtradeMarket = gtradeMarkets.find(m => m.name === selectedPair);
+  const basePair = selectedPair.split("/")[0].toLowerCase();
+  const currentPrice = prices[basePair]?.price;
 
   const combinedData = useMemo(() => {
     // Default values when no data is available
@@ -263,24 +266,29 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
             {/* Price Group with Pair Selector */}
             <PairSelector selectedPair={selectedPair} onPairChange={onPairChange} />
 
-            {/* 24h Change Group */}
-            <div className="flex items-center px-4 border-r min-w-[160px]">
+            {/* Index Price Group */}
+            <div className="flex items-center px-4 border-r min-w-[170px]">
               <div>
-                <div className="text-xs text-muted-foreground">24h Change</div>
-                <div className={cn(
-                  "text-sm font-medium",
-                  (!changeLoading && !changeError && percentageChange >= 0) ? "text-[#22c55e]" : "text-[#ef4444]"
-                )}>
-                  {!changeLoading && !changeError ? (
-                    <>
-                      {absoluteChange >= 0 ? "+" : ""}
-                      {formatPairPrice(selectedPair, Math.abs(absoluteChange))} /{" "}
-                      {percentageChange >= 0 ? "+" : ""}
-                      {percentageChange.toFixed(2)}%
-                    </>
-                  ) : (
-                    "- / -"
-                  )}
+                <div className="text-xs text-muted-foreground">Index Price</div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-mono font-bold">
+                    {formatPairPrice(selectedPair, currentPrice)}
+                  </span>
+                  <span className={cn(
+                    "text-xs font-medium px-1.5 py-0.5 rounded-sm",
+                    (!changeLoading && !changeError && percentageChange >= 0) 
+                      ? "bg-[#22c55e]/10 text-[#22c55e]" 
+                      : "bg-[#ef4444]/10 text-[#ef4444]"
+                  )}>
+                    {!changeLoading && !changeError ? (
+                      <>
+                        {percentageChange >= 0 ? "+" : ""}
+                        {percentageChange.toFixed(2)}%
+                      </>
+                    ) : (
+                      "-"
+                    )}
+                  </span>
                 </div>
               </div>
             </div>
