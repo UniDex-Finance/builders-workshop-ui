@@ -371,7 +371,7 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
       </div>
       
       <div 
-        className="absolute bottom-0 left-0 right-0 h-4 cursor-ns-resize bg-[var(--deposit-card-background)]"
+        className="absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize bg-transparent"
       />
     </div>
   );

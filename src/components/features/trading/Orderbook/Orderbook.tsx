@@ -295,11 +295,14 @@ export function Orderbook({ pair, height }: OrderbookProps) {
 
   return (
     <div 
-      className="bg-card text-foreground w-[300px] border-t border-b border-r border-l border-border"
-      style={{ height: `${height}px` }}
+      className="relative bg-card text-foreground w-[300px] border-t border-b border-r border-l border-border"
+      style={{ 
+        height: `${height}px`,
+        overflow: 'hidden'
+      }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-2 py-1.5">
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between border-b border-border px-2 py-1.5 h-8">
         <div className="flex items-center space-x-1">
           <button
             className={`text-xs px-2 py-0.5 rounded ${
@@ -346,35 +349,33 @@ export function Orderbook({ pair, height }: OrderbookProps) {
         </div>
       </div>
 
-      <div className="flex flex-col h-[calc(100%-48px)]">
-        {/* Column Headers */}
-        <div className="grid grid-cols-3 text-right text-xs text-muted-foreground border-b border-border">
-          <span className="pl-4 pr-2">Price</span>
-          <span className="px-2">Size</span>
-          <span className="px-4">Total</span>
+      {/* Column Headers - positioned below header */}
+      <div className="absolute top-8 left-0 right-0 grid grid-cols-3 text-right text-xs text-muted-foreground border-b border-border h-6">
+        <span className="pl-4 pr-2 flex items-center justify-end">Price</span>
+        <span className="px-2 flex items-center justify-end">Size</span>
+        <span className="px-4 flex items-center justify-end">Total</span>
+      </div>
+
+      {/* Content area - positioned below column headers with plenty of space to bottom */}
+      <div 
+        ref={scrollContainerRef}
+        className="absolute top-14 left-0 right-0 bottom-0 overflow-y-auto scrollbar-custom"
+      >
+        {/* Asks (Sells) */}
+        <div className="overflow-hidden border-b border-border/5">
+          {renderOrders(asks, "asks")}
         </div>
 
-        {/* Update the scrollable content div to use the ref */}
-        <div 
-          ref={scrollContainerRef}
-          className="flex-1 overflow-y-auto scrollbar-custom"
-        >
-          {/* Asks (Sells) */}
-          <div className="overflow-hidden border-b border-border/5">
-            {renderOrders(asks, "asks")}
-          </div>
+        {/* Spread */}
+        <div className="text-center py-1.5 text-xs text-muted-foreground bg-accent/5">
+          <span className="font-mono text-xs">
+            Spread: {spread} ({spreadPercentage}%)
+          </span>
+        </div>
 
-          {/* Spread */}
-          <div className="text-center py-1.5 text-xs text-muted-foreground bg-accent/5">
-            <span className="font-mono text-xs">
-              Spread: {spread} ({spreadPercentage}%)
-            </span>
-          </div>
-
-          {/* Bids (Buys) */}
-          <div className="overflow-hidden border-t border-border/5">
-            {renderOrders(bids, "bids")}
-          </div>
+        {/* Bids (Buys) */}
+        <div className="overflow-hidden border-t border-border/5 mb-2">
+          {renderOrders(bids, "bids")}
         </div>
       </div>
     </div>
