@@ -393,7 +393,7 @@ export function OrderCard({
   );
 
   return (
-    <Card className="w-full md:w-full md:h-full md:rounded-none md:border-0 md:shadow-none">
+    <Card className="w-full md:h-full md:rounded-none md:border-0 md:shadow-none">
       <CardContent className="p-4 md:px-6 h-full overflow-y-auto border-t border-border">
         {error && (
           <div className="mb-4 text-short">Error: {error.message}</div>
