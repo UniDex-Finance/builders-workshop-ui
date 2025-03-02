@@ -61,33 +61,30 @@ export default function TradingInterface() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header />
 
-      <main className="flex flex-col flex-1 md:flex-row md:gap-12">
-        {/* PairHeader for mobile - shown above OrderCard */}
-        <div className="w-full px-2 md:hidden">
-          <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
-        </div>
-
+      <main className="flex flex-col flex-1 md:flex-row">
         {/* Left Side - Trading Panel */}
-        <aside className="w-full md:w-[320px] md:min-w-[320px] md:max-w-[320px] px-2 md:mt-[8px]">
-          <div className="mb-2">
-            <OrderCard
-              leverage={leverage}
-              onLeverageChange={setLeverage}
-              assetId={assetId}
-              initialReferralCode={typeof ref === 'string' ? ref : undefined}
-            />
+        <aside className="w-full md:w-[320px] md:min-w-[320px] md:max-w-[320px] md:h-full md:border-r border-border">
+          {/* PairHeader for mobile - shown above OrderCard */}
+          <div className="w-full md:hidden">
+            <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
           </div>
+          <OrderCard
+            leverage={leverage}
+            onLeverageChange={setLeverage}
+            assetId={assetId}
+            initialReferralCode={typeof ref === 'string' ? ref : undefined}
+          />
         </aside>
 
         {/* Right Side - Chart and Positions Container */}
         <TradeStreamProvider pair={selectedPair}>
-          <div className="flex flex-col flex-1 min-w-0 px-2 space-y-1 overflow-x-auto md:pl-0">
-            <div className="hidden md:block">
+          <div className="flex flex-col flex-1 min-w-0 md:overflow-hidden">
+            <div className="w-full">
               <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
             </div>
             
             <div className="flex flex-col flex-1">
-              <div className="flex">
+              <div className="flex flex-1">
                 <div className="hidden md:block" style={{ height: `${chartHeight}px` }}>
                   <Orderbook pair={selectedPair} height={chartHeight} />
                 </div>
@@ -101,7 +98,7 @@ export default function TradingInterface() {
                 </div>
                 <SideBar />
               </div>
-              <div className="flex-1 mt-3 overflow-x-auto">
+              <div className="flex-1 overflow-x-auto">
                 <PositionsTable address={address} />
               </div>
             </div>

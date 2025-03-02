@@ -341,12 +341,11 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
 
   return (
     <div 
-      className={`relative rounded-xl border border-border bg-[var(--deposit-card-background)]`}
+      className={`relative border-t border-b bg-[var(--deposit-card-background)]`}
       style={{ 
         height: `${height}px`,
         resize: 'vertical',
         overflow: 'hidden',
-        paddingBottom: '16px',
         minHeight: '300px',
         maxHeight: '800px',
         cursor: 'ns-resize',

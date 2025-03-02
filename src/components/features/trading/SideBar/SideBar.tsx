@@ -23,11 +23,11 @@ export function SideBar() {
   };
 
   return (
-    <div className="relative hidden ml-2 md:block">
+    <div className="relative hidden md:block h-full">
       <div className="flex h-full">
         {/* Expandable Content Panel */}
         {isExpanded && (
-          <div className="relative h-full overflow-hidden border border-r-0 rounded-l-lg w-80 bg-card border-border">
+          <div className="relative h-full overflow-hidden border-l border-t border-b w-80 bg-card border-border">
             {activeMode === 'TRADE_STREAM' && (
               <TradeStream isExpanded={true} />
             )}
@@ -36,8 +36,7 @@ export function SideBar() {
 
         {/* Main Sidebar */}
         <div className={`
-          flex flex-col justify-between w-12 h-full border bg-card border-border
-          ${isExpanded ? 'rounded-r-lg' : 'rounded-lg'}
+          flex flex-col justify-between w-12 h-full border-t border-b border-r bg-card border-border
         `}>
           {/* Modes */}
           <button
@@ -56,10 +55,7 @@ export function SideBar() {
           {/* Toggle Button */}
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className={`
-              p-2 transition-colors hover:bg-accent
-              ${isExpanded ? 'rounded-br-lg' : 'rounded-b-lg'}
-            `}
+            className="p-2 transition-colors hover:bg-accent"
           >
             {isExpanded ? (
               <ChevronRight className="w-4 h-4 mx-auto" />

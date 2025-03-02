@@ -295,7 +295,7 @@ export function Orderbook({ pair, height }: OrderbookProps) {
 
   return (
     <div 
-      className="bg-card text-foreground w-[300px] rounded-lg overflow-hidden border border-border mr-2"
+      className="bg-card text-foreground w-[300px] border-t border-b border-r border-border"
       style={{ height: `${height}px` }}
     >
       {/* Header */}

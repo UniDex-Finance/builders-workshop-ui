@@ -257,7 +257,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
 
   return (
     <div className="w-full">
-      <div className="p-2 my-2 border rounded-lg shadow-sm bg-[hsl(var(--component-background))] overflow-hidden">
+      <div className="px-4 py-2 bg-[hsl(var(--component-background))] overflow-hidden border-t border-b border-border">
         <div className="overflow-x-auto">
           <div className="flex items-center text-xs flex-nowrap" style={{ width: "fit-content", minWidth: '1200px' }}>
             {/* Price Group with Pair Selector */}
