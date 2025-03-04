@@ -19,6 +19,13 @@ import { useReferralContract } from "../../../../hooks/use-referral-contract";
 import { useRouting, RouteId } from '../../../../hooks/trading-hooks/use-routing';
 import { toast } from "@/hooks/use-toast";
 import { useLimitRouting } from '../../../../hooks/trading-hooks/use-limit-routing';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 
 
 const DEFAULT_REFERRER = "0x0000000000000000000000000000000000000000";
@@ -394,105 +401,244 @@ export function OrderCard({
 
   return (
     <Card className="w-full md:h-full md:rounded-none md:border-0 md:shadow-none">
-      <CardContent className="p-4 md:px-6 h-full overflow-y-auto border-t border-border">
+      <CardContent className="p-1 md:p-1 h-full overflow-y-auto border-t border-border">
         {error && (
-          <div className="mb-4 text-short">Error: {error.message}</div>
+          <div className="mb-1 p-1 text-xs text-short bg-red-500/10 rounded">Error: {error.message}</div>
         )}
 
-        <Tabs defaultValue="market" onValueChange={setActiveTab}>
-          <div className="grid grid-cols-2 gap-2 mb-4">
+        <div className="space-y-1">
+          {/* Buy/Sell buttons */}
+          <div className="grid grid-cols-2 gap-1 mb-1">
             <Button
               variant={formState.isLong ? "default" : "outline"}
-              className={`w-full ${
-                formState.isLong ? "bg-[var(--main-accent)] hover:bg-[var(--main-accent)]/80 text-white" : ""
+              className={`w-full h-16 text-sm font-medium ${
+                formState.isLong ? "bg-[var(--color-long)] hover:bg-[var(--color-long-dark)] text-black" : "hover:bg-muted"
               }`}
-              onClick={() => formState.isLong || toggleDirection()}
+              onClick={() => !formState.isLong && toggleDirection()}
             >
-              Long
+              Buy <span className="ml-1 text-xs">↗</span>
             </Button>
             <Button
               variant={!formState.isLong ? "default" : "outline"}
-              className={`w-full ${
-                !formState.isLong ? "bg-[var(--main-accent)] hover:bg-[var(--main-accent)]/80 text-white" : ""
+              className={`w-full h-16 text-sm font-medium ${
+                !formState.isLong ? "bg-[var(--color-short)] hover:bg-[var(--color-short-dark)] text-white" : "hover:bg-muted"
               }`}
-              onClick={() => !formState.isLong || toggleDirection()}
+              onClick={() => formState.isLong && toggleDirection()}
             >
-              Short
+              Sell <span className="ml-1 text-xs">↘</span>
+            </Button>
+          </div>
+          
+          {/* Estimated execution price and order type */}
+          <div className="grid grid-cols-2 gap-1 mb-1">
+            <div className="flex flex-col justify-between p-3 bg-muted/50 rounded-md h-16">
+              <span className="text-xs text-muted-foreground">{activeTab === "market" ? "Execution Price" : "Limit Price"}</span>
+              {activeTab === "market" ? (
+                // Market mode - non-editable execution price
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">
+                    {tradeDetails.entryPrice ? Number(tradeDetails.entryPrice.toFixed(2)).toLocaleString() : "0.00"}
+                  </span>
+                  <span className="text-xs text-muted-foreground">USD</span>
+                </div>
+              ) : (
+                // Limit mode - editable limit price
+                <div className="flex justify-between items-center w-full">
+                  <input
+                    type="text"
+                    placeholder="0"
+                    value={formState.limitPrice || ''}
+                    onChange={handleLimitPriceChange}
+                    className="w-3/4 h-7 px-0 border-0 text-sm font-medium bg-transparent focus:outline-none"
+                    suppressHydrationWarning
+                  />
+                  <span className="text-xs text-muted-foreground">USD</span>
+                </div>
+              )}
+            </div>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full h-16 justify-between font-normal bg-muted/50 hover:bg-muted/70 border-0"
+                >
+                  <div className="flex flex-col items-start">
+                    <span className="text-xs text-muted-foreground w-full text-left">Order Type</span>
+                    <span className="text-sm font-medium mt-1">
+                      {activeTab === "market" ? "Market Order" : activeTab === "limit" ? "Limit Order" : "Stop Order"}
+                    </span>
+                  </div>
+                  <span className="text-lg">⌄</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setActiveTab("market")}>
+                  Market Order
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setActiveTab("limit")}>
+                  Limit Order
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setActiveTab("stop")}>
+                  Stop Order
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Size and Margin */}
+          <div className="grid grid-cols-2 gap-1 mb-1">
+            <div className="flex flex-col justify-between p-3 bg-muted/50 rounded-md h-16">
+              <span className="text-xs text-muted-foreground">Size</span>
+              <div className="flex justify-between items-center w-full">
+                <input
+                  type="text"
+                  placeholder="0"
+                  value={formState.amount || ''}
+                  onChange={handleAmountChange}
+                  className="w-3/4 h-7 px-0 border-0 text-sm font-medium bg-transparent focus:outline-none"
+                  suppressHydrationWarning
+                />
+                <span className="text-xs text-muted-foreground">USD</span>
+              </div>
+            </div>
+            
+            <div className="flex flex-col justify-between p-3 bg-muted/50 rounded-md h-16">
+              <span className="text-xs text-muted-foreground">Margin</span>
+              <div className="flex justify-between items-center w-full">
+                <input
+                  type="text"
+                  placeholder="0"
+                  value={calculatedMargin ? Number(calculatedMargin.toFixed(2)).toString() : ''}
+                  onChange={handleMarginChange}
+                  className="w-3/4 h-7 px-0 border-0 text-sm font-medium bg-transparent focus:outline-none"
+                  suppressHydrationWarning
+                />
+                <span className="text-xs text-muted-foreground">USD</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Render appropriate form based on active tab */}
+          {activeTab === "market" ? (
+            <div className="hidden">
+              <MarketOrderForm
+                formState={formState}
+                calculatedMargin={calculatedMargin}
+                handleAmountChange={handleAmountChange}
+                handleMarginChange={handleMarginChange}
+                handleSliderChange={handleSliderChange}
+                toggleTPSL={toggleTPSL}
+                handleTakeProfitChange={(value) => handleTakeProfitChange(value)}
+                handleStopLossChange={(value) => handleStopLossChange(value)}
+                leverage={leverage}
+                onLeverageChange={onLeverageChange}
+              />
+            </div>
+          ) : activeTab === "limit" ? (
+            <div className="mt-1">
+              {/* Remove the duplicate Limit Price field since we've moved it to the top */}
+            </div>
+          ) : null}
+
+          {/* Percentage buttons */}
+          <div className="grid grid-cols-4 gap-1 mb-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSliderChange([25])}
+              className="h-10 bg-muted/50 hover:bg-muted border-0 text-sm"
+            >
+              25%
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSliderChange([50])}
+              className="h-10 bg-muted/50 hover:bg-muted border-0 text-sm"
+            >
+              50%
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSliderChange([75])}
+              className="h-10 bg-muted/50 hover:bg-muted border-0 text-sm"
+            >
+              75%
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSliderChange([100])}
+              className="h-10 bg-muted/50 hover:bg-muted border-0 text-sm"
+            >
+              100%
             </Button>
           </div>
 
-          <div className="flex justify-between text-sm text-muted-foreground">
-            <TabsList className="flex gap-4 p-0 bg-transparent border-0">
-              <TabsTrigger
-                value="market"
-                className="bg-transparent border-0 p-0 text-[13px] data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary"
-              >
-                Market
-              </TabsTrigger>
-              <TabsTrigger
-                value="limit"
-                className="bg-transparent border-0 p-0 text-[13px] data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary"
-              >
-                Limit
-              </TabsTrigger>
-              <TabsTrigger
-                value="stop"
-                className="bg-transparent border-0 p-0 text-[13px] data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary"
-              >
-                Stop
-              </TabsTrigger>
-            </TabsList>
+          {/* Leverage control */}
+          <div className="flex flex-col p-3 bg-muted/50 rounded-md mb-1">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs text-muted-foreground">Leverage</span>
+              <div className="w-16 h-6 bg-background/70 rounded flex items-center justify-center">
+                <input
+                  type="text"
+                  value={leverage || ''}
+                  onChange={(e) => {
+                    const value = Math.min(Math.max(1, Number(e.target.value)), 100);
+                    onLeverageChange(value.toString());
+                  }}
+                  className="w-10 h-full text-center border-0 bg-transparent focus:outline-none text-sm"
+                  suppressHydrationWarning
+                />
+                <span className="text-xs">x</span>
+              </div>
+            </div>
+            <div className="relative w-full h-[3px] bg-background/70 rounded-full">
+              <div className="absolute left-0 top-0 h-full rounded-full" 
+                style={{ 
+                  width: `${(Number(leverage) / 100) * 100}%`,
+                  backgroundColor: formState.isLong ? "var(--color-long)" : "var(--color-short)"
+                }}
+              ></div>
+            </div>
+            <div className="relative w-full h-3 mt-1">
+              <div className="absolute left-0 text-[9px] -translate-x-1/2 text-muted-foreground">1x</div>
+              <div className="absolute left-[25%] -translate-x-1/2 text-[9px] text-muted-foreground">25x</div>
+              <div className="absolute left-[50%] -translate-x-1/2 text-[9px] text-muted-foreground">50x</div>
+              <div className="absolute left-[75%] -translate-x-1/2 text-[9px] text-muted-foreground">75x</div>
+              <div className="absolute right-0 text-[9px] translate-x-1/2 text-muted-foreground">100x</div>
+            </div>
           </div>
 
-          <TabsContent value="market">
-            <MarketOrderForm
-              formState={formState}
-              calculatedMargin={calculatedMargin}
-              handleAmountChange={handleAmountChange}
-              handleMarginChange={handleMarginChange}  // Add this
-              handleSliderChange={handleSliderChange}
-              toggleTPSL={toggleTPSL}
-              handleTakeProfitChange={(value) => handleTakeProfitChange(value)}
-              handleStopLossChange={(value) => handleStopLossChange(value)}
-              leverage={leverage}
-              onLeverageChange={onLeverageChange}
-            />
-          </TabsContent>
-
-          <TabsContent value="limit">
-            <LimitOrderForm
-              formState={formState}
-              calculatedMargin={calculatedMargin}
-              handleAmountChange={handleAmountChange}
-              handleMarginChange={handleMarginChange}  // Add this
-              handleLimitPriceChange={handleLimitPriceChange}
-              handleSliderChange={handleSliderChange}
-              toggleTPSL={toggleTPSL}
-              handleTakeProfitChange={(value) => handleTakeProfitChange(value)}
-              handleStopLossChange={(value) => handleStopLossChange(value)}
-              leverage={leverage}
-              onLeverageChange={onLeverageChange}
-            />
-          </TabsContent>
-
-<TradeDetails 
-  details={tradeDetails} 
-  pair={market?.pair} 
-  tradingFee={tradingFee}
-  totalRequired={totalRequired}
-  referrerSection={referrerSection}
-  routingInfo={routingInfo}
-  splitOrderInfo={splitOrderInfo}
-  isLimitOrder={activeTab === "limit"}
-/>
+          {/* Trade details in a condensed format */}
+          <div className="bg-muted/50 rounded-md p-3 space-y-1 mb-1">
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Entry Price</span>
+              <span>${tradeDetails.entryPrice ? Number(tradeDetails.entryPrice.toFixed(2)).toLocaleString() : "0.00"}</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Liquidation Price</span>
+              <span className="text-short">${tradeDetails.liquidationPrice ? Number(tradeDetails.liquidationPrice.toFixed(2)).toLocaleString() : "0.00"}</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Trading Fee</span>
+              <span>{tradingFee.toFixed(2)} USD ({routingInfo.routes[routingInfo.selectedRoute].tradingFee * 100}%)</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Total Required</span>
+              <span>{totalRequired.toFixed(2)} USD</span>
+            </div>
+          </div>
 
           {!isConnected ? (
-            <div className="w-full mt-4">
+            <div className="w-full mt-1">
               <ConnectButton.Custom>
                 {({ openConnectModal }) => (
                   <Button
                     variant="market"
-                    className="w-full"
+                    className="w-full h-12 text-sm font-medium bg-[#7de2ac] hover:bg-[#7de2ac]/90 text-black"
                     onClick={openConnectModal}
                   >
                     Connect Wallet
@@ -503,7 +649,11 @@ export function OrderCard({
           ) : (
             <Button
               variant="market"
-              className="w-full mt-4"
+              className={`w-full h-12 text-sm font-medium mt-1 ${
+                formState.isLong 
+                ? "bg-[var(--color-long)] hover:bg-[var(--color-long-dark)] text-black" 
+                : "bg-[var(--color-short)] hover:bg-[var(--color-short-dark)] text-white"
+              }`}
               disabled={
                 // Only check these conditions if we have a smart account
                 smartAccount?.address
@@ -526,11 +676,10 @@ export function OrderCard({
             </Button>
           )}
 
-          <div className="h-px my-4 bg-border" />
-          <div className="mt-4">
+          <div className="mt-8">
             <WalletBox />
           </div>
-        </Tabs>
+        </div>
       </CardContent>
     </Card>
   );

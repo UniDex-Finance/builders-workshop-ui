@@ -40,21 +40,8 @@ export function LimitOrderForm({
 
   return (
     <div className="space-y-4">
-      <div className="space-y-1">
-        <div className="relative">
-          <Input
-            type="number"
-            placeholder="0"
-            value={formState.amount || ''}
-            onChange={handleAmountChange}
-            className="pr-10 text-right no-spinners"
-            label="Size"
-            suppressHydrationWarning
-          />
-          <div className="absolute text-sm -translate-y-1/2 right-3 top-1/2 text-muted-foreground">
-            USD
-          </div>
-        </div>
+      <div className="space-y-4">
+        {/* Limit Price input */}
         <div className="relative">
           <Input
             type="number"
@@ -69,21 +56,41 @@ export function LimitOrderForm({
             USD
           </div>
         </div>
-        <div className="relative">
-          <Input
-            type="number"
-            placeholder="0"
-            value={calculatedMargin ? Number(calculatedMargin.toFixed(2)).toString() : ''}
-            onChange={handleMarginChange}
-            className="pr-10 text-right no-spinners"
-            label="Margin"
-            suppressHydrationWarning
-          />
-          <div className="absolute text-sm -translate-y-1/2 right-3 top-1/2 text-muted-foreground">
-            USD
+        
+        {/* Grid for Size and Margin inputs */}
+        <div className="grid grid-cols-2 gap-2">
+          <div className="relative">
+            <Input
+              type="number"
+              placeholder="0"
+              value={formState.amount || ''}
+              onChange={handleAmountChange}
+              className="pr-10 text-right no-spinners"
+              label="Size"
+              suppressHydrationWarning
+            />
+            <div className="absolute text-sm -translate-y-1/2 right-3 top-1/2 text-muted-foreground">
+              USD
+            </div>
+          </div>
+          <div className="relative">
+            <Input
+              type="number"
+              placeholder="0"
+              value={calculatedMargin ? Number(calculatedMargin.toFixed(2)).toString() : ''}
+              onChange={handleMarginChange}
+              className="pr-10 text-right no-spinners"
+              label="Margin"
+              suppressHydrationWarning
+            />
+            <div className="absolute text-sm -translate-y-1/2 right-3 top-1/2 text-muted-foreground">
+              USD
+            </div>
           </div>
         </div>
-        <div className="grid grid-cols-4 gap-2 pt-2">
+
+        {/* Replace slider with percentage buttons */}
+        <div className="grid grid-cols-4 gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -117,7 +124,6 @@ export function LimitOrderForm({
             100%
           </Button>
         </div>
-
 
         <div className="pt-2 space-y-4">
           <div className="flex items-center justify-between">
