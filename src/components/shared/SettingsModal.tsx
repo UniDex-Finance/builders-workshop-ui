@@ -73,7 +73,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             opacity: 0,
           }}
           className={cn(
-            "fixed top-16 right-4 z-50 overflow-hidden rounded-2xl bg-card border border-border shadow-lg",
+            "fixed top-16 right-4 z-[100] overflow-hidden rounded-2xl bg-card border border-border shadow-lg",
           )}
           transition={{
             type: "spring",

@@ -10,7 +10,7 @@ const SIDEBAR_MODES = {
 type SidebarMode = keyof typeof SIDEBAR_MODES;
 
 export function SideBar() {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [activeMode, setActiveMode] = useState<SidebarMode>('TRADE_STREAM');
 
   const handleModeClick = (mode: SidebarMode) => {
@@ -23,21 +23,11 @@ export function SideBar() {
   };
 
   return (
-    <div className="relative hidden ml-2 md:block">
+    <div className="relative hidden md:block h-full">
       <div className="flex h-full">
-        {/* Expandable Content Panel */}
-        {isExpanded && (
-          <div className="relative h-full overflow-hidden border border-r-0 rounded-l-lg w-80 bg-card border-border">
-            {activeMode === 'TRADE_STREAM' && (
-              <TradeStream isExpanded={true} />
-            )}
-          </div>
-        )}
-
-        {/* Main Sidebar */}
+        {/* Main Sidebar - Now positioned on the left */}
         <div className={`
-          flex flex-col justify-between w-12 h-full border bg-card border-border
-          ${isExpanded ? 'rounded-r-lg' : 'rounded-lg'}
+          flex flex-col justify-between w-12 h-full border-t border-b border-l border-r bg-card border-border
         `}>
           {/* Modes */}
           <button
@@ -56,18 +46,24 @@ export function SideBar() {
           {/* Toggle Button */}
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className={`
-              p-2 transition-colors hover:bg-accent
-              ${isExpanded ? 'rounded-br-lg' : 'rounded-b-lg'}
-            `}
+            className="p-2 transition-colors hover:bg-accent"
           >
             {isExpanded ? (
-              <ChevronRight className="w-4 h-4 mx-auto" />
-            ) : (
               <ChevronLeft className="w-4 h-4 mx-auto" />
+            ) : (
+              <ChevronRight className="w-4 h-4 mx-auto" />
             )}
           </button>
         </div>
+
+        {/* Expandable Content Panel - Now positioned to the right of the main sidebar */}
+        {isExpanded && (
+          <div className="relative h-full overflow-hidden border-t border-r border-b w-80 bg-card border-border">
+            {activeMode === 'TRADE_STREAM' && (
+              <TradeStream isExpanded={true} />
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

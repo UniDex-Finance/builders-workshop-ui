@@ -30,43 +30,45 @@ export function Header() {
   const { theme, setTheme } = useTheme()
 
   return (
-    <header className="flex items-center px-4 pt-2 mb-1 md:px-6 h-14 md:pt-3">
-      <div className="flex items-center space-x-4">
-        <Link href="/" className="hover:opacity-80">
+    <header className="flex items-center justify-between px-4 mb-1 md:px-6 h-[50px]">
+      <div className="flex items-center space-x-3 h-full translate-y-[2px]">
+        <Link href="/" className="hover:opacity-80 flex items-center h-full">
           {/* Desktop Logo */}
-          <div className="hidden md:block">
+          <div className="hidden md:flex items-center">
             <Image
               src={theme === 'light' ? '/static/images/logo-large-dark.png' : '/static/images/logo-large.png'}
               alt="UniDex Logo"
-              width={100}
-              height={32}
+              width={90}
+              height={28}
               priority
+              className="object-contain"
             />
           </div>
           {/* Mobile Logo */}
-          <div className="block md:hidden">
+          <div className="flex md:hidden items-center">
             <Image
               src={theme === 'light' ? '/static/images/logo-small-dark.png' : '/static/images/logo-small.png'}
               alt="UniDex Logo"
-              width={32}
-              height={32}
+              width={28}
+              height={28}
               priority
+              className="object-contain"
             />
           </div>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="items-center hidden space-x-4 md:flex">
-          <Link href="/">
-            <Button variant="ghost">Trade</Button>
+        <nav className="h-full hidden space-x-3 md:flex items-center">
+          <Link href="/" className="flex items-center h-full">
+            <Button variant="ghost" size="sm" className="text-sm font-normal h-8 flex items-center justify-center">Trade</Button>
           </Link>
-          <Link href="/leaderboard">
-            <Button variant="ghost">Leaderboard</Button>
+          <Link href="/leaderboard" className="flex items-center h-full">
+            <Button variant="ghost" size="sm" className="text-sm font-normal h-8 flex items-center justify-center">Leaderboard</Button>
           </Link>
           <Dropdown>
             <DropdownTrigger>
-              <Button variant="ghost" className="gap-1">
-                Earn <ChevronDown size={16} />
+              <Button variant="ghost" size="sm" className="text-sm font-normal gap-1 h-8 flex items-center justify-center">
+                Earn <ChevronDown size={14} />
               </Button>
             </DropdownTrigger>
             <DropdownMenu
@@ -122,8 +124,8 @@ export function Header() {
           </Dropdown>
           <Dropdown>
             <DropdownTrigger>
-              <Button variant="ghost" className="gap-1">
-                Socials <ChevronDown size={16} />
+              <Button variant="ghost" size="sm" className="text-sm font-normal gap-1 h-8 flex items-center justify-center">
+                Socials <ChevronDown size={14} />
               </Button>
             </DropdownTrigger>
             <DropdownMenu
@@ -169,8 +171,8 @@ export function Header() {
           </Dropdown>
           <Dropdown>
             <DropdownTrigger>
-              <Button variant="ghost" className="gap-1">
-                More <ChevronDown size={16} />
+              <Button variant="ghost" size="sm" className="text-sm font-normal gap-1 h-8 flex items-center justify-center">
+                More <ChevronDown size={14} />
               </Button>
             </DropdownTrigger>
             <DropdownMenu
@@ -257,11 +259,11 @@ export function Header() {
         </nav>
 
         {/* Mobile Navigation */}
-        <div className="md:hidden">
+        <div className="md:hidden flex items-center h-full">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu size={20} />
+              <Button variant="ghost" size="icon" className="h-8 w-8 flex items-center justify-center">
+                <Menu size={19} />
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[300px] p-0">
@@ -272,9 +274,10 @@ export function Header() {
                     <Image
                       src="/static/images/logo-large.png"
                       alt="UniDex Logo"
-                      width={100}
-                      height={32}
+                      width={90}
+                      height={28}
                       priority
+                      className="object-contain"
                     />
                   </Link>
                 </SheetHeader>
@@ -285,7 +288,7 @@ export function Header() {
                     {/* Trade */}
                     <Button
                       variant="ghost"
-                      className="justify-start w-full"
+                      className="justify-start w-full text-sm h-8"
                       onClick={() => (window.location.href = "/")}
                     >
                       Trade
@@ -294,7 +297,7 @@ export function Header() {
                     {/* Leaderboard */}
                     <Button
                       variant="ghost"
-                      className="justify-start w-full"
+                      className="justify-start w-full text-sm h-8"
                       onClick={() => (window.location.href = "/leaderboard")}
                     >
                       Leaderboard
@@ -307,7 +310,7 @@ export function Header() {
                       </div>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2"
+                        className="justify-start w-full gap-2 text-sm h-8"
                         onClick={() => (window.location.href = "/staking")}
                       >
                         <Coins className="w-4 h-4" />
@@ -321,7 +324,7 @@ export function Header() {
                       </div>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2"
+                        className="justify-start w-full gap-2 text-sm h-8"
                         onClick={() => (window.location.href = "/usdm")}
                       >
                         <DollarSign className="w-4 h-4" />
@@ -329,7 +332,7 @@ export function Header() {
                       </Button>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2"
+                        className="justify-start w-full gap-2 text-sm h-8"
                         onClick={() => (window.location.href = "/usdm-staking")}
                       >
                         <PiggyBank className="w-4 h-4" />
@@ -343,7 +346,7 @@ export function Header() {
                       </div>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2"
+                        className="justify-start w-full gap-2 text-sm h-8"
                         onClick={() => (window.location.href = "/referrals")}
                       >
                         <Users2 className="w-4 h-4" />
@@ -358,7 +361,7 @@ export function Header() {
                       </div>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2"
+                        className="justify-start w-full gap-2 text-sm h-8"
                         onClick={() =>
                           window.open("https://discord.gg/W2TByeuD7R", "_blank")
                         }
@@ -368,7 +371,7 @@ export function Header() {
                       </Button>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2"
+                        className="justify-start w-full gap-2 text-sm h-8"
                         onClick={() =>
                           window.open("https://t.me/unidexfinance", "_blank")
                         }
@@ -378,7 +381,7 @@ export function Header() {
                       </Button>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2"
+                        className="justify-start w-full gap-2 text-sm h-8"
                         onClick={() =>
                           window.open("https://x.com/UniDexFinance", "_blank")
                         }
@@ -395,7 +398,7 @@ export function Header() {
                       </div>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2"
+                        className="justify-start w-full gap-2 text-sm h-8"
                         onClick={() =>
                           window.open("https://discord.gg/W2TByeuD7R", "_blank")
                         }
@@ -408,7 +411,7 @@ export function Header() {
                       </Button>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2"
+                        className="justify-start w-full gap-2 text-sm h-8"
                         onClick={() =>
                           window.open(
                             "https://docs.unidex.exchange/introduction",
@@ -421,7 +424,7 @@ export function Header() {
                       </Button>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2"
+                        className="justify-start w-full gap-2 text-sm h-8"
                         onClick={() =>
                           window.open(
                             "https://dune.com/supakawaiidesu/unidex-molten-stats",
@@ -437,7 +440,7 @@ export function Header() {
                       </Button>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2"
+                        className="justify-start w-full gap-2 text-sm h-8"
                         onClick={() => (window.location.href = "/bridge")}
                       >
                         <UnfoldHorizontal className="w-4 h-4" />
@@ -452,8 +455,8 @@ export function Header() {
         </div>
       </div>
 
-      <div className="flex items-center ml-auto space-x-2">
-        <AccountSummary buttonText="Deposit / Withdraw" className="h-9" />
+      <div className="flex items-center space-x-2 h-full translate-y-[2px]">
+        <AccountSummary buttonText="Deposit / Withdraw" className="h-8 text-sm" />
 
         <ConnectButton.Custom>
           {({
@@ -477,6 +480,7 @@ export function Header() {
                     userSelect: "none",
                   },
                 })}
+                className="flex items-center h-full"
               >
                 {(() => {
                   if (!connected) {
@@ -485,7 +489,7 @@ export function Header() {
                         <Button
                           onClick={openConnectModal}
                           variant="outline"
-                          className="hidden sm:inline-flex h-9 px-3 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important"
+                          className="hidden sm:inline-flex h-8 px-3 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important text-sm flex items-center justify-center"
                         >
                           Connect
                         </Button>
@@ -493,9 +497,9 @@ export function Header() {
                           onClick={openConnectModal}
                           variant="outline"
                           size="icon"
-                          className="sm:hidden h-9 w-9 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
+                          className="sm:hidden h-8 w-8 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
                         >
-                          <Wallet className="w-5 h-5 text-white" />
+                          <Wallet className="w-4 h-4 text-white" />
                         </Button>
                       </>
                     );
@@ -506,7 +510,7 @@ export function Header() {
                       <Button
                         onClick={openChainModal}
                         variant="destructive"
-                        className="h-9 px-3 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important"
+                        className="h-8 px-3 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important text-sm flex items-center justify-center"
                       >
                         Wrong Network
                       </Button>
@@ -514,11 +518,11 @@ export function Header() {
                   }
 
                   return (
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center h-full">
                       <Button
                         onClick={openAccountModal}
                         variant="outline"
-                        className="hidden sm:inline-flex h-9 px-3 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important"
+                        className="hidden sm:inline-flex h-8 px-3 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important text-sm flex items-center justify-center"
                       >
                         {account.displayName}
                       </Button>
@@ -526,9 +530,9 @@ export function Header() {
                         onClick={openAccountModal}
                         variant="outline"
                         size="icon"
-                        className="sm:hidden h-9 w-9 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
+                        className="sm:hidden h-8 w-8 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
                       >
-                        <Wallet className="w-5 h-5 text-white" />
+                        <Wallet className="w-4 h-4 text-white" />
                       </Button>
                     </div>
                   );
@@ -541,10 +545,10 @@ export function Header() {
         <Button
           variant="outline"
           size="icon"
-          className="h-9 w-9 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
+          className="h-8 w-8 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
           onClick={() => setIsSettingsOpen(!isSettingsOpen)}
         >
-          {theme === 'light' ? <Settings className="w-5 h-5" stroke="black" /> : <Settings className="w-5 h-5" />}
+          {theme === 'light' ? <Settings className="w-4 h-4" stroke="black" /> : <Settings className="w-4 h-4" />}
         </Button>
 
         <SettingsModal 

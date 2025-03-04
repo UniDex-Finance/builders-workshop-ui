@@ -97,13 +97,13 @@ export function PositionsTable({ address }: PositionsTableProps) {
   };
 
   return (
-    <div className="w-full mb-4 border rounded-lg bg-[hsl(var(--component-background))]">
-      <div className="flex items-center p-2 border-b">
+    <div className="w-full bg-[hsl(var(--component-background))] border-border">
+      <div className="flex items-center px-4 py-1 border-b">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setActiveTab("positions")}
-          className={activeTab === "positions" ? "text-white" : "text-muted-foreground"}
+          className={activeTab === "positions" ? "text-white px-0 mr-2" : "text-muted-foreground px-0 mr-2"}
         >
           Positions
         </Button>
@@ -112,7 +112,7 @@ export function PositionsTable({ address }: PositionsTableProps) {
           variant="ghost"
           size="sm"
           onClick={() => setActiveTab("orders")}
-          className={activeTab === "orders" ? "text-white" : "text-muted-foreground"}
+          className={activeTab === "orders" ? "text-white px-0 mx-2" : "text-muted-foreground px-0 mx-2"}
         >
           Orders
         </Button>
@@ -121,7 +121,7 @@ export function PositionsTable({ address }: PositionsTableProps) {
           variant="ghost"
           size="sm"
           onClick={() => setActiveTab("trades")}
-          className={activeTab === "trades" ? "text-white" : "text-muted-foreground"}
+          className={activeTab === "trades" ? "text-white px-0 ml-2" : "text-muted-foreground px-0 ml-2"}
         >
           History
         </Button>

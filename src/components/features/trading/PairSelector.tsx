@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useMemo } from "react";
 import { Search, Star, ArrowUpDown } from "lucide-react";
 import { cn } from "../../../lib/utils";
 import { TokenIcon } from "../../../hooks/use-token-icon";
-import { useMarketData } from "../../../hooks/use-market-data";
+import { useMarketData, getPairFullName } from "../../../hooks/use-market-data";
 import { usePrices } from "../../../lib/websocket-price-context";
 import { usePairPrecision } from "../../../hooks/use-pair-precision";
 import { use24hChange } from "../../../hooks/use-24h-change";
@@ -280,23 +280,25 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
   }, [filteredMarkets, sortField, sortDirection]);
 
   return (
-    <div className="flex min-w-[130px] pr-2 border-r">
+    <div className="flex min-w-[310px] pr-2 pl-0 border-r">
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Button
-            variant="ghost"
-            className="w-full h-full p-0 bg-transparent border-0 shadow-none cursor-pointer focus:ring-0 hover:bg-muted/60"
+            variant="outline"
+            className="w-full h-full px-3 py-2 bg-secondary/30 border border-border/70 cursor-pointer hover:bg-secondary/40 hover:border-[var(--main-accent)]/40 focus:outline-none focus:ring-0 transition-colors shadow-sm"
           >
-            <div className="flex items-center px-4">
-              <TokenIcon pair={selectedPair} size={28} className="mr-2" />
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2 px-2 mb-1 text-xs text-muted-foreground">
-                  <span>{selectedPair}</span>
-                  <ChevronDown className="w-4 h-4" />
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center">
+                <TokenIcon pair={selectedPair} size={28} className="mr-3" />
+                <div className="flex flex-col items-start">
+                  <div className="font-semibold text-sm">{selectedPair}</div>
+                  <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                    {getPairFullName(selectedPair)}
+                  </div>
                 </div>
-                <div className="px-2 font-mono font-bold text-left text-sm min-w-[90px]">
-                  {formatPairPrice(selectedPair, currentPrice)}
-                </div>
+              </div>
+              <div className="flex items-center justify-center w-5 h-5 ml-2 rounded-full bg-[var(--main-accent)]/10">
+                <ChevronDown className="w-3.5 h-3.5 text-[var(--main-accent)]" />
               </div>
             </div>
           </Button>
