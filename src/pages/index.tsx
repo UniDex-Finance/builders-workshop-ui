@@ -59,9 +59,12 @@ export default function TradingInterface() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <Header />
+      {/* Header has highest z-index since it contains the settings modal */}
+      <div className="relative z-40">
+        <Header />
+      </div>
 
-      <main className="flex flex-col flex-1">
+      <main className="flex flex-col flex-1 relative z-10">
         {/* PairHeader - Now full width */}
         <div className="w-full">
           <PairHeader selectedPair={selectedPair} onPairChange={setPair} />
@@ -86,7 +89,7 @@ export default function TradingInterface() {
                 </div>
                 
                 {/* Orderbook - Right of the chart */}
-                <div className="hidden md:block" style={{ height: `${chartHeight}px` }}>
+                <div className="hidden md:block relative z-20" style={{ height: `${chartHeight}px` }}>
                   <Orderbook pair={selectedPair} height={chartHeight} />
                 </div>
               </div>

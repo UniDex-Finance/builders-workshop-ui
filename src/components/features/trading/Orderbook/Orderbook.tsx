@@ -19,6 +19,7 @@ export function Orderbook({ pair, height }: OrderbookProps) {
   const [selectedDepth, setSelectedDepth] = useState("10");
   const [grouping, setGrouping] = useState("0.1");
   const [denomination, setDenomination] = useState<"currency" | "usd">("currency");
+  const orderbookContainerRef = useRef<HTMLDivElement>(null);
 
   // Group orders by price level
   const groupOrders = (orders: OrderbookLevel[], groupSize: number) => {
@@ -214,7 +215,7 @@ export function Orderbook({ pair, height }: OrderbookProps) {
                 side="left"
                 align="center"
                 sideOffset={5}
-                className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md"
+                className="z-30 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -295,6 +296,7 @@ export function Orderbook({ pair, height }: OrderbookProps) {
 
   return (
     <div 
+      ref={orderbookContainerRef}
       className="relative bg-card text-foreground w-[300px] border-t border-b border-r border-l border-border"
       style={{ 
         height: `${height}px`,
