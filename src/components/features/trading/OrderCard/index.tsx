@@ -26,6 +26,14 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Slider } from "@/components/ui/slider";
 
 
 const DEFAULT_REFERRER = "0x0000000000000000000000000000000000000000";
@@ -52,6 +60,8 @@ export function OrderCard({
   const [tempReferrerCode, setTempReferrerCode] = useState("");
   const [placingOrders, setPlacingOrders] = useState(false);
   const [initialIsLong] = useState(true);
+  const [leverageDialogOpen, setLeverageDialogOpen] = useState(false);
+  const [tempLeverageValue, setTempLeverageValue] = useState(leverage);
 
   const {
     formState,
@@ -399,6 +409,10 @@ export function OrderCard({
     </div>
   );
 
+  useEffect(() => {
+    setTempLeverageValue(leverage);
+  }, [leverage]);
+
   return (
     <Card className="w-full md:h-full md:rounded-none md:border-0 md:shadow-none">
       <CardContent className="p-1 md:p-1 h-full overflow-y-auto border-t border-border">
@@ -407,8 +421,8 @@ export function OrderCard({
         )}
 
         <div className="space-y-1">
-          {/* Buy/Sell buttons */}
-          <div className="grid grid-cols-2 gap-1 mb-1">
+          {/* Buy/Leverage/Sell buttons in one row */}
+          <div className="grid grid-cols-3 gap-1 mb-1">
             <Button
               variant={formState.isLong ? "default" : "outline"}
               className={`w-full h-16 text-sm font-medium ${
@@ -418,6 +432,85 @@ export function OrderCard({
             >
               Buy <span className="ml-1 text-xs">↗</span>
             </Button>
+            
+            {/* Leverage button in the middle */}
+            <Dialog open={leverageDialogOpen} onOpenChange={setLeverageDialogOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full h-16 flex flex-col justify-center items-center hover:bg-muted"
+                >
+                  <span className="text-xs text-muted-foreground">Leverage</span>
+                  <span className="text-lg font-medium">{leverage}x</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Adjust Leverage</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[13px]">Leverage:</span>
+                    <div className="relative w-16">
+                      <Input
+                        type="number"
+                        value={tempLeverageValue || ''}
+                        onChange={(e) => {
+                          const value = Math.min(Math.max(1, Number(e.target.value)), 100);
+                          setTempLeverageValue(value.toString());
+                        }}
+                        className="h-8 text-sm text-center no-spinners"
+                        suppressHydrationWarning
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="relative w-full">
+                      <div className="absolute w-full h-full">
+                        <div className="absolute left-0 -translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
+                        <div className="absolute left-[25%] -translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
+                        <div className="absolute left-[50%] -translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
+                        <div className="absolute left-[75%] -translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
+                        <div className="absolute right-0 translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
+                      </div>
+                      <Slider
+                        value={[Number(tempLeverageValue)]}
+                        min={1}
+                        max={100}
+                        step={1}
+                        onValueChange={(value) => {
+                          setTempLeverageValue(value[0].toString());
+                        }}
+                      />
+                    </div>
+                    <div className="relative w-full h-4">
+                      <div className="absolute left-0 text-xs -translate-x-1/2 text-muted-foreground">1x</div>
+                      <div className="absolute left-[25%] -translate-x-1/2 text-xs text-muted-foreground">25x</div>
+                      <div className="absolute left-[50%] -translate-x-1/2 text-xs text-muted-foreground">50x</div>
+                      <div className="absolute left-[75%] -translate-x-1/2 text-xs text-muted-foreground">75x</div>
+                      <div className="absolute right-0 text-xs translate-x-1/2 text-muted-foreground">100x</div>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 mt-4">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setLeverageDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        onLeverageChange(tempLeverageValue);
+                        setLeverageDialogOpen(false);
+                      }}
+                    >
+                      Apply
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+            
             <Button
               variant={!formState.isLong ? "default" : "outline"}
               className={`w-full h-16 text-sm font-medium ${
@@ -575,41 +668,6 @@ export function OrderCard({
             >
               100%
             </Button>
-          </div>
-
-          {/* Leverage control */}
-          <div className="flex flex-col p-3 bg-muted/50 rounded-md mb-1">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-muted-foreground">Leverage</span>
-              <div className="w-16 h-6 bg-background/70 rounded flex items-center justify-center">
-                <input
-                  type="text"
-                  value={leverage || ''}
-                  onChange={(e) => {
-                    const value = Math.min(Math.max(1, Number(e.target.value)), 100);
-                    onLeverageChange(value.toString());
-                  }}
-                  className="w-10 h-full text-center border-0 bg-transparent focus:outline-none text-sm"
-                  suppressHydrationWarning
-                />
-                <span className="text-xs">x</span>
-              </div>
-            </div>
-            <div className="relative w-full h-[3px] bg-background/70 rounded-full">
-              <div className="absolute left-0 top-0 h-full rounded-full" 
-                style={{ 
-                  width: `${(Number(leverage) / 100) * 100}%`,
-                  backgroundColor: formState.isLong ? "var(--color-long)" : "var(--color-short)"
-                }}
-              ></div>
-            </div>
-            <div className="relative w-full h-3 mt-1">
-              <div className="absolute left-0 text-[9px] -translate-x-1/2 text-muted-foreground">1x</div>
-              <div className="absolute left-[25%] -translate-x-1/2 text-[9px] text-muted-foreground">25x</div>
-              <div className="absolute left-[50%] -translate-x-1/2 text-[9px] text-muted-foreground">50x</div>
-              <div className="absolute left-[75%] -translate-x-1/2 text-[9px] text-muted-foreground">75x</div>
-              <div className="absolute right-0 text-[9px] translate-x-1/2 text-muted-foreground">100x</div>
-            </div>
           </div>
 
           {/* Trade details in a condensed format */}
