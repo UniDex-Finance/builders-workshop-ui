@@ -93,8 +93,12 @@ export default function CustomSlider({
         {ticks.map((tick, i) => (
           <div
             key={i}
-            className={cn("absolute top-0 w-px h-1.5 -translate-x-1/2", tick.isKey ? "bg-white" : "bg-gray-600")}
-            style={{ left: `${tick.percentage}%`, top: "calc(50% - 0.75px)" }}
+            className={cn("absolute w-px h-1.5 -translate-x-1/2", tick.isKey ? "bg-white" : "bg-gray-600")}
+            style={{ 
+              left: `${tick.percentage}%`, 
+              top: "50%", 
+              transform: "translate(-50%, -50%)" 
+            }}
           />
         ))}
 
