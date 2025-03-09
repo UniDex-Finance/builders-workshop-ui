@@ -10,6 +10,7 @@ interface CustomSliderProps {
   max?: number
   step?: number
   defaultValue?: number
+  value?: number
   onChange?: (value: number) => void
   className?: string
 }
@@ -19,17 +20,26 @@ export default function CustomSlider({
   max = 100,
   step = 1,
   defaultValue = 0,
+  value,
   onChange,
   className,
 }: CustomSliderProps) {
-  const [value, setValue] = useState(defaultValue)
+  const [internalValue, setInternalValue] = useState(defaultValue)
   const [isDragging, setIsDragging] = useState(false)
   const trackRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    if (value !== undefined) {
+      setInternalValue(value)
+    }
+  }, [value])
+
+  const currentValue = value !== undefined ? value : internalValue
+  
   // Define a subtle edge padding (3% on each side)
   const edgePadding = 0.03
   
-  const percentage = ((value - min) / (max - min)) * 100
+  const percentage = ((currentValue - min) / (max - min)) * 100
 
   // Generate tick marks - increased to have marks at every 5% (21 ticks total)
   const tickCount = 20
@@ -61,8 +71,10 @@ export default function CustomSlider({
     const roundedPercentage = roundToNearest5(rawPercentage)
     
     const newValue = Math.round((roundedPercentage / 100) * (max - min) + min)
-    setValue(Math.max(min, Math.min(max, newValue)))
-    onChange?.(Math.max(min, Math.min(max, newValue)))
+    const clampedValue = Math.max(min, Math.min(max, newValue))
+    
+    setInternalValue(clampedValue)
+    onChange?.(clampedValue)
   }
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -81,8 +93,10 @@ export default function CustomSlider({
     const roundedPercentage = roundToNearest5(rawPercentage)
     
     const newValue = Math.round((roundedPercentage / 100) * (max - min) + min)
-    setValue(Math.max(min, Math.min(max, newValue)))
-    onChange?.(Math.max(min, Math.min(max, newValue)))
+    const clampedValue = Math.max(min, Math.min(max, newValue))
+    
+    setInternalValue(clampedValue)
+    onChange?.(clampedValue)
   }
 
   const handleMouseUp = () => {

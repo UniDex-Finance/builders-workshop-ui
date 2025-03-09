@@ -622,7 +622,7 @@ export function OrderCard({
               min={0}
               max={100}
               step={1}
-              defaultValue={formState.sliderValue || 0}
+              value={formState.sliderValue ? formState.sliderValue[0] || 0 : 0}
               onChange={(value) => handleSliderChange([value])}
               className="mt-2"
             />
