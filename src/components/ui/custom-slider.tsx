@@ -36,14 +36,22 @@ export default function CustomSlider({
     return { percentage: tickPercentage, isKey: isKeyTick }
   })
 
+  // Round to nearest 5 for manual interaction
+  const roundToNearest5 = (value: number) => {
+    return Math.round(value / 5) * 5
+  }
+
   const handleTrackClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!trackRef.current) return
 
     const rect = trackRef.current.getBoundingClientRect()
     const clickPosition = e.clientX - rect.left
-    const newPercentage = (clickPosition / rect.width) * 100
-    const newValue = Math.round((newPercentage / 100) * (max - min) + min)
-
+    const rawPercentage = (clickPosition / rect.width) * 100
+    
+    // Round to nearest 5%
+    const roundedPercentage = roundToNearest5(rawPercentage)
+    
+    const newValue = Math.round((roundedPercentage / 100) * (max - min) + min)
     setValue(Math.max(min, Math.min(max, newValue)))
     onChange?.(Math.max(min, Math.min(max, newValue)))
   }
@@ -58,9 +66,12 @@ export default function CustomSlider({
 
     const rect = trackRef.current.getBoundingClientRect()
     const movePosition = e.clientX - rect.left
-    const newPercentage = (movePosition / rect.width) * 100
-    const newValue = Math.round((newPercentage / 100) * (max - min) + min)
-
+    const rawPercentage = (movePosition / rect.width) * 100
+    
+    // Round to nearest 5%
+    const roundedPercentage = roundToNearest5(rawPercentage)
+    
+    const newValue = Math.round((roundedPercentage / 100) * (max - min) + min)
     setValue(Math.max(min, Math.min(max, newValue)))
     onChange?.(Math.max(min, Math.min(max, newValue)))
   }
