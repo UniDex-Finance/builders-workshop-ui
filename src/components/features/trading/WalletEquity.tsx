@@ -117,13 +117,13 @@ export function WalletBox() {
       <div className="space-y-2">
         <Button
           onClick={() => setShowDeposit(true)}
-          className="w-full h-10 text-sm bg-background hover:bg-background/90 border border-border"
+          className="w-full h-10 text-sm bg-muted/50 hover:bg-muted/70 border border-border"
         >
           Deposit
         </Button>
         <Button
           onClick={() => setShowWithdraw(true)}
-          className="w-full h-10 text-sm bg-background hover:bg-background/90 border border-border"
+          className="w-full h-10 text-sm bg-muted/50 hover:bg-muted/70 border border-border"
         >
           Withdraw
         </Button>

@@ -306,7 +306,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                       </div>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent className="z-50 p-4 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md">
+                  <TooltipContent className="z-50 p-4 rounded-md shadow-lg border border-border/40 bg-[#171717]/80 backdrop-blur-md">
                     <p className="mb-4 text-sm font-medium text-white">Open Interest Distribution</p>
                     {unidexMarketData && (
                       <ProgressBar 
@@ -341,7 +341,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                       </div>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent className="z-50 p-4 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md">
+                  <TooltipContent className="z-50 p-4 rounded-md shadow-lg border border-border/40 bg-[#171717]/80 backdrop-blur-md">
                     <p className="mb-4 text-sm font-medium text-white">Open Interest Distribution</p>
                     {unidexMarketData && (
                       <ProgressBar 
@@ -394,7 +394,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                       </div>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent className="z-50 p-4 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md">
+                  <TooltipContent className="z-50 p-4 rounded-md shadow-lg border border-border/40 bg-[#171717]/80 backdrop-blur-md">
                     <p className="text-xs text-white whitespace-pre-line">
                       {getAnnualizedRate(combinedData.fundingRate) >= 0 
                         ? <>
@@ -427,7 +427,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                         </div>
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent className="z-50 w-[300px] p-4 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md">
+                    <TooltipContent className="z-50 w-[300px] p-4 rounded-md shadow-lg border border-border/40 bg-[#171717]/80 backdrop-blur-md">
                       <p className="mb-4 text-xs text-white">
                         Borrow rate is a fee paid to keep your position open, regardless of market direction.
                       </p>
@@ -458,7 +458,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                         </div>
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent className="z-50 w-[300px] p-4 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md">
+                    <TooltipContent className="z-50 w-[300px] p-4 rounded-md shadow-lg border border-border/40 bg-[#171717]/80 backdrop-blur-md">
                       <p className="mb-4 text-xs text-white">
                         Borrow rate is a fee paid to keep your position open, regardless of market direction.
                       </p>

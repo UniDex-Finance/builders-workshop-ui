@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import CustomSlider from "@/components/ui/custom-slider";
+import Image from "next/image";
 
 const DEFAULT_REFERRER = "0x0000000000000000000000000000000000000000";
 const STORAGE_KEY_CODE = 'unidex-referral-code';
@@ -78,6 +79,7 @@ export function OrderCard({
   const [initialIsLong] = useState(true);
   const [leverageDialogOpen, setLeverageDialogOpen] = useState(false);
   const [tempLeverageValue, setTempLeverageValue] = useState(leverage);
+  const [detailsExpanded, setDetailsExpanded] = useState(false);
 
   const {
     formState,
@@ -401,18 +403,18 @@ export function OrderCard({
   };
 
   const referrerSection = (
-    <div className="flex items-center justify-between">
-      <span>Referrer</span>
+    <div className="flex justify-between text-xs">
+      <span className="text-muted-foreground">Referrer</span>
       {isEditingReferrer ? (
         <input
           ref={referrerInputRef}
           type="text"
-          value={tempReferrerCode} // Use temporary value for input
+          value={tempReferrerCode}
           onChange={handleReferrerChange}
           onBlur={handleReferrerBlur}
-          onKeyDown={handleReferrerKeyDown} // Add keyboard handler
+          onKeyDown={handleReferrerKeyDown}
           placeholder="Enter code"
-          className="text-right bg-transparent border-b border-dashed outline-none border-muted-foreground"
+          className="text-right bg-transparent border-b border-dashed outline-none text-xs w-auto"
         />
       ) : (
         <span
@@ -628,28 +630,8 @@ export function OrderCard({
             />
           </div>
 
-          {/* Trade details in a condensed format */}
-          <div className="bg-muted/50 rounded-md p-3 space-y-1 mb-1">
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Entry Price</span>
-              <span>${tradeDetails.entryPrice ? Number(tradeDetails.entryPrice.toFixed(2)).toLocaleString() : "0.00"}</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Liquidation Price</span>
-              <span className="text-short">${tradeDetails.liquidationPrice ? Number(tradeDetails.liquidationPrice.toFixed(2)).toLocaleString() : "0.00"}</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Trading Fee</span>
-              <span>{tradingFee.toFixed(2)} USD ({routingInfo.routes[routingInfo.selectedRoute].tradingFee * 100}%)</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Total Required</span>
-              <span>{totalRequired.toFixed(2)} USD</span>
-            </div>
-          </div>
-
           {!isConnected ? (
-            <div className="w-full mt-1">
+            <div className="w-full mb-3">
               <ConnectButton.Custom>
                 {({ openConnectModal }) => (
                   <Button
@@ -665,7 +647,7 @@ export function OrderCard({
           ) : (
             <Button
               variant="market"
-              className={`w-full h-12 text-sm font-medium mt-1 ${
+              className={`w-full h-12 text-sm font-medium mb-3 ${
                 formState.isLong 
                 ? "bg-[var(--color-long)] hover:bg-[var(--color-long-dark)] text-black" 
                 : "bg-[var(--color-short)] hover:bg-[var(--color-short-dark)] text-white"
@@ -692,7 +674,112 @@ export function OrderCard({
             </Button>
           )}
 
-          <div className="mt-8">
+          {/* Trade details box */}
+          <div className="bg-muted/50 rounded-md p-3 space-y-1 mb-1">
+            {/* Source/Route Information */}
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Source</span>
+              <div className="flex items-center gap-1">
+                {splitOrderInfo?.unidex && splitOrderInfo?.gtrade ? (
+                  <div className="flex items-center gap-1">
+                    <Image 
+                      src="/static/images/logo-small.png"
+                      alt="UniDex"
+                      width={14}
+                      height={14}
+                    />
+                    <span>UniDex</span>
+                    <span className="text-muted-foreground">+</span>
+                    <Image 
+                      src="/static/images/gtrade.svg"
+                      alt="gTrade"
+                      width={14}
+                      height={14}
+                    />
+                    <span>gTrade</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1">
+                    <Image 
+                      src={routingInfo.selectedRoute === 'unidexv4' ? '/static/images/logo-small.png' : '/static/images/gtrade.svg'}
+                      alt={routingInfo.routeNames[routingInfo.selectedRoute]}
+                      width={14}
+                      height={14}
+                    />
+                    <span>{routingInfo.routeNames[routingInfo.selectedRoute]}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Liquidation Price */}
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Liquidation Price</span>
+              <span className="text-short">${tradeDetails.liquidationPrice ? Number(tradeDetails.liquidationPrice.toFixed(2)).toLocaleString() : "0.00"}</span>
+            </div>
+            
+            {/* Trading Fee */}
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Trading Fee</span>
+              <span>{tradingFee.toFixed(2)} USD ({routingInfo.routes[routingInfo.selectedRoute].tradingFee * 100}%)</span>
+            </div>
+
+            {/* Conditional rendering based on expanded state */}
+            {!detailsExpanded ? (
+              // Show execution details toggle when collapsed
+              <div 
+                className="flex justify-between text-xs items-center cursor-pointer group py-0.5"
+                onClick={() => setDetailsExpanded(true)}
+              >
+                <span className="text-muted-foreground group-hover:text-primary transition-colors">Execution Details</span>
+                <span className="group-hover:text-primary transition-colors">↓</span>
+              </div>
+            ) : (
+              // Show expanded details when expanded
+              <>
+                {/* Entry Price */}
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Entry Price</span>
+                  <span>${tradeDetails.entryPrice ? Number(tradeDetails.entryPrice.toFixed(2)).toLocaleString() : "0.00"}</span>
+                </div>
+                
+                {/* Hourly Interest */}
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Hourly Interest</span>
+                  <span className={tradeDetails.fees.hourlyInterest >= 0 ? "text-short" : "text-long"}>
+                    {tradeDetails.fees.hourlyInterest >= 0 ? "-" : "+"}$
+                    {Math.abs(tradeDetails.fees.hourlyInterest).toFixed(2)} ({Math.abs(tradeDetails.fees.hourlyInterestPercent).toFixed(4)}%)
+                  </span>
+                </div>
+                
+                {/* Total Required */}
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Total Required</span>
+                  <span>{totalRequired.toFixed(2)} USD</span>
+                </div>
+                
+                {/* Gas Price */}
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Gas Price</span>
+                  <span>~$0.10</span>
+                </div>
+                
+                {/* Referrer */}
+                {referrerSection}
+                
+                {/* Close button at bottom */}
+                <div 
+                  className="flex justify-between text-xs items-center cursor-pointer group py-0.5"
+                  onClick={() => setDetailsExpanded(false)}
+                >
+                  <span className="text-muted-foreground group-hover:text-primary transition-colors">Execution Details</span>
+                  <span className="group-hover:text-primary transition-colors">↑</span>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="mt-2">
             <WalletBox />
           </div>
         </div>

@@ -288,7 +288,7 @@ export function Header() {
                     {/* Trade */}
                     <Button
                       variant="ghost"
-                      className="justify-start w-full text-sm h-8"
+                      className="justify-start w-full text-sm h-8 bg-muted/50 hover:bg-muted/70"
                       onClick={() => (window.location.href = "/")}
                     >
                       Trade
@@ -297,7 +297,7 @@ export function Header() {
                     {/* Leaderboard */}
                     <Button
                       variant="ghost"
-                      className="justify-start w-full text-sm h-8"
+                      className="justify-start w-full text-sm h-8 bg-muted/50 hover:bg-muted/70"
                       onClick={() => (window.location.href = "/leaderboard")}
                     >
                       Leaderboard
@@ -310,7 +310,7 @@ export function Header() {
                       </div>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2 text-sm h-8"
+                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
                         onClick={() => (window.location.href = "/staking")}
                       >
                         <Coins className="w-4 h-4" />
@@ -324,7 +324,7 @@ export function Header() {
                       </div>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2 text-sm h-8"
+                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
                         onClick={() => (window.location.href = "/usdm")}
                       >
                         <DollarSign className="w-4 h-4" />
@@ -332,7 +332,7 @@ export function Header() {
                       </Button>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2 text-sm h-8"
+                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
                         onClick={() => (window.location.href = "/usdm-staking")}
                       >
                         <PiggyBank className="w-4 h-4" />
@@ -346,7 +346,7 @@ export function Header() {
                       </div>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2 text-sm h-8"
+                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
                         onClick={() => (window.location.href = "/referrals")}
                       >
                         <Users2 className="w-4 h-4" />
@@ -361,7 +361,7 @@ export function Header() {
                       </div>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2 text-sm h-8"
+                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
                         onClick={() =>
                           window.open("https://discord.gg/W2TByeuD7R", "_blank")
                         }
@@ -371,7 +371,7 @@ export function Header() {
                       </Button>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2 text-sm h-8"
+                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
                         onClick={() =>
                           window.open("https://t.me/unidexfinance", "_blank")
                         }
@@ -381,7 +381,7 @@ export function Header() {
                       </Button>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2 text-sm h-8"
+                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
                         onClick={() =>
                           window.open("https://x.com/UniDexFinance", "_blank")
                         }
@@ -398,7 +398,7 @@ export function Header() {
                       </div>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2 text-sm h-8"
+                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
                         onClick={() =>
                           window.open("https://discord.gg/W2TByeuD7R", "_blank")
                         }
@@ -411,7 +411,7 @@ export function Header() {
                       </Button>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2 text-sm h-8"
+                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
                         onClick={() =>
                           window.open(
                             "https://docs.unidex.exchange/introduction",
@@ -424,7 +424,7 @@ export function Header() {
                       </Button>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2 text-sm h-8"
+                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
                         onClick={() =>
                           window.open(
                             "https://dune.com/supakawaiidesu/unidex-molten-stats",
@@ -440,7 +440,7 @@ export function Header() {
                       </Button>
                       <Button
                         variant="ghost"
-                        className="justify-start w-full gap-2 text-sm h-8"
+                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
                         onClick={() => (window.location.href = "/bridge")}
                       >
                         <UnfoldHorizontal className="w-4 h-4" />
@@ -456,7 +456,7 @@ export function Header() {
       </div>
 
       <div className="flex items-center space-x-2 h-full translate-y-[2px]">
-        <AccountSummary buttonText="Deposit / Withdraw" className="h-8 text-sm" />
+        <AccountSummary buttonText="Deposit / Withdraw" className="h-8 text-sm bg-muted/50 hover:bg-muted/70" />
 
         <ConnectButton.Custom>
           {({
@@ -489,7 +489,7 @@ export function Header() {
                         <Button
                           onClick={openConnectModal}
                           variant="outline"
-                          className="hidden sm:inline-flex h-8 px-3 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important text-sm flex items-center justify-center"
+                          className="hidden sm:inline-flex h-8 px-3 bg-muted/50 hover:bg-muted/70 [&>*]:text-white [&>*]:font-normal [&>*]:!important text-sm flex items-center justify-center"
                         >
                           Connect
                         </Button>
@@ -497,7 +497,7 @@ export function Header() {
                           onClick={openConnectModal}
                           variant="outline"
                           size="icon"
-                          className="sm:hidden h-8 w-8 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
+                          className="sm:hidden h-8 w-8 bg-muted/50 hover:bg-muted/70 [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
                         >
                           <Wallet className="w-4 h-4 text-white" />
                         </Button>
@@ -510,7 +510,7 @@ export function Header() {
                       <Button
                         onClick={openChainModal}
                         variant="destructive"
-                        className="h-8 px-3 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important text-sm flex items-center justify-center"
+                        className="h-8 px-3 bg-muted/50 hover:bg-muted/70 [&>*]:text-white [&>*]:font-normal [&>*]:!important text-sm flex items-center justify-center"
                       >
                         Wrong Network
                       </Button>
@@ -522,7 +522,7 @@ export function Header() {
                       <Button
                         onClick={openAccountModal}
                         variant="outline"
-                        className="hidden sm:inline-flex h-8 px-3 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important text-sm flex items-center justify-center"
+                        className="hidden sm:inline-flex h-8 px-3 bg-muted/50 hover:bg-muted/70 [&>*]:text-white [&>*]:font-normal [&>*]:!important text-sm flex items-center justify-center"
                       >
                         {account.displayName}
                       </Button>
@@ -530,7 +530,7 @@ export function Header() {
                         onClick={openAccountModal}
                         variant="outline"
                         size="icon"
-                        className="sm:hidden h-8 w-8 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
+                        className="sm:hidden h-8 w-8 bg-muted/50 hover:bg-muted/70 [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
                       >
                         <Wallet className="w-4 h-4 text-white" />
                       </Button>
@@ -545,7 +545,7 @@ export function Header() {
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8 bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
+          className="h-8 w-8 bg-muted/50 hover:bg-muted/70 [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
           onClick={() => setIsSettingsOpen(!isSettingsOpen)}
         >
           {theme === 'light' ? <Settings className="w-4 h-4" stroke="black" /> : <Settings className="w-4 h-4" />}

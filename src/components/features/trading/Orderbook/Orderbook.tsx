@@ -215,7 +215,7 @@ export function Orderbook({ pair, height }: OrderbookProps) {
                 side="left"
                 align="center"
                 sideOffset={5}
-                className="z-30 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md"
+                className="z-30 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#171717]/80 backdrop-blur-md"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -245,7 +245,7 @@ export function Orderbook({ pair, height }: OrderbookProps) {
                     </div>
                   </div>
                 </div>
-                <HoverCard.Arrow className="fill-[#17161d]/80" />
+                <HoverCard.Arrow className="fill-[#171717]/80" />
               </HoverCard.Content>
             </HoverCard.Portal>
           </HoverCard.Root>
