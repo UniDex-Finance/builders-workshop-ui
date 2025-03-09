@@ -34,11 +34,27 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
-
+import CustomSlider from "@/components/ui/custom-slider";
 
 const DEFAULT_REFERRER = "0x0000000000000000000000000000000000000000";
 const STORAGE_KEY_CODE = 'unidex-referral-code';
 const STORAGE_KEY_ADDRESS = 'unidex-referral-address';
+
+const SliderWithGlowStyles = () => (
+  <style jsx global>{`
+    .slider-with-glow .data-[state=active]:bg-primary {
+      box-shadow: 0 0 10px 2px var(--color-primary-glow, rgba(124, 226, 172, 0.5));
+    }
+    
+    .slider-with-glow[data-orientation=horizontal] .data-[state=active]:bg-primary {
+      background: var(--color-primary, #7de2ac);
+    }
+    
+    .slider-with-glow[data-orientation=horizontal] .data-[state=active]:bg-primary:active {
+      box-shadow: 0 0 15px 3px var(--color-primary-glow, rgba(124, 226, 172, 0.7));
+    }
+  `}</style>
+);
 
 export function OrderCard({
   leverage,
@@ -415,6 +431,7 @@ export function OrderCard({
 
   return (
     <Card className="w-full md:h-full md:rounded-none md:border-0 md:shadow-none">
+      <SliderWithGlowStyles />
       <CardContent className="p-1 md:p-1 h-full overflow-y-auto border-t border-border">
         {error && (
           <div className="mb-1 p-1 text-xs text-short bg-red-500/10 rounded">Error: {error.message}</div>
@@ -426,7 +443,9 @@ export function OrderCard({
             <Button
               variant={formState.isLong ? "default" : "outline"}
               className={`w-full h-16 text-sm font-medium ${
-                formState.isLong ? "bg-[var(--color-long)] hover:bg-[var(--color-long-dark)] text-black" : "hover:bg-muted"
+                formState.isLong 
+                  ? "bg-[var(--color-long)] hover:bg-[var(--color-long-dark)] text-black" 
+                  : "bg-muted/50 hover:bg-muted border-0"
               }`}
               onClick={() => !formState.isLong && toggleDirection()}
             >
@@ -438,7 +457,7 @@ export function OrderCard({
               <DialogTrigger asChild>
                 <Button
                   variant="outline"
-                  className="w-full h-16 flex flex-col justify-center items-center hover:bg-muted"
+                  className="w-full h-16 flex flex-col justify-center items-center bg-muted/50 hover:bg-muted border-0"
                 >
                   <span className="text-xs text-muted-foreground">Leverage</span>
                   <span className="text-lg font-medium">{leverage}x</span>
@@ -465,31 +484,14 @@ export function OrderCard({
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <div className="relative w-full">
-                      <div className="absolute w-full h-full">
-                        <div className="absolute left-0 -translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
-                        <div className="absolute left-[25%] -translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
-                        <div className="absolute left-[50%] -translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
-                        <div className="absolute left-[75%] -translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
-                        <div className="absolute right-0 translate-x-[1px] w-[2px] h-full" style={{ backgroundColor: '#1a1a1f' }}></div>
-                      </div>
-                      <Slider
-                        value={[Number(tempLeverageValue)]}
-                        min={1}
-                        max={100}
-                        step={1}
-                        onValueChange={(value) => {
-                          setTempLeverageValue(value[0].toString());
-                        }}
-                      />
-                    </div>
-                    <div className="relative w-full h-4">
-                      <div className="absolute left-0 text-xs -translate-x-1/2 text-muted-foreground">1x</div>
-                      <div className="absolute left-[25%] -translate-x-1/2 text-xs text-muted-foreground">25x</div>
-                      <div className="absolute left-[50%] -translate-x-1/2 text-xs text-muted-foreground">50x</div>
-                      <div className="absolute left-[75%] -translate-x-1/2 text-xs text-muted-foreground">75x</div>
-                      <div className="absolute right-0 text-xs translate-x-1/2 text-muted-foreground">100x</div>
-                    </div>
+                    <CustomSlider
+                      min={1}
+                      max={100}
+                      step={1}
+                      defaultValue={Number(tempLeverageValue)}
+                      onChange={(value) => setTempLeverageValue(value.toString())}
+                      className="mt-2"
+                    />
                   </div>
                   <div className="flex justify-end gap-2 mt-4">
                     <Button 
@@ -514,7 +516,9 @@ export function OrderCard({
             <Button
               variant={!formState.isLong ? "default" : "outline"}
               className={`w-full h-16 text-sm font-medium ${
-                !formState.isLong ? "bg-[var(--color-short)] hover:bg-[var(--color-short-dark)] text-white" : "hover:bg-muted"
+                !formState.isLong 
+                  ? "bg-[var(--color-short)] hover:bg-[var(--color-short-dark)] text-white" 
+                  : "bg-muted/50 hover:bg-muted border-0"
               }`}
               onClick={() => formState.isLong && toggleDirection()}
             >
@@ -612,62 +616,16 @@ export function OrderCard({
             </div>
           </div>
 
-          {/* Render appropriate form based on active tab */}
-          {activeTab === "market" ? (
-            <div className="hidden">
-              <MarketOrderForm
-                formState={formState}
-                calculatedMargin={calculatedMargin}
-                handleAmountChange={handleAmountChange}
-                handleMarginChange={handleMarginChange}
-                handleSliderChange={handleSliderChange}
-                toggleTPSL={toggleTPSL}
-                handleTakeProfitChange={(value) => handleTakeProfitChange(value)}
-                handleStopLossChange={(value) => handleStopLossChange(value)}
-                leverage={leverage}
-                onLeverageChange={onLeverageChange}
-              />
-            </div>
-          ) : activeTab === "limit" ? (
-            <div className="mt-1">
-              {/* Remove the duplicate Limit Price field since we've moved it to the top */}
-            </div>
-          ) : null}
-
-          {/* Percentage buttons */}
-          <div className="grid grid-cols-4 gap-1 mb-1">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSliderChange([25])}
-              className="h-10 bg-muted/50 hover:bg-muted border-0 text-sm"
-            >
-              25%
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSliderChange([50])}
-              className="h-10 bg-muted/50 hover:bg-muted border-0 text-sm"
-            >
-              50%
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSliderChange([75])}
-              className="h-10 bg-muted/50 hover:bg-muted border-0 text-sm"
-            >
-              75%
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSliderChange([100])}
-              className="h-10 bg-muted/50 hover:bg-muted border-0 text-sm"
-            >
-              100%
-            </Button>
+          {/* Replace percentage buttons with slider */}
+          <div className="mb-3 mt-2">
+            <CustomSlider
+              min={0}
+              max={100}
+              step={1}
+              defaultValue={formState.sliderValue || 0}
+              onChange={(value) => handleSliderChange([value])}
+              className="mt-2"
+            />
           </div>
 
           {/* Trade details in a condensed format */}
