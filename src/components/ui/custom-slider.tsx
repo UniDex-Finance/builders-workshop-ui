@@ -82,7 +82,7 @@ export default function CustomSlider({
   }, [isDragging])
 
   return (
-    <div className={cn("w-full max-w-md mx-auto", className)}>
+    <div className={cn("w-full max-w-md mx-auto mb-6", className)}>
       <div
         ref={trackRef}
         className="relative h-2.5 bg-muted/50 rounded-full cursor-pointer"
@@ -107,9 +107,9 @@ export default function CustomSlider({
           }}
         />
 
-        {/* Percentage Label */}
+        {/* Percentage Label - smaller font */}
         <div
-          className="absolute top-full mt-1 text-white text-sm font-medium"
+          className="absolute top-full mt-1 text-white text-xs font-medium"
           style={{
             left: percentage === 0 ? "0%" : `${percentage}%`,
             transform: percentage === 0 ? "none" : "translateX(-50%)",
