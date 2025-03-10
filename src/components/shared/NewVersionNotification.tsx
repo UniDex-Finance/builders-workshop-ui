@@ -46,7 +46,7 @@ const NewVersionNotification = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Alert className="border border-[#7142cf]/20 bg-[#171717] shadow-lg shadow-[#7142cf]/10 backdrop-blur-sm transition-all duration-300 hover:border-[#7142cf]/30">
+      <Alert className="border border-[#7142cf]/20 bg-[#141414] shadow-lg shadow-[#7142cf]/10 backdrop-blur-sm transition-all duration-300 hover:border-[#7142cf]/30">
         <div className="flex flex-col space-y-4">
           <AlertTitle className="text-lg font-semibold text-white">
             New Version Available

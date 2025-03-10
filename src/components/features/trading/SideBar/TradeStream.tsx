@@ -272,7 +272,7 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
               side="left"
               align="center"
               sideOffset={5}
-              className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#171717]/80 backdrop-blur-md text-[13px]"
+              className="z-50 w-64 p-3 rounded-md shadow-lg border border-border/40 bg-[#141414]/80 backdrop-blur-md text-[13px]"
             >
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
@@ -314,7 +314,7 @@ export function TradeStream({ isExpanded }: TradeStreamProps) {
                   </div>
                 )}
               </div>
-              <HoverCard.Arrow className="fill-[#171717]/80" />
+              <HoverCard.Arrow className="fill-[#141414]/80" />
             </HoverCard.Content>
           </HoverCard.Portal>
         </HoverCard.Root>
