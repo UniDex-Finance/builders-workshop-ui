@@ -20,7 +20,7 @@ export function StatsActions() {
         </div>
       </div>
       <Button 
-        className="hidden md:block bg-[#272734] text-white hover:bg-[#373745] text-base"
+        className="hidden md:block bg-[#252525] text-white hover:bg-[#373745] text-base"
         onClick={() => window.open('https://app.unidex.exchange/?chain=arbitrum&from=0x0000000000000000000000000000000000000000&to=0x66e535e8d2ebf13f49f3d49e5c50395a97c137b1', '_blank')}
       >
         Buy MOLTEN

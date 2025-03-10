@@ -78,7 +78,7 @@ export function StatsActions({ balances, isLoading }: Props) {
         const moltenPrice = moltenData.coins["arbitrum:0x66E535e8D2ebf13F49F3D49e5c50395a97C137b1"].price
 
         // Calculate esMOLTEN APR
-        const monthlyEsMoltenUsd = moltenPrice * 6000
+        const monthlyEsMoltenUsd = moltenPrice * 0
         const yearlyEsMoltenUsd = monthlyEsMoltenUsd * 12
         const tvl = parseFloat(usdmData?.formattedVaultBalance || '0')
         const calculatedEsMoltenApr = tvl > 0 ? (yearlyEsMoltenUsd / tvl) * 100 : 0
@@ -105,7 +105,7 @@ export function StatsActions({ balances, isLoading }: Props) {
           <span className="font-medium text-white">{vaultApr.toFixed(2)}%</span>
         </div>
         <p className="text-sm text-[#A0AEC0]">
-          Yield earned from market making preformance and 50% of trading fees collected by the protocol in the past 7 days annualized.
+          Yield earned from market making preformance and 50% of trading fees collected by the protocol in the past 30 days, annualized.
         </p>
       </div>
 
@@ -120,20 +120,6 @@ export function StatsActions({ balances, isLoading }: Props) {
         </div>
         <p className="text-sm text-[#A0AEC0]">
           Idle funds in the vault earn yield from the Aave V3 lending vault on Arbitrum.
-        </p>
-      </div>
-
-      {/* Divider */}
-      <div className="my-3 border-t border-[#404040]" />
-
-      {/* esMOLTEN APR Section */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="font-medium text-white">Staking APR (esMOLTEN)</span>
-          <span className="font-medium text-white">{esMoltenApr.toFixed(2)}%</span>
-        </div>
-        <p className="text-sm text-[#A0AEC0]">
-          Stake your USD.m to earn a share of 6,000 esMOLTEN tokens on the USD.m staking page.
         </p>
       </div>
 

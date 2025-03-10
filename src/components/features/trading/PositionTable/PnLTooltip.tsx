@@ -41,7 +41,7 @@ export function PnLTooltip({ position, rect }: PnLTooltipProps) {
         transform: "translateY(-100%)",
         minWidth: "250px",
         pointerEvents: "none",
-        backgroundColor: "#16161d",
+        backgroundColor: "#1e1e20",
       }}
     >
       <div className="space-y-2">

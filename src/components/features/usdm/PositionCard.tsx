@@ -38,7 +38,7 @@ export function PositionCard({ balances, isLoading }: Props) {
   }
 
   return (
-    <Card className="bg-[#16161D] border-[#1b1b22]">
+    <Card className="bg-[#1e1e20] border-[#1b1b22]">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-white">Positions</CardTitle>
       </CardHeader>
@@ -53,7 +53,7 @@ export function PositionCard({ balances, isLoading }: Props) {
             </span>
           </div>
         </div>
-        <div className="border-t border-[#272734]" />
+        <div className="border-t border-[#252525]" />
         <div className="space-y-4">
           <div className="flex justify-between text-xs md:text-sm">
             <span className="text-[#A0AEC0]">Amount Staked</span>

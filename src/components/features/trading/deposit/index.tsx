@@ -311,7 +311,7 @@ export default function DepositBox() {
                 selectedNetwork={selectedNetwork}
               />
               <Tabs defaultValue="smart-account" className="w-full">
-                <TabsList className="w-full bg-[#272734]">
+                <TabsList className="w-full bg-[#252525]">
                   <TabsTrigger 
                     value="smart-account" 
                     className="flex-1 data-[state=active]:bg-[#1f1f29]"
