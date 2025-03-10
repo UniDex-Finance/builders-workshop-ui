@@ -52,7 +52,7 @@ export function CreateReferralCodeDialog({ isOpen, onClose }: CreateReferralCode
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto outline-none focus:outline-none">
         <div className="relative w-[380px] mx-auto max-w-[380px] border border-[#1b1b22] rounded-lg">
-          <div className="border-0 shadow-lg relative flex flex-col w-full text-white bg-[#16161d] rounded-lg z-50">
+          <div className="border-0 shadow-lg relative flex flex-col w-full text-white bg-[#1e1e20] rounded-lg z-50">
             <div className="flex items-center justify-between p-4 border-b border-[#1b1b22]">
               <div className="text-sm font-medium">Create Referral Code</div>
               <Button

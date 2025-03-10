@@ -164,7 +164,7 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
     }
 
     return (
-        <Card className="bg-[#16161D] border-[#1b1b22]">
+        <Card className="bg-[#1e1e20] border-[#1b1b22]">
             <CardHeader className="pt-3 pb-0 sm:pt-4">
                 <div className="flex items-center justify-between">
                     <CardTitle className="text-white">Manage Stake</CardTitle>

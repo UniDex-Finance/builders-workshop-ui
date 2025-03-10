@@ -83,7 +83,7 @@ export function UsdmAssetBreakdown() {
                   background: assetType.type === "Rehypothecation" 
                     ? "var(--rehypothecation-gradient)"
                     : assetType.color,
-                  borderRight: index < assetData.assets.length - 1 ? '2px solid #16161D' : 'none'
+                  borderRight: index < assetData.assets.length - 1 ? '2px solid #1e1e20' : 'none'
                 }}
                 onClick={() => {
                   if (isMobile) {

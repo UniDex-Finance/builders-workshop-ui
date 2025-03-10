@@ -489,7 +489,7 @@ export function ActionsCard({
   }
 
   return (
-    <Card className="bg-[#16161D] border-[#1b1b22] text-white">
+    <Card className="bg-[#1e1e20] border-[#1b1b22] text-white">
       <CardHeader className="pt-3 pb-0 sm:pt-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

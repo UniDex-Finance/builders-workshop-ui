@@ -18,7 +18,7 @@ export function PositionCard() {
   }
   
   return (
-    <Card className="bg-[#16161D] border-[#1b1b22]">
+    <Card className="bg-[#1e1e20] border-[#1b1b22]">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-white">Positions</CardTitle>
       </CardHeader>

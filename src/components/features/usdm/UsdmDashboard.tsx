@@ -37,7 +37,7 @@ export function UsdmDashboard() {
   }
 
   return (
-    <Card className="bg-[#16161D] border-[#1b1b22] text-white">
+    <Card className="bg-[#1e1e20] border-[#1b1b22] text-white">
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as TabId)} className="w-full">
         {!isMobile ? (
           <TabsList className="w-full bg-[#272734] rounded-t-xl rounded-b-none border-b border-[#1b1b22] p-0">
