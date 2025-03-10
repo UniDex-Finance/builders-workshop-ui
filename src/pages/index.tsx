@@ -31,7 +31,7 @@ export default function TradingInterface() {
   );
   const assetId = selectedMarket ? selectedMarket.assetId : "";
 
-  const [chartHeight, setChartHeight] = useState<number>(500);
+  const [chartHeight, setChartHeight] = useState<number>(580);
 
   useEffect(() => {
     // Initialize Usersnap
