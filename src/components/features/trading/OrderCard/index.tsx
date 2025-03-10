@@ -36,6 +36,7 @@ import {
 import { Slider } from "@/components/ui/slider";
 import CustomSlider from "@/components/ui/custom-slider";
 import Image from "next/image";
+import CustomLeverageSlider from "@/components/ui/custom-leverage-slider";
 
 const DEFAULT_REFERRER = "0x0000000000000000000000000000000000000000";
 const STORAGE_KEY_CODE = 'unidex-referral-code';
@@ -465,50 +466,31 @@ export function OrderCard({
                   <span className="text-lg font-medium">{leverage}x</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
+              <DialogContent className="sm:max-w-[350px]">
+                <DialogHeader className="pb-0">
                   <DialogTitle>Adjust Leverage</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[13px]">Leverage:</span>
-                    <div className="relative w-16">
-                      <Input
-                        type="number"
-                        value={tempLeverageValue || ''}
-                        onChange={(e) => {
-                          const value = Math.min(Math.max(1, Number(e.target.value)), 100);
-                          setTempLeverageValue(value.toString());
-                        }}
-                        className="h-8 text-sm text-center no-spinners"
-                        suppressHydrationWarning
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <CustomSlider
+                <div className="py-3">
+                  <div>
+                    <CustomLeverageSlider
                       min={1}
                       max={100}
                       step={1}
                       defaultValue={Number(tempLeverageValue)}
                       onChange={(value) => setTempLeverageValue(value.toString())}
-                      className="mt-2"
+                      className="mt-0"
                     />
                   </div>
-                  <div className="flex justify-end gap-2 mt-4">
+                  
+                  <div className="mt-3">
                     <Button 
-                      variant="outline" 
-                      onClick={() => setLeverageDialogOpen(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button 
+                      className="w-full"
                       onClick={() => {
                         onLeverageChange(tempLeverageValue);
                         setLeverageDialogOpen(false);
                       }}
                     >
-                      Apply
+                      Confirm Leverage
                     </Button>
                   </div>
                 </div>
