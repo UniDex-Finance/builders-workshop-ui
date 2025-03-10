@@ -45,7 +45,7 @@ export function UsdmDashboard() {
               <TabsTrigger 
                 key={tab.id}
                 value={tab.id} 
-                className="flex-1 data-[state=active]:bg-[#1f1f29] rounded-none"
+                className="flex-1 data-[state=active]:bg-[#333333] rounded-none"
               >
                 {tab.label}
               </TabsTrigger>

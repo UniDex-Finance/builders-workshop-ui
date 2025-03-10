@@ -170,9 +170,9 @@ a {
     --textbox-border: #252525;
     --deposit-card-background: #171717;
     --deposit-card-border: #171717;
-    --header-button-background: #1f1f29;
+    --header-button-background: #333333;
     --header-button-hover: #1d1d26;
-    --pane-hover: #1f1f29;
+    --pane-hover: #333333;
     --position-cards-background: #171717;
     /* Add these NextUI specific variables */
     --nextui-dropdown-background: #0e0d12;

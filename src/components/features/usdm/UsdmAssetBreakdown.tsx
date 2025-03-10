@@ -65,7 +65,7 @@ export function UsdmAssetBreakdown() {
   return (
     <CardContent className="py-6">
       {/* Progress Bar */}
-      <div className="flex w-full h-4 mb-6 overflow-hidden rounded-lg bg-[#1f1f29]">
+      <div className="flex w-full h-4 mb-6 overflow-hidden rounded-lg bg-[#333333]">
         {assetData.assets.map((assetType, index) => (
           <HoverCard.Root 
             key={assetType.type} 
