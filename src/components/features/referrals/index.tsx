@@ -66,7 +66,7 @@ export function ReferralDashboard() {
                   </Button>
                 </div>
               </div>
-              <div className="p-6 bg-[#16161d] text-sm text-gray-400 flex-grow">
+              <div className="p-6 bg-[#1e1e20] text-sm text-gray-400 flex-grow">
                 <p className="m-0">
                   A Tier {referralData?.tier ?? 0} status will grant you a {referralData?.referralRebate ?? 0}% rebate on your referee's trading fees; the referral rebates are
                   sent in real time to your margin wallet. The data on this page updates every 4 hours.
@@ -75,21 +75,21 @@ export function ReferralDashboard() {
             </Card>
 
             <div className="space-y-6">
-              <Card className="p-6 bg-[#16161d] border border-[#1b1b22]">
+              <Card className="p-6 bg-[#1e1e20] border border-[#1b1b22]">
                 <div className="text-4xl font-bold text-white">
                   ${referralData?.totalReferredVolume.toLocaleString('en', { minimumFractionDigits: 2 }) ?? '0.00'}
                 </div>
                 <div className="text-sm text-gray-400">Referral Total Trading Volume</div>
               </Card>
               
-              <Card className="p-6 bg-[#16161d] border border-[#1b1b22]">
+              <Card className="p-6 bg-[#1e1e20] border border-[#1b1b22]">
                 <div className="text-4xl font-bold text-white">
                   ${referralData?.totalRebatesPaid.toLocaleString('en', { minimumFractionDigits: 2 }) ?? '0.00'}
                 </div>
                 <div className="text-sm text-gray-400">Your Total Earned Referral Rebates</div>
               </Card>
               
-              <Card className="p-6 bg-[#16161d] border border-[#1b1b22]">
+              <Card className="p-6 bg-[#1e1e20] border border-[#1b1b22]">
                 <div className="text-4xl font-bold text-white">
                   {referralData?.totalReferredTrades.toLocaleString('en', { minimumFractionDigits: 0 }) ?? '0'}
                 </div>
@@ -107,7 +107,7 @@ export function ReferralDashboard() {
               You can create multiple referral codes to attract traders.
             </p>
             
-            <Card className="bg-[#16161d] border border-[#1b1b22]">
+            <Card className="bg-[#1e1e20] border border-[#1b1b22]">
               <Table className="border-[#1b1b22]">
                 <TableHeader>
                   <TableRow>

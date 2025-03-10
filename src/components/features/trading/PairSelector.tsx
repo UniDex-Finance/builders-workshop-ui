@@ -285,7 +285,7 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            className="w-full h-full px-3 py-2 bg-secondary/30 border border-border/70 cursor-pointer hover:bg-secondary/40 hover:border-[var(--main-accent)]/40 focus:outline-none focus:ring-0 transition-colors shadow-sm"
+            className="w-full h-full px-3 py-2 bg-muted/50 border border-border cursor-pointer hover:bg-muted/70 focus:outline-none focus:ring-0 transition-colors shadow-sm"
           >
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center">

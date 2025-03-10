@@ -489,7 +489,7 @@ export function ActionsCard({
   }
 
   return (
-    <Card className="bg-[#16161D] border-[#1b1b22] text-white">
+    <Card className="bg-[#1e1e20] border-[#1b1b22] text-white">
       <CardHeader className="pt-3 pb-0 sm:pt-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -506,7 +506,7 @@ export function ActionsCard({
                   value={selectedAsset.split('-')[0]} 
                   onValueChange={(chain) => handleAssetChange(`${chain}-usdc`)}
                 >
-                  <SelectTrigger className="w-[140px] h-[30px] bg-[#272734] border-0 focus:ring-0">
+                  <SelectTrigger className="w-[140px] h-[30px] bg-[#252525] border-0 focus:ring-0">
                     <SelectValue>
                       {selectedChainAsset && (
                         <div className="flex items-center gap-2">
@@ -521,7 +521,7 @@ export function ActionsCard({
                       )}
                     </SelectValue>
                   </SelectTrigger>
-                  <SelectContent className="bg-[#272734] border-zinc-800">
+                  <SelectContent className="bg-[#252525] border-zinc-800">
                     {CHAIN_ASSETS.map((asset) => (
                       <SelectItem key={asset.chain} value={asset.chain}>
                         <div className="flex items-center gap-2">
@@ -543,14 +543,14 @@ export function ActionsCard({
           <div className="flex gap-1 sm:gap-2">
             <Button 
               variant="ghost" 
-              className={`text-[#A0AEC0] text-sm px-2 sm:px-4 ${action === 'mint' ? 'bg-[#272734] hover:bg-[#373745]' : ''}`}
+              className={`text-[#A0AEC0] text-sm px-2 sm:px-4 ${action === 'mint' ? 'bg-[#252525] hover:bg-[#373745]' : ''}`}
               onClick={() => setAction('mint')}
             >
               Mint
             </Button>
             <Button 
               variant="ghost" 
-              className={`text-[#A0AEC0] text-sm px-2 sm:px-4 ${action === 'burn' ? 'bg-[#272734] hover:bg-[#373745]' : ''}`}
+              className={`text-[#A0AEC0] text-sm px-2 sm:px-4 ${action === 'burn' ? 'bg-[#252525] hover:bg-[#373745]' : ''}`}
               onClick={() => setAction('burn')}
             >
               Redeem
@@ -567,7 +567,7 @@ export function ActionsCard({
                   value={selectedAsset.split('-')[0]} 
                   onValueChange={(chain) => handleAssetChange(`${chain}-usdc`)}
                 >
-                  <SelectTrigger className="w-full h-[42px] bg-[#272734] border-0 focus:ring-0">
+                  <SelectTrigger className="w-full h-[42px] bg-[#252525] border-0 focus:ring-0">
                     <SelectValue>
                       {selectedChainAsset && (
                         <div className="flex items-center gap-2">
@@ -582,7 +582,7 @@ export function ActionsCard({
                       )}
                     </SelectValue>
                   </SelectTrigger>
-                  <SelectContent className="bg-[#272734] border-zinc-800">
+                  <SelectContent className="bg-[#252525] border-zinc-800">
                     {CHAIN_ASSETS.map((asset) => (
                       <SelectItem key={asset.chain} value={asset.chain}>
                         <div className="flex items-center gap-2">
@@ -603,7 +603,7 @@ export function ActionsCard({
                 value={action === 'burn' ? "arbitrum-usdc" : selectedAsset} 
                 onValueChange={() => {}}
               >
-                <SelectTrigger className="w-full h-[42px] bg-[#272734] border-0 focus:ring-0">
+                <SelectTrigger className="w-full h-[42px] bg-[#252525] border-0 focus:ring-0">
                   <SelectValue>
                     <div className="flex items-center gap-2">
                       <Image 
@@ -616,7 +616,7 @@ export function ActionsCard({
                     </div>
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="bg-[#272734] border-zinc-800">
+                <SelectContent className="bg-[#252525] border-zinc-800">
                   <SelectItem value="arbitrum-usdc">
                     <div className="flex items-center gap-2">
                       <Image 
@@ -637,7 +637,7 @@ export function ActionsCard({
                 value={action === 'burn' ? "arbitrum-usdc" : selectedAsset} 
                 onValueChange={() => {}}
               >
-                <SelectTrigger className="w-[210px] h-[42px] bg-[#272734] border-0 focus:ring-0">
+                <SelectTrigger className="w-[210px] h-[42px] bg-[#252525] border-0 focus:ring-0">
                   <SelectValue>
                     <div className="flex items-center gap-2">
                       <Image 
@@ -650,7 +650,7 @@ export function ActionsCard({
                     </div>
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="bg-[#272734] border-zinc-800">
+                <SelectContent className="bg-[#252525] border-zinc-800">
                   <SelectItem value="arbitrum-usdc">
                     <div className="flex items-center gap-2">
                       <Image 
@@ -671,7 +671,7 @@ export function ActionsCard({
                 type="text"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full h-[42px] bg-[#272734] border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none text-lg pr-20 ring-offset-0 rounded-md shadow-none"
+                className="w-full h-[42px] bg-[#252525] border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none text-lg pr-20 ring-offset-0 rounded-md shadow-none"
                 placeholder="0.00"
                 style={{ WebkitAppearance: 'none', margin: 0 }}
               />
@@ -693,7 +693,7 @@ export function ActionsCard({
           </div>
 
           <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-            <CollapsibleTrigger className="flex items-center justify-between w-full p-3 sm:p-4 bg-[#272734] rounded-lg text-sm">
+            <CollapsibleTrigger className="flex items-center justify-between w-full p-3 sm:p-4 bg-[#252525] rounded-lg text-sm">
               <span className="text-[#A0AEC0]">You will receive</span>
               <div className="flex items-center gap-2">
                 <span>{amount ? calculateOutputAmount(amount) : '0.00'}</span>
@@ -701,7 +701,7 @@ export function ActionsCard({
                 <ChevronDown className={`ml-1 h-4 w-4 sm:h-5 sm:w-5 transition-transform ${isOpen ? "rotate-180" : ""}`} />
               </div>
             </CollapsibleTrigger>
-            <CollapsibleContent className="bg-[#272734] rounded-lg mt-px p-3 sm:p-4">
+            <CollapsibleContent className="bg-[#252525] rounded-lg mt-px p-3 sm:p-4">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-[#A0AEC0]">Balance</span>

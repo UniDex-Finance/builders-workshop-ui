@@ -37,22 +37,22 @@ export function UsdmDashboard() {
   }
 
   return (
-    <Card className="bg-[#16161D] border-[#1b1b22] text-white">
+    <Card className="bg-[#1e1e20] border-[#1b1b22] text-white">
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as TabId)} className="w-full">
         {!isMobile ? (
-          <TabsList className="w-full bg-[#272734] rounded-t-xl rounded-b-none border-b border-[#1b1b22] p-0">
+          <TabsList className="w-full bg-[#252525] rounded-t-xl rounded-b-none border-b border-[#1b1b22] p-0">
             {TABS.map(tab => (
               <TabsTrigger 
                 key={tab.id}
                 value={tab.id} 
-                className="flex-1 data-[state=active]:bg-[#1f1f29] rounded-none"
+                className="flex-1 data-[state=active]:bg-[#333333] rounded-none"
               >
                 {tab.label}
               </TabsTrigger>
             ))}
           </TabsList>
         ) : (
-          <div className="flex items-center justify-between px-4 py-3 bg-[#272734] rounded-t-xl border-b border-[#1b1b22]">
+          <div className="flex items-center justify-between px-4 py-3 bg-[#252525] rounded-t-xl border-b border-[#1b1b22]">
             <Button
               variant="ghost"
               size="icon"
