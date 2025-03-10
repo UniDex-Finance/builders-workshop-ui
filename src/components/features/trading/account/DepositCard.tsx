@@ -5,6 +5,10 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog"
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -244,43 +248,19 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex md:items-center md:justify-center">
-      {/* Mobile overlay */}
-      <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden" />
-      
-      <Card className={`
-        z-50
-        w-full
-        bg-[#17161d]
-        text-white
-        border-zinc-800
-        p-4
-        
-        /* Mobile styles */
-        fixed
-        bottom-0
-        rounded-b-none
-        animate-slide-up-mobile
-        
-        /* Desktop styles */
-        md:relative
-        md:animate-none
-        md:w-[440px]
-        md:rounded-lg
-      `}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium">Deposit</h3>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={onClose}
-            className="text-zinc-500 hover:text-white"
-          >
-            <X className="w-4 h-4" />
+    <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        className="sm:max-w-md bg-[var(--deposit-card-background)] border-zinc-800 p-6"
+        hideClose
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Deposit</h2>
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="h-4 w-4" />
           </Button>
         </div>
-
-        <CardContent className="p-0 space-y-4">
+        
+        <div className="space-y-4">
           <div className="space-y-3">
             <div>
               <label className="text-sm text-zinc-500 mb-1.5 block">Source</label>
@@ -452,8 +432,8 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
           <p className="text-xs text-zinc-500">
             I agree to the Terms of Use, including that I accept the risks associated with these products and services and will not use them from any restricted jurisdiction.
           </p>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 } 

@@ -304,14 +304,6 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  if (showWithdraw) {
-    return <WithdrawCard onClose={() => setShowWithdraw(false)} balances={balances} />;
-  }
-
-  if (showDeposit) {
-    return <DepositCard onClose={() => setShowDeposit(false)} balances={balances} />;
-  }
-
   return (
     <div className="relative" ref={summaryRef}>
       <Button
@@ -522,6 +514,27 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
             </div>
           </Card>
         </>
+      )}
+
+      {/* Render modals outside the account popup */}
+      {showDeposit && (
+        <DepositCard 
+          onClose={() => setShowDeposit(false)} 
+          balances={balances} 
+          onSuccess={() => {
+            setShowDeposit(false);
+          }}
+        />
+      )}
+      
+      {showWithdraw && (
+        <WithdrawCard 
+          onClose={() => setShowWithdraw(false)} 
+          balances={balances} 
+          onSuccess={() => {
+            setShowWithdraw(false);
+          }}
+        />
       )}
     </div>
   );

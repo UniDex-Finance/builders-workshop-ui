@@ -113,8 +113,10 @@ function MyApp({ Component, pageProps }: AppProps) {
                     <div className="fixed bottom-0 left-0 right-0 bg-background">
                       <Footer />
                     </div>
-                    <Toaster />
-                    <NewVersionNotification />
+                    <div className="relative z-50">
+                      <Toaster />
+                      <NewVersionNotification />
+                    </div>
                   </div>
                 </DailyBasePricesProvider>
               </PriceProvider>

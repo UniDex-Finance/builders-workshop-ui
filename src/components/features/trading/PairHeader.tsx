@@ -64,6 +64,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
 }) => {
   const [rateTimeframe, setRateTimeframe] = useState<TimeframeRate>("1h");
   const { formatPairPrice } = usePairPrecision();
+  const { prices } = usePrices();
   
   const { marketData: unidexMarketData, loading: unidexLoading, error: unidexError } = useMarketData({
     selectedPair,
@@ -71,6 +72,8 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
   const { markets: gtradeMarkets, loading: gtradeLoading, error: gtradeError } = useGTradeMarketData();
 
   const gtradeMarket = gtradeMarkets.find(m => m.name === selectedPair);
+  const basePair = selectedPair.split("/")[0].toLowerCase();
+  const currentPrice = prices[basePair]?.price;
 
   const combinedData = useMemo(() => {
     // Default values when no data is available
@@ -257,30 +260,35 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
 
   return (
     <div className="w-full">
-      <div className="p-2 my-2 border rounded-lg shadow-sm bg-[hsl(var(--component-background))] overflow-hidden">
+      <div className="px-4 py-2 bg-[hsl(var(--component-background))] overflow-hidden border-t border-border">
         <div className="overflow-x-auto">
           <div className="flex items-center text-xs flex-nowrap" style={{ width: "fit-content", minWidth: '1200px' }}>
             {/* Price Group with Pair Selector */}
             <PairSelector selectedPair={selectedPair} onPairChange={onPairChange} />
 
-            {/* 24h Change Group */}
-            <div className="flex items-center px-4 border-r min-w-[160px]">
+            {/* Index Price Group */}
+            <div className="flex items-center px-4 border-r min-w-[170px]">
               <div>
-                <div className="text-xs text-muted-foreground">24h Change</div>
-                <div className={cn(
-                  "text-sm font-medium",
-                  (!changeLoading && !changeError && percentageChange >= 0) ? "text-[#22c55e]" : "text-[#ef4444]"
-                )}>
-                  {!changeLoading && !changeError ? (
-                    <>
-                      {absoluteChange >= 0 ? "+" : ""}
-                      {formatPairPrice(selectedPair, Math.abs(absoluteChange))} /{" "}
-                      {percentageChange >= 0 ? "+" : ""}
-                      {percentageChange.toFixed(2)}%
-                    </>
-                  ) : (
-                    "- / -"
-                  )}
+                <div className="text-xs text-muted-foreground">Index Price</div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-mono font-bold">
+                    {formatPairPrice(selectedPair, currentPrice)}
+                  </span>
+                  <span className={cn(
+                    "text-xs font-medium px-1.5 py-0.5 rounded-sm",
+                    (!changeLoading && !changeError && percentageChange >= 0) 
+                      ? "bg-[#22c55e]/10 text-[#22c55e]" 
+                      : "bg-[#ef4444]/10 text-[#ef4444]"
+                  )}>
+                    {!changeLoading && !changeError ? (
+                      <>
+                        {percentageChange >= 0 ? "+" : ""}
+                        {percentageChange.toFixed(2)}%
+                      </>
+                    ) : (
+                      "-"
+                    )}
+                  </span>
                 </div>
               </div>
             </div>
@@ -298,7 +306,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                       </div>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent className="z-50 p-4 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md">
+                  <TooltipContent className="z-50 p-4 rounded-md shadow-lg border border-border/40 bg-[#171717]/80 backdrop-blur-md">
                     <p className="mb-4 text-sm font-medium text-white">Open Interest Distribution</p>
                     {unidexMarketData && (
                       <ProgressBar 
@@ -333,7 +341,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                       </div>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent className="z-50 p-4 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md">
+                  <TooltipContent className="z-50 p-4 rounded-md shadow-lg border border-border/40 bg-[#171717]/80 backdrop-blur-md">
                     <p className="mb-4 text-sm font-medium text-white">Open Interest Distribution</p>
                     {unidexMarketData && (
                       <ProgressBar 
@@ -386,7 +394,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                       </div>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent className="z-50 p-4 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md">
+                  <TooltipContent className="z-50 p-4 rounded-md shadow-lg border border-border/40 bg-[#171717]/80 backdrop-blur-md">
                     <p className="text-xs text-white whitespace-pre-line">
                       {getAnnualizedRate(combinedData.fundingRate) >= 0 
                         ? <>
@@ -419,7 +427,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                         </div>
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent className="z-50 w-[300px] p-4 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md">
+                    <TooltipContent className="z-50 w-[300px] p-4 rounded-md shadow-lg border border-border/40 bg-[#171717]/80 backdrop-blur-md">
                       <p className="mb-4 text-xs text-white">
                         Borrow rate is a fee paid to keep your position open, regardless of market direction.
                       </p>
@@ -450,7 +458,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                         </div>
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent className="z-50 w-[300px] p-4 rounded-md shadow-lg border border-border/40 bg-[#17161d]/80 backdrop-blur-md">
+                    <TooltipContent className="z-50 w-[300px] p-4 rounded-md shadow-lg border border-border/40 bg-[#171717]/80 backdrop-blur-md">
                       <p className="mb-4 text-xs text-white">
                         Borrow rate is a fee paid to keep your position open, regardless of market direction.
                       </p>

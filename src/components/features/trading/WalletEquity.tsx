@@ -86,69 +86,47 @@ export function WalletBox() {
   }, [eoaAddress]);
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <span className="font-medium">Your Account</span>
-        <span className="text-sm">
-          <button 
-            onClick={() => setShowDeposit(true)}
-            className="text-primary hover:opacity-80"
-          >
-            Deposit
-          </button>
-          <span className="mx-1 text-border">|</span>
-          <button 
-            onClick={() => setShowWithdraw(true)}
-            className="text-primary hover:opacity-80"
-          >
-            Withdraw
-          </button>
-        </span>
-      </div>
-
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
-            Account Equity
-          </span>
-          <span className="text-sm text-white">
-            {calculateTotalBalance()}
-          </span>
+    <div className="mt-8 border-t border-border pt-3">
+      {/* Account Info Headers */}
+      <div className="grid grid-cols-2 gap-8 mb-1 px-1">
+        <div>
+          <span className="text-xs text-muted-foreground">Trading Account</span>
         </div>
-
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
-            Trading Account
-          </span>
-          <span className="text-sm text-muted-foreground">
-            {calculateTradingAccountBalance()}
-          </span>
+        <div className="text-right">
+          <span className="text-xs text-muted-foreground">Unrealized PnL</span>
         </div>
       </div>
 
-      <div className="h-px my-4 bg-border" />
-
-      <div className="space-y-2">
-        <div className="flex justify-between">
-          <span className="text-sm text-muted-foreground">Unrealized PnL</span>
+      {/* Account Values */}
+      <div className="grid grid-cols-2 gap-8 mb-4 px-1">
+        <div>
+          <span className="text-sm font-medium">{calculateTradingAccountBalance()}</span>
+        </div>
+        <div className="text-right">
           <span
-            className={`text-sm ${
+            className={`text-sm font-medium ${
               (totalUnrealizedPnl || 0) >= 0 ? "text-long" : "text-short"
             }`}
           >
-            {positionsLoading ? "Loading..." : !eoaAddress ? "0.00" : formatPnL(totalUnrealizedPnl)} USD
+            {positionsLoading ? "Loading..." : !eoaAddress ? "$0.00" : formatPnL(totalUnrealizedPnl)}
           </span>
         </div>
+      </div>
 
-        <div className="flex justify-between">
-          <span className="text-sm text-muted-foreground">Open Exposure</span>
-          <span className="text-sm text-muted-foreground">{calculateTotalExposure()}</span>
-        </div>
-
-        <div className="flex justify-between">
-          <span className="text-sm text-muted-foreground">Used Margin</span>
-          <span className="text-sm text-muted-foreground">{calculateUsedMargin()}</span>
-        </div>
+      {/* Action Buttons */}
+      <div className="space-y-2">
+        <Button
+          onClick={() => setShowDeposit(true)}
+          className="w-full h-10 text-sm bg-muted/50 hover:bg-muted/70 border border-border"
+        >
+          Deposit
+        </Button>
+        <Button
+          onClick={() => setShowWithdraw(true)}
+          className="w-full h-10 text-sm bg-muted/50 hover:bg-muted/70 border border-border"
+        >
+          Withdraw
+        </Button>
       </div>
 
       {/* Modals */}

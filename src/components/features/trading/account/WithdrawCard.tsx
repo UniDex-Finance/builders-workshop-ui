@@ -5,6 +5,10 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog"
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -147,74 +151,44 @@ export function WithdrawCard({ onClose, balances, onSuccess }: WithdrawCardProps
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex md:items-center md:justify-center">
-      {/* Mobile overlay */}
-      <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden" />
-      
-      <Card className={`
-        z-50
-        w-full
-        bg-[#17161d]
-        text-white
-        border-zinc-800
-        p-4
-        
-        /* Mobile styles */
-        fixed
-        bottom-0
-        rounded-b-none
-        animate-slide-up-mobile
-        
-        /* Desktop styles */
-        md:relative
-        md:animate-none
-        md:w-[440px]
-        md:rounded-lg
-      `}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium">Withdraw</h3>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={onClose}
-            className="text-zinc-500 hover:text-white"
-          >
-            <X className="w-4 h-4" />
+    <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        className="sm:max-w-md bg-[var(--deposit-card-background)] border-zinc-800 p-6"
+        hideClose
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Withdraw</h2>
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="h-4 w-4" />
           </Button>
         </div>
-
-        <CardContent className="p-0 space-y-4">
+        
+        <div className="space-y-4">
           <div className="space-y-3">
             <div>
-              <label className="text-sm text-zinc-500 mb-1.5 block">Withdraw From</label>
-              <Select value={selectedSource} onValueChange={(value: WithdrawSource) => setSelectedSource(value)}>
-                <SelectTrigger className="bg-[#272734] border-zinc-800 h-[52px]">
-                  <SelectValue>
-                    <div className="flex items-center gap-2">
-                      <TokenIcon pair="USDC" size={24} />
-                      <span>{selectedSource === "margin" ? "Margin Wallet" : "1CT Wallet"}</span>
-                    </div>
-                  </SelectValue>
+              <label className="block mb-2 text-sm font-medium">
+                Source Wallet
+              </label>
+              
+              <Select
+                value={selectedSource}
+                onValueChange={(value) => setSelectedSource(value as WithdrawSource)}
+              >
+                <SelectTrigger className="w-full bg-[#272734] border-zinc-800 h-[52px] text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <SelectValue placeholder="Select Source" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#272734] border-zinc-800">
-                  <SelectItem value="1ct">
-                    <div className="flex items-center gap-2">
-                      <TokenIcon pair="USDC" size={24} />
-                      <span>1CT Wallet</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="margin">
-                    <div className="flex items-center gap-2">
-                      <TokenIcon pair="USDC" size={24} />
-                      <span>Margin Wallet</span>
-                    </div>
-                  </SelectItem>
+                  <SelectItem value="1ct">1CT Wallet</SelectItem>
+                  <SelectItem value="margin">Margin Wallet</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-
-            <div>
-              <label className="text-sm text-zinc-500 mb-1.5 block">Amount</label>
+            
+            <div className="relative">
+              <label className="block mb-2 text-sm font-medium">
+                Amount
+              </label>
+              
               <div className="relative">
                 <input
                   type="text"
@@ -267,9 +241,8 @@ export function WithdrawCard({ onClose, balances, onSuccess }: WithdrawCardProps
           </div>
 
           <Button 
-            // className="w-full h-[52px] bg-[#7142cf] hover:bg-[#7142cf]/80 text-white"
             variant="market"
-              className="w-full mt-4 h-[52px]"
+            className="w-full mt-4 h-[52px]"
             disabled={
               !amount || 
               parseFloat(amount) <= 0 || 
@@ -285,8 +258,8 @@ export function WithdrawCard({ onClose, balances, onSuccess }: WithdrawCardProps
                 : "Withdraw"
             }
           </Button>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 } 

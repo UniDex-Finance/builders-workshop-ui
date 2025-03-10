@@ -225,8 +225,8 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
           "paneProperties.legendProperties.showBackground": false,
           "paneProperties.horzGridProperties.style": 2,
           "paneProperties.vertGridProperties.style": 2,
-          "paneProperties.background": theme === 'greenify' ? "#0c1012" : theme === 'light' ? "#ffffff" : theme === 'hotline' ? "#0f0c2c" : theme === 'oled' ? "#000000" : "#17161d",
-          "scalesProperties.backgroundColor": theme === 'greenify' ? "#0c1012" : theme === 'light' ? "#ffffff" : theme === 'hotline' ? "#0f0c2c" : theme === 'oled' ? "#000000" : "#17161d",
+          "paneProperties.background": theme === 'greenify' ? "#0c1012" : theme === 'light' ? "#ffffff" : theme === 'hotline' ? "#0f0c2c" : theme === 'oled' ? "#000000" : "#171717",
+          "scalesProperties.backgroundColor": theme === 'greenify' ? "#0c1012" : theme === 'light' ? "#ffffff" : theme === 'hotline' ? "#0f0c2c" : theme === 'oled' ? "#000000" : "#171717",
         },
         load_last_chart: false,
         saved_data: null,
@@ -341,12 +341,11 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
 
   return (
     <div 
-      className={`relative rounded-xl border border-border bg-[var(--deposit-card-background)]`}
+      className={`relative border-t border-b bg-[var(--deposit-card-background)]`}
       style={{ 
         height: `${height}px`,
         resize: 'vertical',
         overflow: 'hidden',
-        paddingBottom: '16px',
         minHeight: '300px',
         maxHeight: '800px',
         cursor: 'ns-resize',
@@ -372,7 +371,7 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
       </div>
       
       <div 
-        className="absolute bottom-0 left-0 right-0 h-4 cursor-ns-resize bg-[var(--deposit-card-background)]"
+        className="absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize bg-transparent"
       />
     </div>
   );

@@ -19,11 +19,44 @@ import { useReferralContract } from "../../../../hooks/use-referral-contract";
 import { useRouting, RouteId } from '../../../../hooks/trading-hooks/use-routing';
 import { toast } from "@/hooks/use-toast";
 import { useLimitRouting } from '../../../../hooks/trading-hooks/use-limit-routing';
-
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Slider } from "@/components/ui/slider";
+import CustomSlider from "@/components/ui/custom-slider";
+import Image from "next/image";
+import CustomLeverageSlider from "@/components/ui/custom-leverage-slider";
 
 const DEFAULT_REFERRER = "0x0000000000000000000000000000000000000000";
 const STORAGE_KEY_CODE = 'unidex-referral-code';
 const STORAGE_KEY_ADDRESS = 'unidex-referral-address';
+
+const SliderWithGlowStyles = () => (
+  <style jsx global>{`
+    .slider-with-glow .data-[state=active]:bg-primary {
+      box-shadow: 0 0 10px 2px var(--color-primary-glow, rgba(124, 226, 172, 0.5));
+    }
+    
+    .slider-with-glow[data-orientation=horizontal] .data-[state=active]:bg-primary {
+      background: var(--color-primary, #7de2ac);
+    }
+    
+    .slider-with-glow[data-orientation=horizontal] .data-[state=active]:bg-primary:active {
+      box-shadow: 0 0 15px 3px var(--color-primary-glow, rgba(124, 226, 172, 0.7));
+    }
+  `}</style>
+);
 
 export function OrderCard({
   leverage,
@@ -45,6 +78,9 @@ export function OrderCard({
   const [tempReferrerCode, setTempReferrerCode] = useState("");
   const [placingOrders, setPlacingOrders] = useState(false);
   const [initialIsLong] = useState(true);
+  const [leverageDialogOpen, setLeverageDialogOpen] = useState(false);
+  const [tempLeverageValue, setTempLeverageValue] = useState(leverage);
+  const [detailsExpanded, setDetailsExpanded] = useState(false);
 
   const {
     formState,
@@ -368,18 +404,18 @@ export function OrderCard({
   };
 
   const referrerSection = (
-    <div className="flex items-center justify-between">
-      <span>Referrer</span>
+    <div className="flex justify-between text-xs">
+      <span className="text-muted-foreground">Referrer</span>
       {isEditingReferrer ? (
         <input
           ref={referrerInputRef}
           type="text"
-          value={tempReferrerCode} // Use temporary value for input
+          value={tempReferrerCode}
           onChange={handleReferrerChange}
           onBlur={handleReferrerBlur}
-          onKeyDown={handleReferrerKeyDown} // Add keyboard handler
+          onKeyDown={handleReferrerKeyDown}
           placeholder="Enter code"
-          className="text-right bg-transparent border-b border-dashed outline-none border-muted-foreground"
+          className="text-right bg-transparent border-b border-dashed outline-none text-xs w-auto"
         />
       ) : (
         <span
@@ -392,107 +428,197 @@ export function OrderCard({
     </div>
   );
 
+  useEffect(() => {
+    setTempLeverageValue(leverage);
+  }, [leverage]);
+
   return (
-    <Card className="w-full md:w-[350px]">
-      <CardContent className="p-4">
+    <Card className="w-full md:h-full md:rounded-none md:border-0 md:shadow-none">
+      <SliderWithGlowStyles />
+      <CardContent className="p-1 md:p-1 h-full overflow-y-auto border-t border-border">
         {error && (
-          <div className="mb-4 text-short">Error: {error.message}</div>
+          <div className="mb-1 p-1 text-xs text-short bg-red-500/10 rounded">Error: {error.message}</div>
         )}
 
-        <Tabs defaultValue="market" onValueChange={setActiveTab}>
-          <div className="grid grid-cols-2 gap-2 mb-4">
+        <div className="space-y-1">
+          {/* Buy/Leverage/Sell buttons in one row */}
+          <div className="grid grid-cols-3 gap-1 mb-1">
             <Button
               variant={formState.isLong ? "default" : "outline"}
-              className={`w-full ${
-                formState.isLong ? "bg-[var(--main-accent)] hover:bg-[var(--main-accent)]/80 text-white" : ""
+              className={`w-full h-16 text-sm font-medium ${
+                formState.isLong 
+                  ? "bg-[var(--color-long)] hover:bg-[var(--color-long-dark)] text-black" 
+                  : "bg-muted/50 hover:bg-muted border-0"
               }`}
-              onClick={() => formState.isLong || toggleDirection()}
+              onClick={() => !formState.isLong && toggleDirection()}
             >
-              Long
+              Buy <span className="ml-1 text-xs">↗</span>
             </Button>
+            
+            {/* Leverage button in the middle */}
+            <Dialog open={leverageDialogOpen} onOpenChange={setLeverageDialogOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full h-16 flex flex-col justify-center items-center bg-muted/50 hover:bg-muted border-0"
+                >
+                  <span className="text-xs text-muted-foreground">Leverage</span>
+                  <span className="text-lg font-medium">{leverage}x</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[350px]">
+                <DialogHeader className="pb-0">
+                  <DialogTitle>Adjust Leverage</DialogTitle>
+                </DialogHeader>
+                <div className="py-3">
+                  <div>
+                    <CustomLeverageSlider
+                      min={1}
+                      max={100}
+                      step={1}
+                      defaultValue={Number(tempLeverageValue)}
+                      onChange={(value) => setTempLeverageValue(value.toString())}
+                      className="mt-0"
+                    />
+                  </div>
+                  
+                  <div className="mt-3">
+                    <Button 
+                      className="w-full"
+                      onClick={() => {
+                        onLeverageChange(tempLeverageValue);
+                        setLeverageDialogOpen(false);
+                      }}
+                    >
+                      Confirm Leverage
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+            
             <Button
               variant={!formState.isLong ? "default" : "outline"}
-              className={`w-full ${
-                !formState.isLong ? "bg-[var(--main-accent)] hover:bg-[var(--main-accent)]/80 text-white" : ""
+              className={`w-full h-16 text-sm font-medium ${
+                !formState.isLong 
+                  ? "bg-[var(--color-short)] hover:bg-[var(--color-short-dark)] text-white" 
+                  : "bg-muted/50 hover:bg-muted border-0"
               }`}
-              onClick={() => !formState.isLong || toggleDirection()}
+              onClick={() => formState.isLong && toggleDirection()}
             >
-              Short
+              Sell <span className="ml-1 text-xs">↘</span>
             </Button>
           </div>
-
-          <div className="flex justify-between text-sm text-muted-foreground">
-            <TabsList className="flex gap-4 p-0 bg-transparent border-0">
-              <TabsTrigger
-                value="market"
-                className="bg-transparent border-0 p-0 text-[13px] data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary"
-              >
-                Market
-              </TabsTrigger>
-              <TabsTrigger
-                value="limit"
-                className="bg-transparent border-0 p-0 text-[13px] data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary"
-              >
-                Limit
-              </TabsTrigger>
-              <TabsTrigger
-                value="stop"
-                className="bg-transparent border-0 p-0 text-[13px] data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-primary"
-              >
-                Stop
-              </TabsTrigger>
-            </TabsList>
+          
+          {/* Estimated execution price and order type */}
+          <div className="grid grid-cols-2 gap-1 mb-1">
+            <div className="flex flex-col justify-between p-3 bg-muted/50 rounded-md h-16">
+              <span className="text-xs text-muted-foreground">{activeTab === "market" ? "Execution Price" : "Limit Price"}</span>
+              {activeTab === "market" ? (
+                // Market mode - non-editable execution price
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">
+                    {tradeDetails.entryPrice ? Number(tradeDetails.entryPrice.toFixed(2)).toLocaleString() : "0.00"}
+                  </span>
+                  <span className="text-xs text-muted-foreground">USD</span>
+                </div>
+              ) : (
+                // Limit mode - editable limit price
+                <div className="flex justify-between items-center w-full">
+                  <input
+                    type="text"
+                    placeholder="0"
+                    value={formState.limitPrice || ''}
+                    onChange={handleLimitPriceChange}
+                    className="w-3/4 h-7 px-0 border-0 text-sm font-medium bg-transparent focus:outline-none"
+                    suppressHydrationWarning
+                  />
+                  <span className="text-xs text-muted-foreground">USD</span>
+                </div>
+              )}
+            </div>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full h-16 justify-between font-normal bg-muted/50 hover:bg-muted/70 border-0"
+                >
+                  <div className="flex flex-col items-start">
+                    <span className="text-xs text-muted-foreground w-full text-left">Order Type</span>
+                    <span className="text-sm font-medium mt-1">
+                      {activeTab === "market" ? "Market Order" : activeTab === "limit" ? "Limit Order" : "Stop Order"}
+                    </span>
+                  </div>
+                  <span className="text-lg">⌄</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setActiveTab("market")}>
+                  Market Order
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setActiveTab("limit")}>
+                  Limit Order
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setActiveTab("stop")}>
+                  Stop Order
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
-          <TabsContent value="market">
-            <MarketOrderForm
-              formState={formState}
-              calculatedMargin={calculatedMargin}
-              handleAmountChange={handleAmountChange}
-              handleMarginChange={handleMarginChange}  // Add this
-              handleSliderChange={handleSliderChange}
-              toggleTPSL={toggleTPSL}
-              handleTakeProfitChange={(value) => handleTakeProfitChange(value)}
-              handleStopLossChange={(value) => handleStopLossChange(value)}
-              leverage={leverage}
-              onLeverageChange={onLeverageChange}
-            />
-          </TabsContent>
+          {/* Size and Margin */}
+          <div className="grid grid-cols-2 gap-1 mb-1">
+            <div className="flex flex-col justify-between p-3 bg-muted/50 rounded-md h-16">
+              <span className="text-xs text-muted-foreground">Size</span>
+              <div className="flex justify-between items-center w-full">
+                <input
+                  type="text"
+                  placeholder="0"
+                  value={formState.amount || ''}
+                  onChange={handleAmountChange}
+                  className="w-3/4 h-7 px-0 border-0 text-sm font-medium bg-transparent focus:outline-none"
+                  suppressHydrationWarning
+                />
+                <span className="text-xs text-muted-foreground">USD</span>
+              </div>
+            </div>
+            
+            <div className="flex flex-col justify-between p-3 bg-muted/50 rounded-md h-16">
+              <span className="text-xs text-muted-foreground">Margin</span>
+              <div className="flex justify-between items-center w-full">
+                <input
+                  type="text"
+                  placeholder="0"
+                  value={calculatedMargin ? Number(calculatedMargin.toFixed(2)).toString() : ''}
+                  onChange={handleMarginChange}
+                  className="w-3/4 h-7 px-0 border-0 text-sm font-medium bg-transparent focus:outline-none"
+                  suppressHydrationWarning
+                />
+                <span className="text-xs text-muted-foreground">USD</span>
+              </div>
+            </div>
+          </div>
 
-          <TabsContent value="limit">
-            <LimitOrderForm
-              formState={formState}
-              calculatedMargin={calculatedMargin}
-              handleAmountChange={handleAmountChange}
-              handleMarginChange={handleMarginChange}  // Add this
-              handleLimitPriceChange={handleLimitPriceChange}
-              handleSliderChange={handleSliderChange}
-              toggleTPSL={toggleTPSL}
-              handleTakeProfitChange={(value) => handleTakeProfitChange(value)}
-              handleStopLossChange={(value) => handleStopLossChange(value)}
-              leverage={leverage}
-              onLeverageChange={onLeverageChange}
+          {/* Replace percentage buttons with slider */}
+          <div className="mb-3 mt-2">
+            <CustomSlider
+              min={0}
+              max={100}
+              step={1}
+              value={formState.sliderValue ? formState.sliderValue[0] || 0 : 0}
+              onChange={(value) => handleSliderChange([value])}
+              className="mt-2"
             />
-          </TabsContent>
-
-<TradeDetails 
-  details={tradeDetails} 
-  pair={market?.pair} 
-  tradingFee={tradingFee}
-  totalRequired={totalRequired}
-  referrerSection={referrerSection}
-  routingInfo={routingInfo}
-  splitOrderInfo={splitOrderInfo}
-  isLimitOrder={activeTab === "limit"}
-/>
+          </div>
 
           {!isConnected ? (
-            <div className="w-full mt-4">
+            <div className="w-full mb-3">
               <ConnectButton.Custom>
                 {({ openConnectModal }) => (
                   <Button
                     variant="market"
-                    className="w-full"
+                    className="w-full h-12 text-sm font-medium bg-[#7de2ac] hover:bg-[#7de2ac]/90 text-black"
                     onClick={openConnectModal}
                   >
                     Connect Wallet
@@ -503,7 +629,11 @@ export function OrderCard({
           ) : (
             <Button
               variant="market"
-              className="w-full mt-4"
+              className={`w-full h-12 text-sm font-medium mb-3 ${
+                formState.isLong 
+                ? "bg-[var(--color-long)] hover:bg-[var(--color-long-dark)] text-black" 
+                : "bg-[var(--color-short)] hover:bg-[var(--color-short-dark)] text-white"
+              }`}
               disabled={
                 // Only check these conditions if we have a smart account
                 smartAccount?.address
@@ -526,11 +656,115 @@ export function OrderCard({
             </Button>
           )}
 
-          <div className="h-px my-4 bg-border" />
-          <div className="mt-4">
+          {/* Trade details box */}
+          <div className="bg-muted/50 rounded-md p-3 space-y-1 mb-1">
+            {/* Source/Route Information */}
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Source</span>
+              <div className="flex items-center gap-1">
+                {splitOrderInfo?.unidex && splitOrderInfo?.gtrade ? (
+                  <div className="flex items-center gap-1">
+                    <Image 
+                      src="/static/images/logo-small.png"
+                      alt="UniDex"
+                      width={14}
+                      height={14}
+                    />
+                    <span>UniDex</span>
+                    <span className="text-muted-foreground">+</span>
+                    <Image 
+                      src="/static/images/gtrade.svg"
+                      alt="gTrade"
+                      width={14}
+                      height={14}
+                    />
+                    <span>gTrade</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1">
+                    <Image 
+                      src={routingInfo.selectedRoute === 'unidexv4' ? '/static/images/logo-small.png' : '/static/images/gtrade.svg'}
+                      alt={routingInfo.routeNames[routingInfo.selectedRoute]}
+                      width={14}
+                      height={14}
+                    />
+                    <span>{routingInfo.routeNames[routingInfo.selectedRoute]}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Liquidation Price */}
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Liquidation Price</span>
+              <span className="text-short">${tradeDetails.liquidationPrice ? Number(tradeDetails.liquidationPrice.toFixed(2)).toLocaleString() : "0.00"}</span>
+            </div>
+            
+            {/* Trading Fee */}
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Trading Fee</span>
+              <span>{tradingFee.toFixed(2)} USD ({routingInfo.routes[routingInfo.selectedRoute].tradingFee * 100}%)</span>
+            </div>
+
+            {/* Conditional rendering based on expanded state */}
+            {!detailsExpanded ? (
+              // Show execution details toggle when collapsed
+              <div 
+                className="flex justify-between text-xs items-center cursor-pointer group py-0.5"
+                onClick={() => setDetailsExpanded(true)}
+              >
+                <span className="text-muted-foreground group-hover:text-primary transition-colors">Execution Details</span>
+                <span className="group-hover:text-primary transition-colors">↓</span>
+              </div>
+            ) : (
+              // Show expanded details when expanded
+              <>
+                {/* Entry Price */}
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Entry Price</span>
+                  <span>${tradeDetails.entryPrice ? Number(tradeDetails.entryPrice.toFixed(2)).toLocaleString() : "0.00"}</span>
+                </div>
+                
+                {/* Hourly Interest */}
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Hourly Interest</span>
+                  <span className={tradeDetails.fees.hourlyInterest >= 0 ? "text-short" : "text-long"}>
+                    {tradeDetails.fees.hourlyInterest >= 0 ? "-" : "+"}$
+                    {Math.abs(tradeDetails.fees.hourlyInterest).toFixed(2)} ({Math.abs(tradeDetails.fees.hourlyInterestPercent).toFixed(4)}%)
+                  </span>
+                </div>
+                
+                {/* Total Required */}
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Total Required</span>
+                  <span>{totalRequired.toFixed(2)} USD</span>
+                </div>
+                
+                {/* Gas Price */}
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Gas Price</span>
+                  <span>~$0.10</span>
+                </div>
+                
+                {/* Referrer */}
+                {referrerSection}
+                
+                {/* Close button at bottom */}
+                <div 
+                  className="flex justify-between text-xs items-center cursor-pointer group py-0.5"
+                  onClick={() => setDetailsExpanded(false)}
+                >
+                  <span className="text-muted-foreground group-hover:text-primary transition-colors">Execution Details</span>
+                  <span className="group-hover:text-primary transition-colors">↑</span>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="mt-2">
             <WalletBox />
           </div>
-        </Tabs>
+        </div>
       </CardContent>
     </Card>
   );

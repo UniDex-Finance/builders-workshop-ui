@@ -79,15 +79,6 @@ export function useOrderForm({ leverage, assetId, isLong }: UseOrderFormProps): 
     const newAmount = Math.floor(maxLeveragedAmount * percentage / 100).toString();
     const calculatedMargin = Number((parseFloat(newAmount) / parseFloat(leverage)).toFixed(2));
     
-    console.log('Slider Calculations:', {
-      percentage,
-      maxLeveragedAmount,
-      newAmount,
-      calculatedMargin,
-      tradingFee: calculatedMargin * (market?.longTradingFee || 0.001),
-      market: market?.longTradingFee,
-      leverage
-    });
     
     if (calculatedMargin >= MIN_MARGIN) {
       setFormState(prev => ({
