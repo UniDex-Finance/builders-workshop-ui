@@ -132,10 +132,10 @@ a {
     --slider-track: var(--border);
   }
   .dark {
-    --background: 0 0% 9%;
+    --background: 0 0% 8%;
     --foreground: 0 0% 98%;
-    --component-background: 0 0% 9%;
-    --card: 0 0% 9%;
+    --component-background: 0 0% 8%;
+    --card: 0 0% 8%;
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
@@ -168,12 +168,12 @@ a {
     --text-accent: #e4d6ff;
     --textbox-background: #252525;
     --textbox-border: #252525;
-    --deposit-card-background: #171717;
-    --deposit-card-border: #171717;
+    --deposit-card-background: #141414;
+    --deposit-card-border: #141414;
     --header-button-background: #333333;
     --header-button-hover: #1d1d26;
     --pane-hover: #333333;
-    --position-cards-background: #171717;
+    --position-cards-background: #141414;
     /* Add these NextUI specific variables */
     --nextui-dropdown-background: #0e0d12;
     --nextui-background: #0e0d12;
