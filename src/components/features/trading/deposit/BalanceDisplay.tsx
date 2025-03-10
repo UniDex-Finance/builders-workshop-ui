@@ -54,7 +54,7 @@ function BalanceDisplayItem({
 
   if (title === "Margin Wallet Balance") {
     return (
-      <Card className="h-full bg-[#272734]">
+      <Card className="h-full bg-[#252525]">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">{title}:</span>
@@ -68,7 +68,7 @@ function BalanceDisplayItem({
   }
 
   return (
-    <Card className="h-full bg-[#272734]">
+    <Card className="h-full bg-[#252525]">
       <CardContent className="p-4">
         <div className="flex flex-col space-y-2">
           <div className="flex items-center gap-2">

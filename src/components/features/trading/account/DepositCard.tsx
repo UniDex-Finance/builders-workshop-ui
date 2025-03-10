@@ -265,7 +265,7 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
             <div>
               <label className="text-sm text-zinc-500 mb-1.5 block">Source</label>
               <Select value={selectedChain} onValueChange={setSelectedChain}>
-                <SelectTrigger className="bg-[#272734] border-zinc-800 h-[52px]">
+                <SelectTrigger className="bg-[#252525] border-zinc-800 h-[52px]">
                   <SelectValue>
                     <div className="flex items-center gap-2">
                       <Image 
@@ -278,7 +278,7 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
                     </div>
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="bg-[#272734] border-zinc-800">
+                <SelectContent className="bg-[#252525] border-zinc-800">
                   <SelectItem value="arbitrum">
                     <div className="flex items-center gap-2">
                       <Image src={ArbLogo} alt="Arbitrum" width={24} height={24} />
@@ -310,7 +310,7 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
             <div>
               <label className="text-sm text-zinc-500 mb-1.5 block">Asset</label>
               <Select defaultValue="usdc">
-                <SelectTrigger className="bg-[#272734] border-zinc-800 h-[52px]">
+                <SelectTrigger className="bg-[#252525] border-zinc-800 h-[52px]">
                   <SelectValue>
                     <div className="flex items-center gap-2">
                       <Image src={USDCIcon} alt="USDC" width={24} height={24} />
@@ -319,7 +319,7 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
                     </div>
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="bg-[#272734] border-zinc-800">
+                <SelectContent className="bg-[#252525] border-zinc-800">
                   <SelectItem value="usdc">
                     <div className="flex items-center gap-2">
                       <Image src={USDCIcon} alt="USDC" width={24} height={24} />
@@ -349,7 +349,7 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
                   type="text"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full bg-[#272734] border-zinc-800 rounded-md px-3 h-[52px] text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full bg-[#252525] border-zinc-800 rounded-md px-3 h-[52px] text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="0.0000"
                 />
                 {amount !== getAvailableBalance() && (
@@ -357,7 +357,7 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
                     onClick={() => setAmount(getAvailableBalance())}
                     className="absolute -translate-y-1/2 right-4 top-1/2 
                       text-xs font-medium
-                      bg-[#272734] hover:bg-[#323242]
+                      bg-[#252525] hover:bg-[#323242]
                       text-zinc-400 hover:text-white
                       px-2 py-1 rounded-md
                       transition-colors"
@@ -376,7 +376,7 @@ export function DepositCard({ onClose, balances, onSuccess }: DepositCardProps) 
             </div>
           </div>
 
-          <div className="space-y-2 bg-[#272734] rounded-lg p-4">
+          <div className="space-y-2 bg-[#252525] rounded-lg p-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-zinc-500">Expected Deposit Amount</span>
               <span className="text-sm">{getExpectedDepositAmount()}</span>

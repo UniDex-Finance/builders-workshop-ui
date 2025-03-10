@@ -80,7 +80,7 @@ export function UsdmPositionsTable() {
         <div className="overflow-x-auto">
           <table className="w-full text-[13px]">
             <thead>
-              <tr className="text-[#A0AEC0] border-b border-[#272734]">
+              <tr className="text-[#A0AEC0] border-b border-[#252525]">
                 <th className="px-3 py-2 font-medium text-left">Coin</th>
                 <SortableHeader field="size" align="left">Size</SortableHeader>
                 <SortableHeader field="margin" align="left">Margin</SortableHeader>
@@ -114,7 +114,7 @@ export function UsdmPositionsTable() {
                 ).toFixed(2)
 
                 return (
-                  <tr key={index} className="border-b border-[#272734] hover:bg-[#272734] transition-colors">
+                  <tr key={index} className="border-b border-[#252525] hover:bg-[#252525] transition-colors">
                     <td className={`px-3 py-2 ${
                       position.isLong ? 'text-long' : 'text-short'
                     }`}>

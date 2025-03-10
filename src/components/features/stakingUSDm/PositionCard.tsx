@@ -83,7 +83,7 @@ export function PositionCard() {
             <span className="text-[#A0AEC0] text-sm">{formatUsdValue(stakingData?.formattedStakedBalance || '0')}</span>
           </div>
         </div>
-        <div className="border-t border-[#272734]" />
+        <div className="border-t border-[#252525]" />
         <div className="space-y-4">
           <div className="flex justify-between text-sm">
             <span className="text-[#A0AEC0]">Wallet Balance</span>

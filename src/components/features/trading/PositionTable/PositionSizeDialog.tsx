@@ -189,7 +189,7 @@ export function PositionSizeDialog({
               </button>
             </div>
 
-            <div className="p-1 rounded bg-[#272734]">
+            <div className="p-1 rounded bg-[#252525]">
               <div className="grid grid-cols-2 gap-1">
                 <Button
                   variant="ghost"
@@ -217,7 +217,7 @@ export function PositionSizeDialog({
                     : `Max: ${currentSize.toFixed(2)}`}
                 </span>
               </div>
-              <div className="flex items-center rounded bg-[#272734] p-1">
+              <div className="flex items-center rounded bg-[#252525] p-1">
                 <Input
                   type="number"
                   value={collateralAmount}
@@ -257,7 +257,7 @@ export function PositionSizeDialog({
               </div>
             )}
 
-            <Separator className="bg-[#272734]" />
+            <Separator className="bg-[#252525]" />
 
             <div className="space-y-2 text-xs">
               <div className="flex justify-between">
@@ -290,7 +290,7 @@ export function PositionSizeDialog({
               </div>
             </div>
 
-            <Separator className="bg-[#272734]" />
+            <Separator className="bg-[#252525]" />
 
             <div className="space-y-2 text-xs">
               <div className="flex justify-between">

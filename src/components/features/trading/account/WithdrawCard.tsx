@@ -174,10 +174,10 @@ export function WithdrawCard({ onClose, balances, onSuccess }: WithdrawCardProps
                 value={selectedSource}
                 onValueChange={(value) => setSelectedSource(value as WithdrawSource)}
               >
-                <SelectTrigger className="w-full bg-[#272734] border-zinc-800 h-[52px] text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <SelectTrigger className="w-full bg-[#252525] border-zinc-800 h-[52px] text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                   <SelectValue placeholder="Select Source" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#272734] border-zinc-800">
+                <SelectContent className="bg-[#252525] border-zinc-800">
                   <SelectItem value="1ct">1CT Wallet</SelectItem>
                   <SelectItem value="margin">Margin Wallet</SelectItem>
                 </SelectContent>
@@ -194,7 +194,7 @@ export function WithdrawCard({ onClose, balances, onSuccess }: WithdrawCardProps
                   type="text"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full bg-[#272734] border-zinc-800 rounded-md px-3 h-[52px] text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full bg-[#252525] border-zinc-800 rounded-md px-3 h-[52px] text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="0.0000"
                 />
                 {amount !== getAvailableBalance() && (
@@ -202,7 +202,7 @@ export function WithdrawCard({ onClose, balances, onSuccess }: WithdrawCardProps
                     onClick={() => setAmount(getAvailableBalance())}
                     className="absolute -translate-y-1/2 right-4 top-1/2 
                       text-xs font-medium
-                      bg-[#272734] hover:bg-[#323242]
+                      bg-[#252525] hover:bg-[#323242]
                       text-zinc-400 hover:text-white
                       px-2 py-1 rounded-md
                       transition-colors"
@@ -221,7 +221,7 @@ export function WithdrawCard({ onClose, balances, onSuccess }: WithdrawCardProps
             </div>
           </div>
 
-          <div className="space-y-2 bg-[#272734] rounded-lg p-4">
+          <div className="space-y-2 bg-[#252525] rounded-lg p-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-zinc-500">Withdrawal Amount</span>
               <span className="text-sm">{amount || "0.0000"}</span>

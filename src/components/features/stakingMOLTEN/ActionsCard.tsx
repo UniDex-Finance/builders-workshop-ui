@@ -157,7 +157,7 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
                     placeholder="Enter amount"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className="w-full h-10 bg-[#272734] border-[#373745] text-white placeholder:text-[#A0AEC0] pr-16"
+                    className="w-full h-10 bg-[#252525] border-[#373745] text-white placeholder:text-[#A0AEC0] pr-16"
                   />
                   <Button
                     className="absolute right-1 top-1/2 -translate-y-1/2 h-8 bg-[#373745] hover:bg-[#474755] text-white text-xs px-2"
@@ -167,14 +167,14 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
                   </Button>
                 </div>
                 <Button
-                  className="bg-[#272734] hover:bg-[#373745] text-white w-24"
+                  className="bg-[#252525] hover:bg-[#373745] text-white w-24"
                   onClick={handleStakeOrApprove}
                   disabled={!canStake()}
                 >
                   {needsApproval() ? 'Approve' : 'Stake'}
                 </Button>
                 <Button
-                  className="bg-[#272734] hover:bg-[#373745] text-white w-24"
+                  className="bg-[#252525] hover:bg-[#373745] text-white w-24"
                   onClick={handleStakeOrWithdraw}
                   disabled={!canUnstake()}
                 >
@@ -190,7 +190,7 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
                     placeholder="Enter amount"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className="w-full h-10 bg-[#272734] border-[#373745] text-white placeholder:text-[#A0AEC0] pr-16"
+                    className="w-full h-10 bg-[#252525] border-[#373745] text-white placeholder:text-[#A0AEC0] pr-16"
                   />
                   <Button
                     className="absolute right-1 top-1/2 -translate-y-1/2 h-8 bg-[#373745] hover:bg-[#474755] text-white text-xs px-2"
@@ -201,14 +201,14 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <Button
-                    className="w-full bg-[#272734] hover:bg-[#373745] text-white"
+                    className="w-full bg-[#252525] hover:bg-[#373745] text-white"
                     onClick={handleStakeOrApprove}
                     disabled={!canStake()}
                   >
                     {needsApproval() ? 'Approve' : 'Stake'}
                   </Button>
                   <Button
-                    className="w-full bg-[#272734] hover:bg-[#373745] text-white"
+                    className="w-full bg-[#252525] hover:bg-[#373745] text-white"
                     onClick={handleStakeOrWithdraw}
                     disabled={!canUnstake()}
                   >
@@ -217,10 +217,10 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
                 </div>
               </div>
 
-              <div className="border-t border-[#272734]" />
+              <div className="border-t border-[#252525]" />
               
               {/* Desktop rewards layout */}
-              <div className="hidden md:flex items-center justify-between p-4 bg-[#272734] rounded-lg">
+              <div className="hidden md:flex items-center justify-between p-4 bg-[#252525] rounded-lg">
                 <div className="space-y-1">
                   <div className="text-sm text-[#A0AEC0]">MOLTEN Staking Rewards</div>
                   <div className="text-white">
@@ -247,7 +247,7 @@ export function ActionsCard({ isStaking, setIsStaking }: ActionsCardProps) {
               </div>
 
               {/* Mobile rewards layout */}
-              <div className="flex md:hidden flex-col gap-4 p-4 bg-[#272734] rounded-lg">
+              <div className="flex md:hidden flex-col gap-4 p-4 bg-[#252525] rounded-lg">
                 <div className="space-y-1">
                   <div className="text-sm text-[#A0AEC0]">MOLTEN Staking Rewards</div>
                   <div className="text-white">
