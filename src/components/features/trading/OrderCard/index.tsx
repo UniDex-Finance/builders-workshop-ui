@@ -471,15 +471,17 @@ export function OrderCard({
                   <DialogTitle>Adjust Leverage</DialogTitle>
                 </DialogHeader>
                 <div className="py-3">
-                  <div>
-                    <CustomLeverageSlider
-                      min={1}
-                      max={100}
-                      step={1}
-                      value={Number(tempLeverageValue)}
-                      onChange={(value) => setTempLeverageValue(value.toString())}
-                      className="mt-0"
-                    />
+                  <div className="touch-manipulation">
+                    <div style={{ touchAction: "none", WebkitTapHighlightColor: "transparent" }}>
+                      <CustomLeverageSlider
+                        min={1}
+                        max={100}
+                        step={1}
+                        value={Number(tempLeverageValue)}
+                        onChange={(value) => setTempLeverageValue(value.toString())}
+                        className="mt-0 h-12 touch-manipulation"
+                      />
+                    </div>
                   </div>
                   
                   {/* Add manual leverage input */}
