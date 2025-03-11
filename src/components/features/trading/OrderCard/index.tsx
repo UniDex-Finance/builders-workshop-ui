@@ -476,10 +476,29 @@ export function OrderCard({
                       min={1}
                       max={100}
                       step={1}
-                      defaultValue={Number(tempLeverageValue)}
+                      value={Number(tempLeverageValue)}
                       onChange={(value) => setTempLeverageValue(value.toString())}
                       className="mt-0"
                     />
+                  </div>
+                  
+                  {/* Add manual leverage input */}
+                  <div className="flex items-center justify-between mt-4 mb-2">
+                    <span className="text-sm font-medium">Leverage:</span>
+                    <div className="flex items-center bg-muted/70 rounded-md px-2 w-24">
+                      <input
+                        type="number"
+                        value={tempLeverageValue}
+                        onChange={(e) => {
+                          const value = Math.min(Math.max(1, parseInt(e.target.value) || 1), 100);
+                          setTempLeverageValue(value.toString());
+                        }}
+                        min={1}
+                        max={100}
+                        className="w-full text-right bg-transparent border-0 focus:outline-none py-1 text-sm"
+                      />
+                      <span className="ml-1 text-sm">x</span>
+                    </div>
                   </div>
                   
                   <div className="mt-3">
@@ -490,7 +509,7 @@ export function OrderCard({
                         setLeverageDialogOpen(false);
                       }}
                     >
-                      Confirm Leverage
+                      Confirm Change
                     </Button>
                   </div>
                 </div>
