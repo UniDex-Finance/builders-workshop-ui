@@ -145,17 +145,47 @@ export default function CustomLeverageSlider({
     setIsDragging(false)
   }
 
+  // Add touch event handlers
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+    handleTouchMove(e);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isDragging || !trackRef.current) return;
+
+    const rect = trackRef.current.getBoundingClientRect();
+    const touch = e.touches[0];
+    const movePosition = touch.clientX - rect.left;
+    const rawPercentage = (movePosition / rect.width) * 100;
+    
+    const newValue = min + (rawPercentage / 100) * (max - min);
+    const clampedValue = Math.max(min, Math.min(max, Math.round(newValue)));
+    
+    setInternalValue(clampedValue);
+    onChange?.(clampedValue);
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
+
   useEffect(() => {
     if (isDragging) {
-      window.addEventListener("mousemove", handleMouseMove)
-      window.addEventListener("mouseup", handleMouseUp)
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+      window.addEventListener("touchmove", handleTouchMove as any, { passive: false });
+      window.addEventListener("touchend", handleTouchEnd, { passive: false });
     }
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove)
-      window.removeEventListener("mouseup", handleMouseUp)
-    }
-  }, [isDragging])
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("touchmove", handleTouchMove as any);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [isDragging]);
 
   // Adjust the visual position for rendering elements
   const getAdjustedPosition = (percent: number) => {
@@ -197,6 +227,8 @@ export default function CustomLeverageSlider({
         className="relative h-2.5 bg-muted/50 rounded-full cursor-pointer mt-1"
         onClick={handleTrackClick}
         onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
+        style={{ touchAction: "none" }}
       >
         {/* Ticks */}
         {ticks.map((tick, i) => {
