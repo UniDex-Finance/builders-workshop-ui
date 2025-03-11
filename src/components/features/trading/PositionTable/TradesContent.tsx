@@ -83,7 +83,7 @@ export function TradesContent() {
 
   return (
     <>
-      <TableHeader>
+      <TableHeader className="sticky top-0 z-10 bg-[hsl(var(--component-background))]">
         <TableRow>
           <TableHead>Market</TableHead>
           <TableHead>Date</TableHead>
@@ -95,16 +95,16 @@ export function TradesContent() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {error ? (
-          <TableRow>
-            <TableCell colSpan={7} className="text-center text-short">
-              {error.message}
-            </TableCell>
-          </TableRow>
-        ) : loading ? (  // Changed this condition
+        {loading ? (
           <TableRow>
             <TableCell colSpan={7} className="text-center">
               Loading trades...
+            </TableCell>
+          </TableRow>
+        ) : error ? (
+          <TableRow>
+            <TableCell colSpan={7} className="text-center text-short">
+              {error.message}
             </TableCell>
           </TableRow>
         ) : trades.length === 0 ? (
@@ -182,8 +182,8 @@ export function TradesContent() {
               </TableRow>
             ))}{" "}
           </>
-        )}{" "}
-      </TableBody>{" "}
+        )}
+      </TableBody>
     </>
   );
 }

@@ -97,83 +97,85 @@ export function PositionsTable({ address }: PositionsTableProps) {
   };
 
   return (
-    <div className="w-full bg-[hsl(var(--component-background))] border-border">
-      <div className="flex items-center px-4 py-1 border-b">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setActiveTab("positions")}
-          className={activeTab === "positions" ? "text-white px-0 mr-2" : "text-muted-foreground px-0 mr-2"}
-        >
-          Positions
-        </Button>
-        <span className="mx-1 text-muted-foreground/30">|</span>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setActiveTab("orders")}
-          className={activeTab === "orders" ? "text-white px-0 mx-2" : "text-muted-foreground px-0 mx-2"}
-        >
-          Orders
-        </Button>
-        <span className="mx-1 text-muted-foreground/30">|</span>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setActiveTab("trades")}
-          className={activeTab === "trades" ? "text-white px-0 ml-2" : "text-muted-foreground px-0 ml-2"}
-        >
-          History
-        </Button>
-      </div>
-      <div className="w-full overflow-x-auto md:overflow-visible">
-        <div className="min-w-full md:min-w-[800px]">
-          <Table>
-            {activeTab === "positions" && (
-              <PositionsContent
-                positions={positions}
-                triggerOrders={triggerOrders}
-                loading={positionsLoading}
-                error={positionsError}
-                closingPositions={closingPositions}
-                handleClosePosition={handleClosePosition}
-                setRef={setRef}
-                handleMouseEnter={handleMouseEnter}
-                setHoveredPosition={setHoveredPosition}
-              />
-            )}
-            {activeTab === "orders" && (
-              <OrdersContent
-                orders={orders}
-                triggerOrders={triggerOrders}
-                loading={ordersLoading}
-                error={ordersError}
-              />
-            )}
-            {activeTab === "trades" && (
-              <TradesContent />
-            )}
-          </Table>
+    <div className="h-[calc(100vh-580px)] min-h-[300px]">
+      <div className="w-full bg-[hsl(var(--component-background))] border-border h-full flex flex-col">
+        <div className="flex items-center px-4 py-1 border-b">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setActiveTab("positions")}
+            className={activeTab === "positions" ? "text-white px-0 mr-2" : "text-muted-foreground px-0 mr-2"}
+          >
+            Positions
+          </Button>
+          <span className="mx-1 text-muted-foreground/30">|</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setActiveTab("orders")}
+            className={activeTab === "orders" ? "text-white px-0 mx-2" : "text-muted-foreground px-0 mx-2"}
+          >
+            Orders
+          </Button>
+          <span className="mx-1 text-muted-foreground/30">|</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setActiveTab("trades")}
+            className={activeTab === "trades" ? "text-white px-0 ml-2" : "text-muted-foreground px-0 ml-2"}
+          >
+            History
+          </Button>
         </div>
+        <div className="w-full flex-1 overflow-y-auto scrollbar-custom">
+          <div className="min-w-full md:min-w-[800px]">
+            <Table>
+              {activeTab === "positions" && (
+                <PositionsContent
+                  positions={positions}
+                  triggerOrders={triggerOrders}
+                  loading={positionsLoading}
+                  error={positionsError}
+                  closingPositions={closingPositions}
+                  handleClosePosition={handleClosePosition}
+                  setRef={setRef}
+                  handleMouseEnter={handleMouseEnter}
+                  setHoveredPosition={setHoveredPosition}
+                />
+              )}
+              {activeTab === "orders" && (
+                <OrdersContent
+                  orders={orders}
+                  triggerOrders={triggerOrders}
+                  loading={ordersLoading}
+                  error={ordersError}
+                />
+              )}
+              {activeTab === "trades" && (
+                <TradesContent />
+              )}
+            </Table>
+          </div>
+        </div>
+
+        {portalContainer &&
+          hoveredPosition &&
+          createPortal(
+            (() => {
+              const cell = cellRefs.current[hoveredPosition];
+              if (!cell) return null;
+
+              const rect = cell.getBoundingClientRect();
+              const position = positions.find(
+                (p) => p.positionId === hoveredPosition
+              );
+              if (!position) return null;
+
+              return <PnLTooltip position={position} rect={rect} />;
+            })(),
+            portalContainer
+          )}
       </div>
-
-      {portalContainer &&
-        hoveredPosition &&
-        createPortal(
-          (() => {
-            const cell = cellRefs.current[hoveredPosition];
-            if (!cell) return null;
-
-            const rect = cell.getBoundingClientRect();
-            const position = positions.find(
-              (p) => p.positionId === hoveredPosition
-            );
-            if (!position) return null;
-
-            return <PnLTooltip position={position} rect={rect} />;
-          })(),
-          portalContainer
-        )}
     </div>
   );
 }
