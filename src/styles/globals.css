@@ -370,6 +370,19 @@ a {
   }
 }
 
+/* Hide number input spinners */
+@layer base {
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+} 
+
 /* Add these styles to remove number input spinners */
 .no-spinners::-webkit-inner-spin-button,
 .no-spinners::-webkit-outer-spin-button {
