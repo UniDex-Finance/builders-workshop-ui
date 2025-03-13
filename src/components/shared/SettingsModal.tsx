@@ -2,7 +2,7 @@
 
 import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
-import { XIcon, SunIcon, MoonIcon } from "lucide-react";
+import { XIcon, SunIcon, MoonIcon, LeafIcon, ZapIcon, CircleDotIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +30,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       case 'hotline':
         setSelected(3);
         break;
+      case 'oled':
+        setSelected(4);
       default:
         setSelected(0);
     }
@@ -38,9 +40,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const themeOptions = [
     { label: "Light", icon: SunIcon, value: 'light' },
     { label: "Dark", icon: MoonIcon, value: 'dark' },
-    { label: "Greenify", icon: SunIcon, value: 'greenify' },
-    { label: "Hotline", icon: MoonIcon, value: 'hotline' },
-    { label: "OLED", icon: MoonIcon, value: 'oled' },
+    { label: "Greenify", icon: LeafIcon, value: 'greenify' },
+    { label: "Hotline", icon: ZapIcon, value: 'hotline' },
+    { label: "OLED", icon: CircleDotIcon, value: 'oled' },
   ];
 
   const handleThemeChange = (index: number) => {
@@ -58,7 +60,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       {isOpen && (
         <motion.div
           animate={{
-            height: 240,
+            height: "auto",
             width: 380,
             opacity: 1,
           }}
@@ -85,7 +87,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             animate={{ opacity: 1 }}
             initial={{ opacity: 0 }}
             transition={{ delay: 0.1 }}
-            className="flex flex-col h-full"
+            className="flex flex-col"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-border">
@@ -102,8 +104,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto scrollbar-custom">
-              <div className="p-4 space-y-6">
+            <div className="overflow-y-auto scrollbar-custom">
+              <div className="p-4 space-y-4">
                 {/* Theme Section */}
                 <div className="space-y-3">
                   <h3 className="text-sm font-medium text-muted-foreground">
