@@ -247,12 +247,12 @@ a {
     --slider-range: var(--primary);
     --slider-thumb: var(--primary);
     --slider-track: var(--border);
-    --rehypothecation-gradient: linear-gradient(135deg, #60a5fa 0%, #8062f1 50%, #5b21b6 100%);
-    --rehypothecation-hover: linear-gradient(135deg, #3b82f6 0%, #7358d9 50%, #4c1d95 100%);
+    --rehypothecation-gradient: linear-gradient(135deg, #0d8063 0%, #17917d 50%, #084239 100%);
+    --rehypothecation-hover: linear-gradient(135deg, #129b77 0%, #148571 50%, #063530 100%);
   }
   .hotline {
     --background: 247 59% 11%;
-    --foreground: 0 0% 98%;
+    --foreground: 247 59% 80%;
     --component-background: 248 58% 11%;
     --card: 248 58% 11%;
     --card-foreground: 0 0% 98%;
@@ -309,9 +309,10 @@ a {
     --rehypothecation-gradient: linear-gradient(135deg, #93c5fd 0%, #a78bfa 50%, #7c3aed 100%);
     --rehypothecation-hover: linear-gradient(135deg, #60a5fa 0%, #8b5cf6 50%, #6d28d9 100%);
   }
+  
   .oled {
     --background: 0 0% 0%;
-    --foreground: 0 0% 98%;
+    --foreground: 0 0 60%;
     --component-background: 0 0% 0%;
     --card: 0 0% 0%;
     --card-foreground: 0 0% 98%;

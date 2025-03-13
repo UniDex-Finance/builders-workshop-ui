@@ -32,6 +32,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         break;
       case 'oled':
         setSelected(4);
+        break;
       default:
         setSelected(0);
     }
