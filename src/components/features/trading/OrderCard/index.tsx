@@ -497,6 +497,14 @@ export function OrderCard({
                         }}
                         min={1}
                         max={100}
+                        inputMode="numeric"
+                        readOnly={true}
+                        onClick={(e) => {
+                          (e.target as HTMLInputElement).readOnly = false;
+                        }}
+                        onBlur={(e) => {
+                          (e.target as HTMLInputElement).readOnly = true;
+                        }}
                         className="w-full text-right bg-transparent border-0 focus:outline-none py-1 text-sm"
                       />
                       <span className="ml-1 text-sm">x</span>
