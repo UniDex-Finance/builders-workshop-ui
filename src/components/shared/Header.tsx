@@ -73,7 +73,7 @@ export function Header() {
             </DropdownTrigger>
             <DropdownMenu
               aria-label="Earn options"
-              className="w-[240px]"
+              className="w-[240px] "
               itemClasses={{
                 base: "gap-4",
                 title: "text-sm",
@@ -87,7 +87,7 @@ export function Header() {
                   startContent={<Coins className="w-4 h-4" />}
                   onClick={() => (window.location.href = "/staking")}
                 >
-                  Stake MOLTEN
+                  <span className="font-semibold">Stake MOLTEN</span>
                 </DropdownItem>
               </DropdownSection>
 
@@ -98,7 +98,7 @@ export function Header() {
                   startContent={<DollarSign className="w-4 h-4" />}
                   onClick={() => (window.location.href = "/usdm")}
                 >
-                  Mint USD.m
+                  <span className="font-semibold">Mint USD.m</span>
                 </DropdownItem>
                 <DropdownItem
                   key="usdm-staking"
@@ -106,7 +106,8 @@ export function Header() {
                   startContent={<PiggyBank className="w-4 h-4" />}
                   onClick={() => (window.location.href = "/usdm-staking")}
                 >
-                  Stake USD.m
+                  
+                  <span className="font-semibold">Stake USD.m</span>
                 </DropdownItem>
               </DropdownSection>
 
@@ -117,7 +118,7 @@ export function Header() {
                   startContent={<Users2 className="w-4 h-4" />}
                   onClick={() => (window.location.href = "/referrals")}
                 >
-                  Refer Traders
+                  <span className="font-semibold">Refer Traders</span>
                 </DropdownItem>
               </DropdownSection>
             </DropdownMenu>
