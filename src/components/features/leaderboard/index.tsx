@@ -103,7 +103,7 @@ export function LeaderboardDashboard() {
             </h2>
             <div className="space-y-3 text-muted-foreground">
               <p>
-                Get ready for our next trading competition starting on March 24th and running until April 20st, 2025 (UTC).
+                Get ready for our next trading competition starting on March 24th and running until April 20th, 2025 (UTC).
               </p>
               <p>
                 This time we're running <strong>two separate competitions</strong> to reward different trading styles:
