@@ -103,7 +103,7 @@ export function LeaderboardDashboard() {
             </h2>
             <div className="space-y-3 text-muted-foreground">
               <p>
-                Get ready for our next trading competition starting on March 24th and running until April 21st, 2025 (UTC).
+                Get ready for our next trading competition starting on March 24th and running until April 20st, 2025 (UTC).
               </p>
               <p>
                 This time we're running <strong>two separate competitions</strong> to reward different trading styles:
@@ -182,10 +182,10 @@ export function LeaderboardDashboard() {
             </h2>
             <div className="space-y-3 text-muted-foreground">
               <p>
-                <strong>Competition Period:</strong> March 24, 2025 (00:00 UTC) to April 21, 2025 (23:59 UTC)
+                <strong>Competition Period:</strong> March 24, 2025 (00:00 UTC) to April 20, 2025 (23:59 UTC)
               </p>
               <p>
-                <strong>Eligibility:</strong> All traders must complete at least 5 trades to qualify for prizes.
+                <strong>Eligibility:</strong> All traders must complete at least 3 trades to qualify for prizes.
               </p>
               <p>
                 <strong>Volume Competition Rules:</strong> Only cryptocurrency trading pairs count toward the volume competition. Trades with the native pool count for both PnL and volume competitions.
