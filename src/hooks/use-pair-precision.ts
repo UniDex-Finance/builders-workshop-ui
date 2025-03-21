@@ -19,7 +19,7 @@ const PRECISION_OVERRIDES: Record<string, PrecisionConfig> = {
   'FTM/USD': { minDecimals: 4, maxDecimals: 4 },
   'SOL/USD': { minDecimals: 3, maxDecimals: 3 },
   'DOGE/USD': { minDecimals: 4, maxDecimals: 4 },
-  'PEPE/USD': { minDecimals: 8, maxDecimals: 8 },
+  'PEPE/USD': { minDecimals: 9, maxDecimals: 9 },
   'AAVE/USD': { minDecimals: 3, maxDecimals: 3 },
   'AVAX/USD': { minDecimals: 4, maxDecimals: 4 },
   'TAO/USD': { minDecimals: 3, maxDecimals: 3 },
