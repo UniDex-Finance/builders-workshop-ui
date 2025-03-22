@@ -115,6 +115,7 @@ interface TokenIconProps {
   pair: string;
   size?: number;
   className?: string;
+  square?: boolean;
 }
 
 /**
@@ -124,7 +125,8 @@ interface TokenIconProps {
 export const TokenIcon: React.FC<TokenIconProps> = memo(({ 
   pair, 
   size = 24,
-  className = ''
+  className = '',
+  square = false
 }) => {
   const imagePath = useTokenImagePath(pair);
   const baseToken = pair.split("/")[0];
@@ -132,7 +134,7 @@ export const TokenIcon: React.FC<TokenIconProps> = memo(({
   if (!imagePath) {
     return (
       <div 
-        className={`flex items-center justify-center text-xs font-medium rounded-full bg-muted ${className}`}
+        className={`flex items-center justify-center text-xs font-medium ${!square ? 'rounded-full' : ''} bg-muted ${className}`}
         style={{ width: size, height: size }}
       >
         {baseToken[0]}
@@ -142,7 +144,7 @@ export const TokenIcon: React.FC<TokenIconProps> = memo(({
 
   return (
     <div 
-      className={`relative rounded-full ${className}`}
+      className={`relative ${!square ? 'rounded-full' : ''} ${className}`}
       style={{ width: size, height: size }}
     >
       <Image
@@ -150,7 +152,7 @@ export const TokenIcon: React.FC<TokenIconProps> = memo(({
         alt={`${pair} icon`}
         width={size}
         height={size}
-        className="rounded-full"
+        className={!square ? 'rounded-full' : ''}
       />
     </div>
   );

@@ -15,6 +15,7 @@ import { PositionSLTPDialog } from "./PositionSLTPDialog";
 import { PositionCollateralDialog } from "./PositionCollateralDialog";
 import { PositionSizeDialog } from "./PositionSizeDialog";
 import * as HoverCard from '@radix-ui/react-hover-card';
+import { TokenIcon } from "../../../../hooks/use-token-icon";
 
 interface PositionsContentProps {
   positions: Position[];
@@ -256,10 +257,18 @@ export function PositionsContent({
               >
                 <TableCell className="flex flex-col md:table-cell md:block">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <div>{position.market}</div>
-                      <div className={position.isLong ? "text-long" : "text-short"}>
-                        {leverage}x {position.isLong ? "Long" : "Short"}
+                    <div className="flex items-center">
+                      <TokenIcon 
+                        pair={position.market} 
+                        size={24} 
+                        className="mr-2"
+                        square={true}
+                      />
+                      <div>
+                        <div>{position.market}</div>
+                        <div className={position.isLong ? "text-long" : "text-short"}>
+                          {leverage}x {position.isLong ? "Long" : "Short"}
+                        </div>
                       </div>
                     </div>
                     <div className="md:hidden" onClick={(e) => e.stopPropagation()}>
