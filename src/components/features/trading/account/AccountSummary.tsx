@@ -84,7 +84,9 @@ function AddressDisplay({
 }: AddressDisplayProps) {
   const { toast } = useToast();
 
-  const handleCopy = () => {
+  const handleCopy = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (address) {
       navigator.clipboard.writeText(address);
       toast({
@@ -94,14 +96,32 @@ function AddressDisplay({
     }
   };
 
-  const handleExplorer = () => {
+  const handleExplorer = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (explorerUrl) {
       window.open(explorerUrl, '_blank');
     }
   };
 
+  const handleLookupClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onLookupClick) {
+      onLookupClick();
+    }
+  };
+
+  const handleRevoke = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onRevoke) {
+      onRevoke();
+    }
+  };
+
   return (
-    <div className="flex items-start space-x-3">
+    <div className="flex items-start space-x-3" onClick={(e) => e.stopPropagation()}>
       {address && (
         <div className="mt-1">
           <Jazzicon diameter={20} seed={jsNumberForAddress(address)} />
@@ -122,6 +142,8 @@ function AddressDisplay({
                   variant="ghost"
                   size="sm"
                   onClick={handleCopy}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
                   className="p-0 h-7 w-7"
                 >
                   <Copy className="w-3.5 h-3.5" />
@@ -138,6 +160,8 @@ function AddressDisplay({
                   variant="ghost"
                   size="sm"
                   onClick={handleExplorer}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
                   className="p-0 h-7 w-7"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -154,7 +178,9 @@ function AddressDisplay({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={onLookupClick}
+                    onClick={handleLookupClick}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
                     className="p-0 h-7 w-7 text-muted-foreground hover:text-muted-foreground/80"
                   >
                     <ChevronDown 
@@ -176,7 +202,9 @@ function AddressDisplay({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={onRevoke}
+                    onClick={handleRevoke}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
                     className="p-0 h-7 w-7 text-muted-foreground hover:text-muted-foreground/80"
                   >
                     <RefreshCcw className="w-3.5 h-3.5" />
@@ -265,14 +293,38 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
     return `https://arbiscan.io/address/${address}`;
   };
 
-  const handleDepositClick = () => {
-    setShowDeposit(true);
-    setIsOpen(false);
+  const handleDepositClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // For mobile, portal the deposit card to body explicitly
+    if (isMobile) {
+      setIsOpen(false);
+      // Short delay to ensure the first modal is closed
+      setTimeout(() => {
+        setShowDeposit(true);
+      }, 10);
+    } else {
+      setShowDeposit(true);
+      setIsOpen(false);
+    }
   };
 
-  const handleWithdrawClick = () => {
-    setShowWithdraw(true);
-    setIsOpen(false);
+  const handleWithdrawClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // For mobile, portal the withdraw card to body explicitly
+    if (isMobile) {
+      setIsOpen(false);
+      // Short delay to ensure the first modal is closed
+      setTimeout(() => {
+        setShowWithdraw(true);
+      }, 10);
+    } else {
+      setShowWithdraw(true);
+      setIsOpen(false);
+    }
   };
 
   const handleMaxClick = () => {
@@ -281,7 +333,12 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
     }
   };
 
-  const handleRevoke = async () => {
+  const handleRevoke = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
     try {
       await revokeCurrentSession();
       toast({
@@ -300,11 +357,14 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        summaryRef.current &&
-        !summaryRef.current.contains(event.target as Node) ||
-        (event.target as Element).classList.contains('bg-black/50')
-      ) {
+      if (event.target instanceof Element && 
+          event.target.classList.contains('bg-black/50')) {
+        setIsOpen(false);
+        return;
+      }
+      
+      if (summaryRef.current && 
+          !summaryRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     }
@@ -318,35 +378,48 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
       {isMobile && (
         <div
           className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
-          onClick={() => setIsOpen(false)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen(false);
+          }}
         />
       )}
-      <Card className={`
-        z-50 
-        p-4 
-        space-y-4 
-        bg-[var(--deposit-card-background)]
-        text-[var(--foreground)]
-        border-zinc-800
-        
-        /* Mobile styles */
-        fixed
-        inset-x-0
-        bottom-0
-        rounded-b-none
-        w-full
-        animate-slide-up-mobile
-        
-        /* Desktop styles */
-        md:absolute
-        md:animate-none
-        md:bottom-auto
-        md:right-0
-        md:left-auto
-        md:w-[400px]
-        md:rounded-lg
-        md:mt-2
-      `}>
+      <Card 
+        className={`
+          z-50 
+          p-4 
+          space-y-4 
+          bg-[var(--deposit-card-background)]
+          text-[var(--foreground)]
+          border-zinc-800
+          
+          /* Mobile styles */
+          fixed
+          inset-x-0
+          bottom-0
+          rounded-b-none
+          w-full
+          animate-slide-up-mobile
+          
+          /* Desktop styles */
+          md:absolute
+          md:animate-none
+          md:bottom-auto
+          md:right-0
+          md:left-auto
+          md:w-[400px]
+          md:rounded-lg
+          md:mt-2
+        `}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          // Prevent bubbling completely
+          if (e.nativeEvent) {
+            e.nativeEvent.stopImmediatePropagation?.();
+          }
+        }}
+      >
         <div className="space-y-3">
           <AddressDisplay
             label="Your Wallet Address"
@@ -364,7 +437,13 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
                   {({ openConnectModal }) => (
                     <Button
                       className="w-full h-[52px] bg-[var(--main-accent)] hover:bg-[var(--main-accent)]/80 text-white"
-                      onClick={openConnectModal}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openConnectModal();
+                      }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onTouchStart={(e) => e.stopPropagation()}
                     >
                       Connect Wallet
                     </Button>
@@ -386,7 +465,13 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
                     <>
                       <div 
                         className="p-3 rounded-md bg-zinc-900/50 border border-zinc-800 cursor-pointer hover:bg-zinc-900/70 transition-colors"
-                        onClick={() => setIsLookupExpanded(!isLookupExpanded)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setIsLookupExpanded(!isLookupExpanded);
+                        }}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
                       >
                         <div className="flex items-center justify-between">
                           <p className="text-sm text-zinc-400">Address no longer the same?</p>
@@ -404,7 +489,13 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
                 </div>
                 <Button
                   className="w-full h-[52px] bg-[var(--main-accent)] hover:bg-[var(--main-accent)]/80 text-white"
-                  onClick={handleSetupSmartAccount}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSetupSmartAccount();
+                  }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
                   disabled={isSigningSessionKey}
                 >
                   {isSigningSessionKey ? (
@@ -433,7 +524,7 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
                 />
               </div>
               {isAgentLookupExpanded && (
-                <div className="mt-2">
+                <div className="mt-2" onClick={(e) => e.stopPropagation()}>
                   <AddressLookupCard 
                     isExpanded={isAgentLookupExpanded}
                     onClose={() => setIsAgentLookupExpanded(false)}
@@ -488,13 +579,25 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
               <div className="flex gap-2">
                 <Button 
                   className="flex-1 bg-[var(--color-long-short-button)] hover:bg-[var(--color-long-short-button-hover)] text-[var(--foreground)]"
-                  onClick={handleDepositClick}
+                  onClick={(e) => {
+                    e.preventDefault(); 
+                    e.stopPropagation(); 
+                    handleDepositClick(e);
+                  }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
                 >
                   Deposit
                 </Button>
                 <Button 
                   className="flex-1 bg-[var(--color-long-short-button)] hover:bg-[var(--color-long-short-button-hover)] text-[var(--foreground)]"
-                  onClick={handleWithdrawClick}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleWithdrawClick(e);
+                  }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
                 >
                   Withdraw
                 </Button>
@@ -520,23 +623,45 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
 
       {/* Render modals outside the account popup */}
       {showDeposit && (
-        <DepositCard 
-          onClose={() => setShowDeposit(false)} 
-          balances={balances} 
-          onSuccess={() => {
-            setShowDeposit(false);
-          }}
-        />
+        isMobile ? 
+          createPortal(
+            <DepositCard 
+              onClose={() => setShowDeposit(false)} 
+              balances={balances} 
+              onSuccess={() => {
+                setShowDeposit(false);
+              }}
+            />,
+            document.body
+          ) : 
+          <DepositCard 
+            onClose={() => setShowDeposit(false)} 
+            balances={balances} 
+            onSuccess={() => {
+              setShowDeposit(false);
+            }}
+          />
       )}
       
       {showWithdraw && (
-        <WithdrawCard 
-          onClose={() => setShowWithdraw(false)} 
-          balances={balances} 
-          onSuccess={() => {
-            setShowWithdraw(false);
-          }}
-        />
+        isMobile ? 
+          createPortal(
+            <WithdrawCard 
+              onClose={() => setShowWithdraw(false)} 
+              balances={balances} 
+              onSuccess={() => {
+                setShowWithdraw(false);
+              }}
+            />,
+            document.body
+          ) : 
+          <WithdrawCard 
+            onClose={() => setShowWithdraw(false)} 
+            balances={balances} 
+            onSuccess={() => {
+              setShowWithdraw(false);
+            }}
+          />
       )}
     </div>
   );

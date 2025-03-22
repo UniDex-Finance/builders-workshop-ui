@@ -27,7 +27,12 @@ export function AddressLookupCard({ isExpanded, onClose }: AddressLookupCardProp
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const lookupAddress = async () => {
+  const lookupAddress = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
     if (!inputAddress) return;
     
     setIsLoading(true);
@@ -74,46 +79,77 @@ export function AddressLookupCard({ isExpanded, onClose }: AddressLookupCardProp
     }
   };
 
+  const handleModeChange = (value: string) => {
+    setMode(value as "wallet" | "agent");
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+    setInputAddress(e.target.value);
+  };
+
   if (!isExpanded) return null;
 
   return (
-    <Card className="p-4 space-y-4 bg-zinc-900/50 border-zinc-800">
-      <div className="flex items-center justify-between">
+    <Card className="p-4 space-y-4 bg-zinc-900/50 border-zinc-800" onClick={(e) => e.stopPropagation()}>
+      <div className="flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
         <Tabs 
           value={mode} 
-          onValueChange={(value) => setMode(value as "wallet" | "agent")}
+          onValueChange={handleModeChange}
           className="w-full"
         >
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="wallet">Find Wallet</TabsTrigger>
-            <TabsTrigger value="agent">Find Trading</TabsTrigger>
+          <TabsList 
+            className="grid w-full grid-cols-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <TabsTrigger 
+              value="wallet"
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+            >
+              Find Wallet
+            </TabsTrigger>
+            <TabsTrigger 
+              value="agent"
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+            >
+              Find Trading
+            </TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
         <Input
           placeholder={`Enter ${mode === "wallet" ? 'trading' : 'wallet'} address`}
           value={inputAddress}
-          onChange={(e) => setInputAddress(e.target.value)}
+          onChange={handleInputChange}
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
         />
         <Button 
           onClick={lookupAddress}
           disabled={isLoading || !inputAddress}
           className="w-full"
+          onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
         >
           {isLoading ? "Looking up..." : "Lookup"}
         </Button>
       </div>
 
       {error && (
-        <div className="text-red-400 text-sm">
+        <div className="text-red-400 text-sm" onClick={(e) => e.stopPropagation()}>
           {error}
         </div>
       )}
 
       {resultAddress && (
-        <div className="p-3 rounded-md bg-zinc-900 border border-zinc-800">
+        <div className="p-3 rounded-md bg-zinc-900 border border-zinc-800" onClick={(e) => e.stopPropagation()}>
           <p className="text-sm text-zinc-400">
             {mode === "wallet" ? "Wallet" : "Trading"} Address:
           </p>
