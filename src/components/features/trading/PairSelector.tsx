@@ -128,7 +128,7 @@ const MarketRow: React.FC<MarketRowProps> = ({ market, isFavorite, onToggleFavor
         </div>
       </div>
       {/* Mobile layout */}
-      <div className="grid w-full grid-cols-4 text-xs font-normal md:hidden">
+      <div className="grid w-full grid-cols-3 text-xs font-normal md:hidden">
         <div className="flex items-center gap-1">
           <button
             onClick={handleFavoriteClick}
@@ -150,20 +150,22 @@ const MarketRow: React.FC<MarketRowProps> = ({ market, isFavorite, onToggleFavor
             </span>
           </div>
         </div>
-        <div className="font-mono text-right">
-          {formatPrice(market.pair)}
-        </div>
-        <div className="text-right">
-          {!error ? (
-            <span className={cn(
-              percentageChange >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"
-            )}>
-              {percentageChange >= 0 ? "+" : ""}
-               {percentageChange.toFixed(2)}%
-            </span>
-          ) : (
-            <span className="text-muted-foreground">-</span>
-          )}
+        <div className="flex flex-col items-end">
+          <div className="font-mono">
+            {formatPrice(market.pair)}
+          </div>
+          <div>
+            {!error ? (
+              <span className={cn(
+                percentageChange >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"
+              )}>
+                {percentageChange >= 0 ? "+" : ""}
+                {percentageChange.toFixed(2)}%
+              </span>
+            ) : (
+              <span className="text-muted-foreground">-</span>
+            )}
+          </div>
         </div>
         <div className="text-right">
           <span
@@ -393,14 +395,13 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
                   </div>
                 </div>
                 {/* Mobile columns */}
-                <div className="grid grid-cols-4 px-4 py-2 text-xs font-medium md:hidden text-muted-foreground">
+                <div className="grid grid-cols-3 px-4 py-2 text-xs font-medium md:hidden text-muted-foreground">
                   <div>Market</div>
-                  <div className="text-right">Oracle Price</div>
                   <div 
                     className="flex items-center justify-end gap-1 text-right cursor-pointer group"
                     onClick={() => handleSort("24hChange")}
                   >
-                    24h Change
+                    Price / 24h
                     <ArrowUpDown className={cn(
                       "h-3 w-3 transition-colors",
                       sortField === "24hChange" ? "text-[var(--main-accent)]" : "text-muted-foreground group-hover:text-[var(--main-accent)]",
