@@ -1,6 +1,6 @@
 import { Position } from "../../../../hooks/use-positions";
 import { TriggerOrder } from "../../../../hooks/use-orders";
-import { Bitcoin, ChevronDown, Share2 } from "lucide-react";
+import { Bitcoin, ChevronDown, Share2, X } from "lucide-react";
 import { Button } from "../../../ui/button";
 import {
   DropdownMenu,
@@ -95,6 +95,13 @@ export function PositionDetails({
               {position.isLong ? "LONG" : "SHORT"}
             </span>
           </div>
+          <button 
+            onClick={onClose}
+            className="p-1 rounded-full hover:bg-zinc-700"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         <div className="mb-4 space-y-2 text-sm">

@@ -42,7 +42,11 @@ export function PositionDialog({
   return (
     <>
       <Dialog open={isOpen} modal={true}>
-        <DialogContent className="sm:max-w-[425px] p-4 bg-[var(--position-cards-background)] border-zinc-800" onPointerDownOutside={() => onClose()}>
+        <DialogContent 
+          className="sm:max-w-[425px] p-4 bg-[var(--position-cards-background)] border-zinc-800" 
+          onPointerDownOutside={() => onClose()}
+          hideClose={true}
+        >
           <PositionDetails
             position={position}
             triggerOrder={triggerOrder}
