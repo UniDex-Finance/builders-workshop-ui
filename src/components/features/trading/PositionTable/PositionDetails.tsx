@@ -1,3 +1,4 @@
+import React from 'react';
 import { Position } from "../../../../hooks/use-positions";
 import { TriggerOrder } from "../../../../hooks/use-orders";
 import { Bitcoin, ChevronDown, Share2, X } from "lucide-react";
@@ -11,6 +12,7 @@ import {
 import { usePrices } from "../../../../lib/websocket-price-context";
 import { useState } from "react";
 import { PositionSizeDialog } from "./PositionSizeDialog";
+import { TokenIcon } from "../../../../hooks/use-token-icon";
 
 interface PositionDetailsProps {
   position: Position;
@@ -20,8 +22,9 @@ interface PositionDetailsProps {
   isClosing: boolean;
   onOpenSLTP?: () => void;
   onOpenCollateral?: () => void;
-  onShare?: () => void;
-  onOpenSize?: () => void;
+  onShare: () => void;
+  onOpenSize: () => void;
+  pairLogo?: string | null;
 }
 
 export function PositionDetails({
@@ -89,7 +92,11 @@ export function PositionDetails({
       <div className="w-full text-white">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-1.5">
-            <Bitcoin className="w-5 h-5 text-amber-500" />
+            <TokenIcon 
+              pair={position.market} 
+              size={32} 
+              className="mr-2" 
+            />
             <span className="font-medium">{position.market}</span>
             <span className={`text-xs px-1.5 py-0.5 rounded ${position.isLong ? "bg-emerald-500/20 text-long" : "bg-red-500/20 text-short"}`}>
               {position.isLong ? "LONG" : "SHORT"}

@@ -188,6 +188,16 @@ const MarketRow: React.FC<MarketRowProps> = ({ market, isFavorite, onToggleFavor
 type SortField = "24hChange" | "fundingRate" | null;
 type SortDirection = "asc" | "desc";
 
+export function getPairLogo(pairName: string): string {
+  const baseToken = pairName.split('/')[0].toLowerCase();
+  
+  try {
+    return `/images/tokens/${baseToken}.svg`;
+  } catch (error) {
+    return '/images/tokens/default.svg';
+  }
+}
+
 export const PairSelector: React.FC<PairSelectorProps> = ({
   selectedPair,
   onPairChange,
