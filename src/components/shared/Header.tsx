@@ -486,21 +486,27 @@ export function Header() {
                   if (!connected) {
                     return (
                       <>
-                        <Button
-                          onClick={openConnectModal}
-                          variant="outline"
-                          className="hidden sm:inline-flex h-8 px-3 bg-muted/50 hover:bg-muted/70 [&>*]:text-white [&>*]:font-normal [&>*]:!important text-sm flex items-center justify-center"
-                        >
-                          Connect
-                        </Button>
-                        <Button
-                          onClick={openConnectModal}
-                          variant="outline"
-                          size="icon"
-                          className="sm:hidden h-8 w-8 bg-muted/50 hover:bg-muted/70 [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
-                        >
-                          <Wallet className="w-4 h-4 text-white" />
-                        </Button>
+                        {/* Only show on desktop */}
+                        <div className="hidden md:block">
+                          <Button
+                            onClick={openConnectModal}
+                            variant="outline"
+                            className="h-8 px-3 bg-muted/50 hover:bg-muted/70 [&>*]:text-white [&>*]:font-normal [&>*]:!important text-sm flex items-center justify-center"
+                          >
+                            Connect
+                          </Button>
+                        </div>
+                        {/* Only show on mobile */}
+                        <div className="block md:hidden">
+                          <Button
+                            onClick={openConnectModal}
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8 bg-muted/50 hover:bg-muted/70 [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
+                          >
+                            <Wallet className="w-4 h-4 text-white" />
+                          </Button>
+                        </div>
                       </>
                     );
                   }
@@ -519,21 +525,27 @@ export function Header() {
 
                   return (
                     <div className="flex gap-2 items-center h-full">
-                      <Button
-                        onClick={openAccountModal}
-                        variant="outline"
-                        className="hidden sm:inline-flex h-8 px-3 bg-muted/50 hover:bg-muted/70 [&>*]:text-white [&>*]:font-normal [&>*]:!important text-sm flex items-center justify-center"
-                      >
-                        {account.displayName}
-                      </Button>
-                      <Button
-                        onClick={openAccountModal}
-                        variant="outline"
-                        size="icon"
-                        className="sm:hidden h-8 w-8 bg-muted/50 hover:bg-muted/70 [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
-                      >
-                        <Wallet className="w-4 h-4 text-white" />
-                      </Button>
+                      {/* Only show on desktop */}
+                      <div className="hidden md:block">
+                        <Button
+                          onClick={openAccountModal}
+                          variant="outline"
+                          className="h-8 px-3 bg-muted/50 hover:bg-muted/70 [&>*]:text-white [&>*]:font-normal [&>*]:!important text-sm flex items-center justify-center"
+                        >
+                          {account.displayName}
+                        </Button>
+                      </div>
+                      {/* Only show on mobile */}
+                      <div className="block md:hidden">
+                        <Button
+                          onClick={openAccountModal}
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8 bg-muted/50 hover:bg-muted/70 [&>*]:text-white [&>*]:font-normal [&>*]:!important flex items-center justify-center"
+                        >
+                          <Wallet className="w-4 h-4 text-white" />
+                        </Button>
+                      </div>
                     </div>
                   );
                 })()}
