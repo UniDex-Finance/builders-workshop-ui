@@ -456,7 +456,7 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger className="text-sm text-muted-foreground">
-                            Emilia's Balance
+                            Trading Account
                           </TooltipTrigger>
                           <TooltipContent>
                             <p className="max-w-[300px]">
