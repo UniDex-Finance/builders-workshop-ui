@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/tooltip";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { AddressLookupCard } from "./AddressLookupCard";
+import { createPortal } from 'react-dom';
 
 interface BalanceItemProps {
   title: string;
@@ -216,8 +217,16 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
   const { balances, isLoading } = useBalances("arbitrum");
   const { positions, loading: positionsLoading } = usePositions();
   const { toast } = useToast();
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const [isLookupExpanded, setIsLookupExpanded] = useState(false);
   const [isAgentLookupExpanded, setIsAgentLookupExpanded] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleSetupSmartAccount = async () => {
     try {
@@ -304,6 +313,199 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const modal = (
+    <>
+      {isMobile && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+      <Card className={`
+        z-50 
+        p-4 
+        space-y-4 
+        bg-[var(--deposit-card-background)]
+        text-[var(--foreground)]
+        border-zinc-800
+        
+        /* Mobile styles */
+        fixed
+        inset-x-0
+        bottom-0
+        rounded-b-none
+        w-full
+        animate-slide-up-mobile
+        
+        /* Desktop styles */
+        md:absolute
+        md:animate-none
+        md:bottom-auto
+        md:right-0
+        md:left-auto
+        md:w-[400px]
+        md:rounded-lg
+        md:mt-2
+      `}>
+        <div className="space-y-3">
+          <AddressDisplay
+            label="Your Wallet Address"
+            address={eoaAddress}
+            explorerUrl={eoaAddress ? getExplorerUrl(eoaAddress) : undefined}
+          />
+          {!isConnected ? (
+            <>
+              <div className="my-4 border-t border-zinc-800" />
+              <div className="space-y-4">
+                <p className="text-sm text-zinc-400">
+                  Connect your wallet to start trading.
+                </p>
+                <ConnectButton.Custom>
+                  {({ openConnectModal }) => (
+                    <Button
+                      className="w-full h-[52px] bg-[var(--main-accent)] hover:bg-[var(--main-accent)]/80 text-white"
+                      onClick={openConnectModal}
+                    >
+                      Connect Wallet
+                    </Button>
+                  )}
+                </ConnectButton.Custom>
+              </div>
+            </>
+          ) : !smartAccount?.address ? (
+            <>
+              <div className="my-4 border-t border-zinc-800" />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <p className="text-sm text-zinc-400">
+                    To start trading, you need to setup a trading account.
+                    <br /><br />
+                    Every trading account address is unique to the wallet address used to setup the account.
+                  </p>
+                  {predictedAddress && (
+                    <>
+                      <div 
+                        className="p-3 rounded-md bg-zinc-900/50 border border-zinc-800 cursor-pointer hover:bg-zinc-900/70 transition-colors"
+                        onClick={() => setIsLookupExpanded(!isLookupExpanded)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-zinc-400">Address no longer the same?</p>
+                          <ChevronDown 
+                            className={`w-4 h-4 text-zinc-400 transition-transform ${isLookupExpanded ? 'transform rotate-180' : ''}`}
+                          />
+                        </div>
+                      </div>
+                      <AddressLookupCard 
+                        isExpanded={isLookupExpanded}
+                        onClose={() => setIsLookupExpanded(false)}
+                      />
+                    </>
+                  )}
+                </div>
+                <Button
+                  className="w-full h-[52px] bg-[var(--main-accent)] hover:bg-[var(--main-accent)]/80 text-white"
+                  onClick={handleSetupSmartAccount}
+                  disabled={isSigningSessionKey}
+                >
+                  {isSigningSessionKey ? (
+                    <div className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white rounded-full animate-spin border-t-transparent" />
+                      Setting up...
+                    </div>
+                  ) : (
+                    "Establish Connection"
+                  )}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="relative">
+                <AddressDisplay
+                  label="Trading Address"
+                  address={smartAccount?.address}
+                  explorerUrl={smartAccount?.address ? getExplorerUrl(smartAccount.address) : undefined}
+                  onRevoke={handleRevoke}
+                  showRevoke={true}
+                  onLookupClick={() => setIsAgentLookupExpanded(!isAgentLookupExpanded)}
+                  showLookup={true}
+                  isLookupExpanded={isAgentLookupExpanded}
+                />
+              </div>
+              {isAgentLookupExpanded && (
+                <div className="mt-2">
+                  <AddressLookupCard 
+                    isExpanded={isAgentLookupExpanded}
+                    onClose={() => setIsAgentLookupExpanded(false)}
+                  />
+                </div>
+              )}
+              <div className="h-px bg-border" />
+              <div className="flex items-end justify-between">
+                <div className="space-y-1">
+                  <div className="text-sm text-muted-foreground">Net Worth</div>
+                  <div className="text-2xl font-semibold">{calculateTotalEquity()}</div>
+                </div>
+                <div className="space-y-1 text-right">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger className="text-sm text-muted-foreground">
+                        Trading Account
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-[300px]">
+                          The trading account balance is the sum of the 1ct wallet and any margin account balances. This is the amount that you have which can be used to open trades.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <div className="text-lg">
+                    ${(parseFloat(balances?.formattedMusdBalance || "0") + parseFloat(balances?.formattedUsdcBalance || "0")).toFixed(2)}
+                  </div>
+                </div>
+              </div>
+              <div className="h-px bg-border" />
+              <div className="space-y-2">
+                <div className="text-sm text-muted-foreground">Balance Breakdown</div>
+                <BalanceItem
+                  title="1CT Wallet Balance"
+                  balance={balances ? balances.formattedUsdcBalance : "0.00"}
+                  isLoading={isLoading}
+                />
+                <BalanceItem
+                  title="UniDex Margin Balance"
+                  balance={balances ? balances.formattedMusdBalance : "0.00"}
+                  isLoading={isLoading}
+                />
+                <BalanceItem
+                  title="Unrealized PnL"
+                  balance={totalUnrealizedPnl?.toFixed(2) || "0.00"}
+                  isLoading={positionsLoading}
+                  suffix="USD"
+                  className={totalUnrealizedPnl && totalUnrealizedPnl >= 0 ? "text-long" : "text-short"}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  className="flex-1 bg-[var(--color-long-short-button)] hover:bg-[var(--color-long-short-button-hover)] text-[var(--foreground)]"
+                  onClick={handleDepositClick}
+                >
+                  Deposit
+                </Button>
+                <Button 
+                  className="flex-1 bg-[var(--color-long-short-button)] hover:bg-[var(--color-long-short-button-hover)] text-[var(--foreground)]"
+                  onClick={handleWithdrawClick}
+                >
+                  Withdraw
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      </Card>
+    </>
+  );
+
   return (
     <div className="relative" ref={summaryRef}>
       <Button
@@ -314,207 +516,7 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
         {buttonText}
       </Button>
 
-      {isOpen && (
-        <>
-          <div 
-            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden" 
-            onClick={() => setIsOpen(false)}
-          />
-          
-          <Card className={`
-            z-50 
-            p-4 
-            space-y-4 
-            bg-[var(--deposit-card-background)]
-            text-[var(--foreground)]
-            border-zinc-800
-            
-            /* Mobile styles */
-            fixed
-            inset-x-0
-            bottom-0
-            rounded-b-none
-            w-full
-            animate-slide-up-mobile
-            
-            /* Desktop styles */
-            md:absolute
-            md:animate-none
-            md:bottom-auto
-            md:right-0
-            md:left-auto
-            md:w-[400px]
-            md:rounded-lg
-            md:mt-2
-          `}>
-            {/* Address Section */}
-            <div className="space-y-3">
-              <AddressDisplay
-                label="Your Wallet Address"
-                address={eoaAddress}
-                explorerUrl={eoaAddress ? getExplorerUrl(eoaAddress) : undefined}
-              />
-              
-              {!isConnected ? (
-                <>
-                  <div className="my-4 border-t border-zinc-800" />
-                  <div className="space-y-4">
-                    <p className="text-sm text-zinc-400">
-                      Connect your wallet to start trading.
-                    </p>
-                    <ConnectButton.Custom>
-                      {({ openConnectModal }) => (
-                        <Button
-                          className="w-full h-[52px] bg-[var(--main-accent)] hover:bg-[var(--main-accent)]/80 text-white"
-                          onClick={openConnectModal}
-                        >
-                          Connect Wallet
-                        </Button>
-                      )}
-                    </ConnectButton.Custom>
-                  </div>
-                </>
-              ) : !smartAccount?.address ? (
-                <>
-                  <div className="my-4 border-t border-zinc-800" />
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <p className="text-sm text-zinc-400">
-                        To start trading, you need to setup a trading account.
-                        <br /><br />
-                        Every trading account address is unique to the wallet address used to setup the account.
-                      </p>
-                      {predictedAddress && (
-                        <>
-                          <div 
-                            className="p-3 rounded-md bg-zinc-900/50 border border-zinc-800 cursor-pointer hover:bg-zinc-900/70 transition-colors"
-                            onClick={() => setIsLookupExpanded(!isLookupExpanded)}
-                          >
-                            <div className="flex items-center justify-between">
-                              <p className="text-sm text-zinc-400">Address no longer the same?</p>
-                              <ChevronDown 
-                                className={`w-4 h-4 text-zinc-400 transition-transform ${
-                                  isLookupExpanded ? 'transform rotate-180' : ''
-                                }`}
-                              />
-                            </div>
-                          </div>
-                          <AddressLookupCard 
-                            isExpanded={isLookupExpanded}
-                            onClose={() => setIsLookupExpanded(false)}
-                          />
-                        </>
-                      )}
-                    </div>
-                    <Button
-                      className="w-full h-[52px] bg-[var(--main-accent)] hover:bg-[var(--main-accent)]/80 text-white"
-                      onClick={handleSetupSmartAccount}
-                      disabled={isSigningSessionKey}
-                    >
-                      {isSigningSessionKey ? (
-                        <div className="flex items-center gap-2">
-                          <span className="w-4 h-4 border-2 border-white rounded-full animate-spin border-t-transparent" />
-                          Setting up...
-                        </div>
-                      ) : (
-                        "Establish Connection"
-                      )}
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="relative">
-                    <AddressDisplay
-                      label="Trading Address"
-                      address={smartAccount?.address}
-                      explorerUrl={smartAccount?.address ? getExplorerUrl(smartAccount.address) : undefined}
-                      onRevoke={handleRevoke}
-                      showRevoke={true}
-                      onLookupClick={() => setIsAgentLookupExpanded(!isAgentLookupExpanded)}
-                      showLookup={true}
-                      isLookupExpanded={isAgentLookupExpanded}
-                    />
-                  </div>
-                  {isAgentLookupExpanded && (
-                    <div className="mt-2">
-                      <AddressLookupCard 
-                        isExpanded={isAgentLookupExpanded}
-                        onClose={() => setIsAgentLookupExpanded(false)}
-                      />
-                    </div>
-                  )}
-                  <div className="h-px bg-border" />
-
-                  {/* Net Worth and Trading Account Section */}
-                  <div className="flex items-end justify-between">
-                    <div className="space-y-1">
-                      <div className="text-sm text-muted-foreground">Net Worth</div>
-                      <div className="text-2xl font-semibold">{calculateTotalEquity()}</div>
-                    </div>
-                    <div className="space-y-1 text-right">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger className="text-sm text-muted-foreground">
-                            Trading Account
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="max-w-[300px]">
-                              The trading account balance is the sum of the 1ct wallet and any margin account balances. This is the amount that you have which can be used to open trades.
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      <div className="text-lg">
-                        ${(parseFloat(balances?.formattedMusdBalance || "0") + parseFloat(balances?.formattedUsdcBalance || "0")).toFixed(2)}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="h-px bg-border" />
-
-                  {/* Detailed Breakdown */}
-                  <div className="space-y-2">
-                    <div className="text-sm text-muted-foreground">Balance Breakdown</div>
-                    <BalanceItem
-                      title="1CT Wallet Balance"
-                      balance={balances ? balances.formattedUsdcBalance : "0.00"}
-                      isLoading={isLoading}
-                    />
-                    <BalanceItem
-                      title="UniDex Margin Balance"
-                      balance={balances ? balances.formattedMusdBalance : "0.00"}
-                      isLoading={isLoading}
-                    />
-                    <BalanceItem
-                      title="Unrealized PnL"
-                      balance={totalUnrealizedPnl?.toFixed(2) || "0.00"}
-                      isLoading={positionsLoading}
-                      suffix="USD"
-                      className={totalUnrealizedPnl && totalUnrealizedPnl >= 0 ? "text-long" : "text-short"}
-                    />
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button 
-                      className="flex-1 bg-[var(--color-long-short-button)] hover:bg-[var(--color-long-short-button-hover)] text-[var(--foreground)]"
-                      onClick={handleDepositClick}
-                    >
-                      Deposit
-                    </Button>
-                    <Button 
-                      className="flex-1 bg-[var(--color-long-short-button)] hover:bg-[var(--color-long-short-button-hover)] text-[var(--foreground)]"
-                      onClick={handleWithdrawClick}
-                    >
-                      Withdraw
-                    </Button>
-                  </div>
-                </>
-              )}
-            </div>
-          </Card>
-        </>
-      )}
+      {isOpen && (isMobile ? createPortal(modal, document.body) : modal)}
 
       {/* Render modals outside the account popup */}
       {showDeposit && (
