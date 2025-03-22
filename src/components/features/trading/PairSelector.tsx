@@ -86,6 +86,7 @@ const MarketRow: React.FC<MarketRowProps> = ({ market, isFavorite, onToggleFavor
             />
           </button>
           <div className="flex items-center gap-1">
+            <TokenIcon pair={market.pair} size={16} square={true} className="mr-0.5" />
             <span>{market.pair}</span>
             <span className="px-1 py-1 text-[11px] leading-none font-medium rounded bg-[var(--foreground-accent)] text-[var(--text-accent)]">
               100x
@@ -144,6 +145,7 @@ const MarketRow: React.FC<MarketRowProps> = ({ market, isFavorite, onToggleFavor
             />
           </button>
           <div className="flex items-center gap-1">
+            <TokenIcon pair={market.pair} size={16} square={true} className="mr-0.5" />
             <span>{market.pair}</span>
             <span className="px-1.5 py-0.5 text-[11px] leading-none font-medium rounded bg-[var(--foreground-accent)] text-[var(--text-accent)]">
               100x
@@ -301,7 +303,7 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
           >
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center">
-                <TokenIcon pair={selectedPair} size={28} className="mr-3" />
+                <TokenIcon pair={selectedPair} size={28} className="mr-3" square={true} />
                 <div className="flex flex-col items-start">
                   <div className="font-semibold text-sm">{selectedPair}</div>
                   <div className="text-xs text-muted-foreground truncate max-w-[200px]">
