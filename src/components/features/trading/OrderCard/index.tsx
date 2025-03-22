@@ -81,6 +81,7 @@ export function OrderCard({
   const [leverageDialogOpen, setLeverageDialogOpen] = useState(false);
   const [tempLeverageValue, setTempLeverageValue] = useState(leverage);
   const [detailsExpanded, setDetailsExpanded] = useState(false);
+  const [isLeverageInputEditing, setIsLeverageInputEditing] = useState(false);
 
   const {
     formState,
@@ -488,26 +489,30 @@ export function OrderCard({
                   <div className="flex items-center justify-between mt-4 mb-2">
                     <span className="text-sm font-medium">Leverage:</span>
                     <div className="flex items-center bg-muted/70 rounded-md px-2 w-24">
-                      <input
-                        type="number"
-                        value={tempLeverageValue}
-                        onChange={(e) => {
-                          const value = Math.min(Math.max(1, parseInt(e.target.value) || 1), 100);
-                          setTempLeverageValue(value.toString());
-                        }}
-                        min={1}
-                        max={100}
-                        inputMode="numeric"
-                        readOnly={true}
-                        onClick={(e) => {
-                          (e.target as HTMLInputElement).readOnly = false;
-                        }}
-                        onBlur={(e) => {
-                          (e.target as HTMLInputElement).readOnly = true;
-                        }}
-                        className="w-full text-right bg-transparent border-0 focus:outline-none py-1 text-sm"
-                      />
-                      <span className="ml-1 text-sm">x</span>
+                      <div 
+                        className="w-full text-right py-1 text-sm flex items-center justify-end"
+                        onClick={() => setIsLeverageInputEditing(true)}
+                      >
+                        {isLeverageInputEditing ? (
+                          <input
+                            type="number"
+                            value={tempLeverageValue}
+                            onChange={(e) => {
+                              const value = Math.min(Math.max(1, parseInt(e.target.value) || 1), 100);
+                              setTempLeverageValue(value.toString());
+                            }}
+                            min={1}
+                            max={100}
+                            inputMode="numeric"
+                            autoFocus
+                            onBlur={() => setIsLeverageInputEditing(false)}
+                            className="w-full text-right bg-transparent border-0 focus:outline-none"
+                          />
+                        ) : (
+                          <span>{tempLeverageValue}</span>
+                        )}
+                        <span className="ml-1 text-sm">x</span>
+                      </div>
                     </div>
                   </div>
                   
