@@ -34,7 +34,7 @@ export const useLeaderboardData = () => {
         let afterCursor: string | null = null;
 
         // Competition start: March 24, 2025 (00:00 UTC)
-        const competitionStart = Math.floor(new Date(Date.UTC(2025, 2, 24, 0, 0, 0, 0)).getTime() / 1000);
+        const competitionStart = Math.floor(new Date(Date.UTC(2025, 1, 24, 0, 0, 0, 0)).getTime() / 1000);
         
         // Competition end: April 20, 2025 (23:59 UTC)
         const competitionEnd = Math.floor(new Date(Date.UTC(2025, 3, 20, 23, 59, 59, 999)).getTime() / 1000);

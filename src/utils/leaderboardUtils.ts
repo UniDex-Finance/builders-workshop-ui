@@ -15,6 +15,8 @@ export interface ProcessedTraderData {
   pnlPrize?: number
   volumeRank?: number
   volumePrize?: number
+  profitableTrades: number
+  profitableTradesAbove10Pct: number
 }
 
 export interface LeaderboardStats {
@@ -129,19 +131,7 @@ const logTradesByDurationThresholds = (trades: TradeItem[]): void => {
 
 // Helper to determine if a trade is valid and why it might be invalid
 export const getTradeValidityReason = (trade: TradeItem): { isValid: boolean; reason?: string } => {
-  const openTime = Number(trade.createdAt);
-  const closeTime = Number(trade.closedAt);
-  const durationInMinutes = (closeTime - openTime) / 60;
-  const maxCollateral = Number(trade.maxCollateral);
-  
-  if (durationInMinutes < 5) {
-    return { isValid: false, reason: "Trade duration under 5 minutes" };
-  }
-  
-  if (maxCollateral < 10) {
-    return { isValid: false, reason: "Collateral under $10" };
-  }
-  
+  // All trades are now valid - no filtering based on duration or collateral
   return { isValid: true };
 };
 
@@ -172,21 +162,15 @@ const filterTrades = (trades: TradeItem[]): TradeItem[] => {
 }
 
 export const calculateLeaderboardStats = (rawData: TradeItem[]): LeaderboardStats => {
-  // Log trade duration statistics before filtering
-  logTradesByDurationThresholds(rawData);
-  
-  // Apply filters
-  const filteredData = filterTrades(rawData);
-
   // Calculate total volume and total PnL across all trades
-  const totalVolume = filteredData.reduce((sum, trade) => sum + Number(trade.size), 0);
-  const totalPnl = filteredData.reduce((sum, trade) => sum + Number(trade.pnl), 0);
+  const totalVolume = rawData.reduce((sum, trade) => sum + Number(trade.size), 0);
+  const totalPnl = rawData.reduce((sum, trade) => sum + Number(trade.pnl), 0);
   
   // Get unique traders count
-  const uniqueTraders = new Set(filteredData.map(trade => trade.user)).size;
+  const uniqueTraders = new Set(rawData.map(trade => trade.user)).size;
   
-  // Total trades is simply the length of the filtered data array
-  const totalTrades = filteredData.length;
+  // Total trades is simply the length of the data array
+  const totalTrades = rawData.length;
   
   return {
     totalVolume: Number(totalVolume.toFixed(2)),
@@ -199,14 +183,8 @@ export const calculateLeaderboardStats = (rawData: TradeItem[]): LeaderboardStat
 export const processLeaderboardData = (rawData: TradeItem[]): ProcessedTraderData[] => {
   console.log('Raw data received:', rawData);
   
-  // Log trade duration statistics before filtering
-  logTradesByDurationThresholds(rawData);
-
-  // Apply filters
-  const filteredData = filterTrades(rawData);
-  
   // Group trades by user and track individual trade performances
-  const traderStats = filteredData.reduce((acc, trade) => {
+  const traderStats = rawData.reduce((acc, trade) => {
     const user = trade.user
     if (!acc[user]) {
       acc[user] = {
@@ -218,7 +196,9 @@ export const processLeaderboardData = (rawData: TradeItem[]): ProcessedTraderDat
         maxCollateral: 0,
         tradeCount: 0,
         collateralSum: 0,
-        validTrades: [],
+        profitableTrades: 0,
+        tradesAbove10PctReturn: 0,
+        allTrades: [],
       }
     }
 
@@ -226,19 +206,24 @@ export const processLeaderboardData = (rawData: TradeItem[]): ProcessedTraderDat
     const pnl = Number(trade.pnl)
     const size = Number(trade.size)
     const maxCollateral = Number(trade.maxCollateral)
+    const returnPercentage = (pnl / maxCollateral) * 100
 
-    console.log(`Processing trade for ${user}:`, {
-      pnl,
-      size,
-      maxCollateral
-    });
+    // Track individual trade metrics
+    if (pnl > 0) {
+      acc[user].profitableTrades += 1
+      
+      // Check if the trade has >10% return
+      if (returnPercentage >= 10) {
+        acc[user].tradesAbove10PctReturn += 1
+      }
+    }
 
-    // Track all trades for score calculation
-    acc[user].validTrades.push({
+    // Track all trades
+    acc[user].allTrades.push({
       pnl,
       maxCollateral,
       size,
-      returnPercentage: (pnl / maxCollateral) * 100
+      returnPercentage
     })
 
     // Accumulate stats
@@ -260,7 +245,9 @@ export const processLeaderboardData = (rawData: TradeItem[]): ProcessedTraderDat
     maxCollateral: number
     tradeCount: number
     collateralSum: number
-    validTrades: Array<{
+    profitableTrades: number
+    tradesAbove10PctReturn: number
+    allTrades: Array<{
       pnl: number
       maxCollateral: number
       size: number
@@ -268,48 +255,49 @@ export const processLeaderboardData = (rawData: TradeItem[]): ProcessedTraderDat
     }>
   }>)
 
-
   // Process all traders
   const allTraders = Object.values(traderStats)
     .map(trader => {
       const avgCollateral = trader.collateralSum / trader.tradeCount
       
-      // Calculate score as average return percentage across all trades
-      const score = trader.validTrades.reduce((sum, trade) => 
+      // Calculate average return percentage across all trades (for display only)
+      const score = trader.allTrades.reduce((sum, trade) => 
         sum + trade.returnPercentage, 0
-      ) / trader.validTrades.length
+      ) / trader.allTrades.length
 
-      // Check if trader qualifies for PNL competition (at least 3 trades with average return >= 10%)
-      const isPnlQualifying = trader.validTrades.length >= 3 && score >= 10 && trader.pnl > 0;
+      // Check if trader qualifies for PNL competition (at least 3 trades with 10%+ gain)
+      const isPnlQualifying = trader.trades >= 3 && trader.tradesAbove10PctReturn >= 3;
       
       // Check if trader qualifies for volume competition (at least 3 trades)
-      const isVolumeQualifying = trader.validTrades.length >= 3;
+      const isVolumeQualifying = trader.trades >= 3;
 
       return {
         trader: trader.trader,
         pnl: Number(trader.pnl.toFixed(2)),
         volume: Number(trader.volume.toFixed(2)),
-        trades: trader.validTrades.length,
+        trades: trader.trades,
         collateral: Number(trader.maxCollateral.toFixed(2)),
         avgCollateral: Number(avgCollateral.toFixed(2)),
         score: Number(score.toFixed(2)),
         isQualifying: isPnlQualifying || isVolumeQualifying,
         isPnlQualifying,
-        isVolumeQualifying
+        isVolumeQualifying,
+        profitableTrades: trader.profitableTrades,
+        profitableTradesAbove10Pct: trader.tradesAbove10PctReturn
       }
     });
 
-  // Sort traders for PNL competition
+  // Sort traders for PNL competition - only include those who qualify
   const pnlQualifyingTraders = allTraders
     .filter(trader => trader.isPnlQualifying)
     .sort((a, b) => b.pnl - a.pnl);
 
-  // Sort traders for volume competition
+  // Sort traders for volume competition - only include those who qualify
   const volumeQualifyingTraders = allTraders
     .filter(trader => trader.isVolumeQualifying)
     .sort((a, b) => b.volume - a.volume);
 
-  // Assign PNL ranks
+  // Assign PNL ranks and prizes
   const pnlRankMap = new Map();
   pnlQualifyingTraders.forEach((trader, index) => {
     pnlRankMap.set(trader.trader, {
@@ -318,7 +306,7 @@ export const processLeaderboardData = (rawData: TradeItem[]): ProcessedTraderDat
     });
   });
 
-  // Assign volume ranks
+  // Assign volume ranks and prizes
   const volumeRankMap = new Map();
   volumeQualifyingTraders.forEach((trader, index) => {
     volumeRankMap.set(trader.trader, {
@@ -327,9 +315,9 @@ export const processLeaderboardData = (rawData: TradeItem[]): ProcessedTraderDat
     });
   });
 
-  // Sort all traders by score by default (original sorting)
+  // Return all traders with their ranks and prizes
   return allTraders
-    .sort((a, b) => b.score - a.score)
+    .sort((a, b) => b.pnl - a.pnl) // Default sort by PnL
     .map(trader => {
       const pnlRankInfo = pnlRankMap.get(trader.trader) || { rank: 0, prize: undefined };
       const volumeRankInfo = volumeRankMap.get(trader.trader) || { rank: 0, prize: undefined };

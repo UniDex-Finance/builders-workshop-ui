@@ -4,8 +4,8 @@ import { Header } from "../../shared/Header"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../ui/table"
 import { Badge } from "../../ui/badge"
 import { ChevronDown, ChevronUp, Info, Trophy, Loader2, BarChart4, Users, LineChart, DollarSign, X } from "lucide-react"
-import { useLeaderboardData } from '../../../hooks/useLeaderboardData'
-import { processLeaderboardData, calculateLeaderboardStats, formatDollarAmount, getTradeValidityReason } from '../../../utils/leaderboardUtils'
+import { TradeItem, useLeaderboardData } from '../../../hooks/useLeaderboardData'
+import { processLeaderboardData, calculateLeaderboardStats, formatDollarAmount, getTradeValidityReason, ProcessedTraderData } from '../../../utils/leaderboardUtils'
 import { Button } from "../../ui/button"
 import { useState, useEffect } from "react"
 import { useSmartAccount } from "@/hooks/use-smart-account"
@@ -17,6 +17,22 @@ import {
   TooltipTrigger,
 } from "../../ui/tooltip"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from "../../ui/dialog"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../../ui/card"
 
 // Countdown timer component
 function CountdownTimer() {
@@ -81,10 +97,216 @@ function CountdownTimer() {
   );
 }
 
+// Trader Details Component
+function TraderDetails({ 
+  trader, 
+  onClose, 
+  rawData 
+}: { 
+  trader: ProcessedTraderData, 
+  onClose: () => void,
+  rawData: TradeItem[]
+}) {
+  // Filter trades for this specific trader
+  const traderTrades = rawData
+    .filter(trade => trade.user === trader.trader)
+    .map(trade => ({
+      id: trade.id,
+      pnl: Number(trade.pnl),
+      size: Number(trade.size),
+      collateral: Number(trade.maxCollateral),
+      returnPercentage: (Number(trade.pnl) / Number(trade.maxCollateral)) * 100,
+      isLong: trade.isLong,
+      createdAt: new Date(Number(trade.createdAt) * 1000),
+      closedAt: new Date(Number(trade.closedAt) * 1000),
+      durationMinutes: (Number(trade.closedAt) - Number(trade.createdAt)) / 60,
+      has10PctReturn: (Number(trade.pnl) / Number(trade.maxCollateral)) * 100 >= 10,
+      pair: trade.tokenAddress,
+      leverage: (Number(trade.size) / Number(trade.maxCollateral)).toFixed(1)
+    }))
+    .sort((a, b) => b.closedAt.getTime() - a.closedAt.getTime()); // Sort by most recent first
+
+  // Calculate summary statistics
+  const totalTrades = traderTrades.length;
+  const profitableTrades = traderTrades.filter(t => t.pnl > 0).length;
+  const tradesAbove10Pct = traderTrades.filter(t => t.returnPercentage >= 10).length;
+  const winRate = totalTrades > 0 ? (profitableTrades / totalTrades) * 100 : 0;
+  const avgTradeReturn = totalTrades > 0 
+    ? traderTrades.reduce((sum, t) => sum + t.returnPercentage, 0) / totalTrades 
+    : 0;
+  const avgTradeDuration = totalTrades > 0
+    ? traderTrades.reduce((sum, t) => sum + t.durationMinutes, 0) / totalTrades
+    : 0;
+
+  // Format duration for display
+  const formatDuration = (minutes: number): string => {
+    if (minutes < 60) {
+      return `${Math.round(minutes)} min`;
+    } else if (minutes < 24 * 60) {
+      const hours = Math.floor(minutes / 60);
+      const mins = Math.round(minutes % 60);
+      return `${hours}H${mins > 0 ? ` ${mins}M` : ''}`;
+    } else {
+      const days = Math.floor(minutes / (24 * 60));
+      const hours = Math.round((minutes % (24 * 60)) / 60);
+      return `${days}D${hours > 0 ? ` ${hours}H` : ''}`;
+    }
+  };
+
+  // Format pair name
+  const formatPairName = (tokenAddress: string): string => {
+    // The tokenAddress directly maps to the key in TRADING_PAIRS
+    const pair = TRADING_PAIRS[tokenAddress];
+    
+    if (pair) {
+      return pair;
+    }
+    
+    // Fallback: return shortened address if no matching pair
+    return tokenAddress.substring(0, 6) + '...' + tokenAddress.substring(tokenAddress.length - 4);
+  };
+
+  return (
+    <DialogContent className="max-w-[95vw] md:max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
+      <DialogHeader>
+        <DialogTitle className="text-xl">Trader Details</DialogTitle>
+        <p className="text-sm text-muted-foreground break-all">{trader.trader}</p>
+      </DialogHeader>
+      
+      {/* Stats Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-4">
+        <Card className="min-h-[100px]">
+          <CardHeader className="py-2 pb-1">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total PnL</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0 pb-4">
+            <p className={`text-2xl font-bold leading-none mt-4 ${trader.pnl >= 0 ? "text-[var(--color-long)]" : "text-[var(--color-short)]"}`}>
+              {formatDollarAmount(trader.pnl)}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="min-h-[100px]">
+          <CardHeader className="py-2 pb-1">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Volume</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0 pb-4">
+            <p className="text-2xl font-bold leading-none mt-4">
+              {trader.volume >= 1000000 
+                ? `$${(trader.volume / 1000000).toFixed(1)}M` 
+                : formatDollarAmount(trader.volume)}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="min-h-[100px]">
+          <CardHeader className="py-2 pb-1">
+            <CardTitle className="text-sm font-medium text-muted-foreground">10%+ Trades</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0 pb-4">
+            <p className="text-2xl font-bold leading-none mt-4">
+              {tradesAbove10Pct} <span className="text-sm text-muted-foreground">of {totalTrades}</span>
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="min-h-[100px]">
+          <CardHeader className="py-2 pb-1">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Win Rate</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0 pb-4">
+            <p className="text-2xl font-bold leading-none mt-4">
+              {winRate.toFixed(1)}%
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="min-h-[100px]">
+          <CardHeader className="py-2 pb-1">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Avg. Trade Return</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0 pb-4">
+            <p className="text-2xl font-bold leading-none mt-4">
+              {avgTradeReturn.toFixed(2)}%
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="min-h-[100px]">
+          <CardHeader className="py-2 pb-1">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Avg. Trade Duration</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0 pb-4">
+            <p className="text-2xl font-bold leading-none mt-4">
+              {formatDuration(avgTradeDuration)}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Trades Table */}
+      <div className="mt-6">
+        <h3 className="font-semibold mb-2">All Trades ({totalTrades})</h3>
+        <div className="border border-[var(--deposit-card-border)] rounded-lg overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Position</TableHead>
+                <TableHead className="text-right hidden md:table-cell">Size</TableHead>
+                <TableHead className="text-right">PnL</TableHead>
+                <TableHead className="text-right hidden md:table-cell">Return</TableHead>
+                <TableHead className="text-right hidden md:table-cell">Duration</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {traderTrades.map((trade) => (
+                <TableRow key={trade.id} className={trade.has10PctReturn ? "bg-[var(--deposit-card-background)]" : ""}>
+                  <TableCell>
+                    {trade.closedAt.toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <div className={trade.isLong ? "text-[var(--color-long)]" : "text-[var(--color-short)]"}>
+                      <div>{formatPairName(trade.pair)}</div>
+                      <div className="text-xs opacity-80">
+                        {trade.leverage}x {trade.isLong ? "LONG" : "SHORT"}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right hidden md:table-cell">
+                    {formatDollarAmount(trade.size)}
+                  </TableCell>
+                  <TableCell className={`text-right ${trade.pnl >= 0 ? "text-[var(--color-long)]" : "text-[var(--color-short)]"}`}>
+                    {formatDollarAmount(trade.pnl)}
+                    <div className="text-xs md:hidden opacity-80">
+                      ({trade.returnPercentage.toFixed(1)}%)
+                    </div>
+                  </TableCell>
+                  <TableCell className={`text-right hidden md:table-cell ${trade.returnPercentage >= 0 ? "text-[var(--color-long)]" : "text-[var(--color-short)]"}`}>
+                    {trade.returnPercentage.toFixed(2)}%
+                  </TableCell>
+                  <TableCell className="text-right hidden md:table-cell">
+                    {formatDuration(trade.durationMinutes)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+      
+      <DialogFooter className="mt-6">
+        <Button onClick={onClose}>Close</Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+}
+
 export function LeaderboardDashboard() {
   const { data: rawData, loading, error } = useLeaderboardData()
   const { smartAccount } = useSmartAccount()
   const [activeCompetition, setActiveCompetition] = useState<'pnl' | 'volume'>('pnl')
+  const [selectedTrader, setSelectedTrader] = useState<ProcessedTraderData | null>(null)
   
   // Process data only once for both competitions
   const processedData = !loading && rawData.length > 0 
@@ -113,6 +335,11 @@ export function LeaderboardDashboard() {
     }
   });
   
+  // Handler for clicking on a trader row
+  const handleTraderClick = (trader: ProcessedTraderData) => {
+    setSelectedTrader(trader);
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header />
@@ -315,9 +542,9 @@ export function LeaderboardDashboard() {
                       <TableRow>
                         <TableHead>Rank</TableHead>
                         <TableHead>Trader</TableHead>
-                        <TableHead className="text-right">PnL</TableHead>
                         <TableHead className="text-right">Score</TableHead>
-                        <TableHead className="text-right">Trades</TableHead>
+                        <TableHead className="text-right hidden md:table-cell">Trades</TableHead>
+                        <TableHead className="text-right hidden md:table-cell">10%+ Trades</TableHead>
                         <TableHead className="text-right">Prize</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -337,9 +564,13 @@ export function LeaderboardDashboard() {
                         </TableRow>
                       ) : (
                         sortedData.map((trader, index) => (
-                          <TableRow key={trader.trader} className={`${
-                            trader.pnlRank && trader.pnlRank <= 3 ? "bg-[var(--deposit-card-background)]" : ""
-                          }`}>
+                          <TableRow 
+                            key={trader.trader} 
+                            className={`${
+                              trader.pnlRank && trader.pnlRank <= 3 ? "bg-[var(--deposit-card-background)]" : ""
+                            } cursor-pointer hover:bg-[var(--deposit-card-background)]/50`}
+                            onClick={() => handleTraderClick(trader)}
+                          >
                             <TableCell>
                               {trader.pnlRank ? (
                                 <div className="flex items-center">
@@ -349,6 +580,10 @@ export function LeaderboardDashboard() {
                                       trader.pnlRank === 2 ? "text-gray-400" :
                                       "text-amber-800"
                                     }`} />
+                                  ) : trader.pnlRank <= 8 ? (
+                                    <span className="mr-2">
+                                      ⭐
+                                    </span>
                                   ) : null}
                                   {trader.pnlRank}
                                 </div>
@@ -366,13 +601,25 @@ export function LeaderboardDashboard() {
                             <TableCell className={`text-right ${
                               trader.pnl >= 0 ? "text-[var(--color-long)]" : "text-[var(--color-short)]"
                             }`}>
-                              {formatDollarAmount(trader.pnl)}
+                              {trader.pnl.toFixed(2)}
                             </TableCell>
-                            <TableCell className="text-right">
-                              {trader.score}%
-                            </TableCell>
-                            <TableCell className="text-right">
+                            <TableCell className="text-right hidden md:table-cell">
                               {trader.trades}
+                            </TableCell>
+                            <TableCell className="text-right hidden md:table-cell">
+                              {trader.profitableTradesAbove10Pct}
+                              {!trader.isQualifying && trader.trades >= 3 && trader.profitableTradesAbove10Pct < 3 && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <Info className="ml-1 h-3 w-3 inline text-muted-foreground" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Needs at least 3 trades with 10%+ gain to qualify</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
                             </TableCell>
                             <TableCell className="text-right">
                               {trader.pnlPrize ? formatDollarAmount(trader.pnlPrize) : "-"}
@@ -393,7 +640,7 @@ export function LeaderboardDashboard() {
                         <TableHead>Rank</TableHead>
                         <TableHead>Trader</TableHead>
                         <TableHead className="text-right">Volume</TableHead>
-                        <TableHead className="text-right">Trades</TableHead>
+                        <TableHead className="text-right hidden md:table-cell">Trades</TableHead>
                         <TableHead className="text-right">Prize</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -413,9 +660,13 @@ export function LeaderboardDashboard() {
                         </TableRow>
                       ) : (
                         sortedData.map((trader, index) => (
-                          <TableRow key={trader.trader} className={`${
-                            trader.volumeRank && trader.volumeRank <= 2 ? "bg-[var(--deposit-card-background)]" : ""
-                          }`}>
+                          <TableRow 
+                            key={trader.trader} 
+                            className={`${
+                              trader.volumeRank && trader.volumeRank <= 2 ? "bg-[var(--deposit-card-background)]" : ""
+                            } cursor-pointer hover:bg-[var(--deposit-card-background)]/50`}
+                            onClick={() => handleTraderClick(trader)}
+                          >
                             <TableCell>
                               {trader.volumeRank ? (
                                 <div className="flex items-center">
@@ -440,7 +691,7 @@ export function LeaderboardDashboard() {
                             <TableCell className="text-right">
                               {formatDollarAmount(trader.volume)}
                             </TableCell>
-                            <TableCell className="text-right">
+                            <TableCell className="text-right hidden md:table-cell">
                               {trader.trades}
                             </TableCell>
                             <TableCell className="text-right">
@@ -455,6 +706,17 @@ export function LeaderboardDashboard() {
               </TabsContent>
             </Tabs>
           </div>
+
+          {/* Trader Details Dialog */}
+          {selectedTrader && (
+            <Dialog open={!!selectedTrader} onOpenChange={(open) => !open && setSelectedTrader(null)}>
+              <TraderDetails 
+                trader={selectedTrader} 
+                onClose={() => setSelectedTrader(null)}
+                rawData={rawData}
+              />
+            </Dialog>
+          )}
         </div>
       </div>
     </div>
