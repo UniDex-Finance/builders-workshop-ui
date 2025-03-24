@@ -16,6 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../../ui/tooltip"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs"
 
 // Countdown timer component
 function CountdownTimer() {
@@ -27,15 +28,15 @@ function CountdownTimer() {
   });
 
   useEffect(() => {
-    // Set the competition start date: March 24, 2025 at 00:00 UTC
-    const competitionStart = new Date(Date.UTC(2025, 2, 24, 0, 0, 0, 0)).getTime();
+    // Set the competition end date: April 20, 2025 at 23:59 UTC
+    const competitionEnd = new Date(Date.UTC(2025, 3, 20, 23, 59, 59, 999)).getTime();
 
     const calculateTimeLeft = () => {
       const now = new Date().getTime();
-      const distance = competitionStart - now;
+      const distance = competitionEnd - now;
 
       if (distance <= 0) {
-        // Competition has started
+        // Competition has ended
         return { days: 0, hours: 0, minutes: 0, seconds: 0 };
       }
 
@@ -81,10 +82,37 @@ function CountdownTimer() {
 }
 
 export function LeaderboardDashboard() {
-  // We'll still load the data in the background, but won't display it yet
   const { data: rawData, loading, error } = useLeaderboardData()
   const { smartAccount } = useSmartAccount()
+  const [activeCompetition, setActiveCompetition] = useState<'pnl' | 'volume'>('pnl')
+  
+  // Process data only once for both competitions
+  const processedData = !loading && rawData.length > 0 
+    ? processLeaderboardData(rawData) 
+    : [];
+  
+  // Get leaderboard stats
+  const stats = !loading && rawData.length > 0
+    ? calculateLeaderboardStats(rawData)
+    : { totalVolume: 0, totalTraders: 0, totalTrades: 0, totalPnl: 0 };
 
+  // Sort data based on the active competition
+  const sortedData = [...processedData].sort((a, b) => {
+    if (activeCompetition === 'pnl') {
+      // Sort by PNL rank for PNL competition
+      if (a.pnlRank && b.pnlRank) return a.pnlRank - b.pnlRank;
+      if (a.pnlRank) return -1;
+      if (b.pnlRank) return 1;
+      return b.pnl - a.pnl; // Secondary sort by PNL
+    } else {
+      // Sort by volume rank for volume competition
+      if (a.volumeRank && b.volumeRank) return a.volumeRank - b.volumeRank;
+      if (a.volumeRank) return -1;
+      if (b.volumeRank) return 1;
+      return b.volume - a.volume; // Secondary sort by volume
+    }
+  });
+  
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header />
@@ -95,25 +123,9 @@ export function LeaderboardDashboard() {
             <h1 className="text-3xl font-semibold">Trading Competition</h1>
           </div>
 
-          {/* Upcoming Competition Banner */}
-          <div className="bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)] rounded-lg p-6 space-y-4">
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-yellow-500" />
-              Upcoming Trading Competition
-            </h2>
-            <div className="space-y-3 text-muted-foreground">
-              <p>
-                Get ready for our next trading competition starting on March 24th and running until April 20th, 2025 (UTC).
-              </p>
-              <p>
-                This time we're running <strong>two separate competitions</strong> to reward different trading styles:
-              </p>
-            </div>
-          </div>
-
-          {/* Countdown Timer */}
+          {/* Countdown Timer - now counts down to the end */}
           <div className="bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)] rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-center mb-2">Competition Starts In</h2>
+            <h2 className="text-xl font-semibold text-center mb-2">Competition Ends In</h2>
             <CountdownTimer />
           </div>
 
@@ -205,16 +217,16 @@ export function LeaderboardDashboard() {
             </div>
           </div>
 
-          {/* Stats from Previous Competition - Simplified version */}
+          {/* Stats from Competition */}
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Previous Competition Stats</h2>
+            <h2 className="text-xl font-semibold">Competition Stats</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Total Volume */}
               <div className="bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)] rounded-lg p-6 flex items-center justify-between">
                 <div>
                   <p className="text-muted-foreground text-sm">Total Volume</p>
                   <h3 className="text-2xl font-bold mt-1">
-                    {loading ? "Loading..." : formatDollarAmount(calculateLeaderboardStats(rawData).totalVolume)}
+                    {loading ? "Loading..." : formatDollarAmount(stats.totalVolume)}
                   </h3>
                 </div>
                 <div className="bg-blue-500/10 p-3 rounded-full">
@@ -227,7 +239,7 @@ export function LeaderboardDashboard() {
                 <div>
                   <p className="text-muted-foreground text-sm">Unique Traders</p>
                   <h3 className="text-2xl font-bold mt-1">
-                    {loading ? "Loading..." : calculateLeaderboardStats(rawData).totalTraders.toLocaleString()}
+                    {loading ? "Loading..." : stats.totalTraders.toLocaleString()}
                   </h3>
                 </div>
                 <div className="bg-violet-500/10 p-3 rounded-full">
@@ -240,7 +252,7 @@ export function LeaderboardDashboard() {
                 <div>
                   <p className="text-muted-foreground text-sm">Total Trades</p>
                   <h3 className="text-2xl font-bold mt-1">
-                    {loading ? "Loading..." : calculateLeaderboardStats(rawData).totalTrades.toLocaleString()}
+                    {loading ? "Loading..." : stats.totalTrades.toLocaleString()}
                   </h3>
                 </div>
                 <div className="bg-amber-500/10 p-3 rounded-full">
@@ -253,20 +265,20 @@ export function LeaderboardDashboard() {
                 <div>
                   <p className="text-muted-foreground text-sm">Total PnL</p>
                   <h3 className={`text-2xl font-bold mt-1 ${
-                    !loading && calculateLeaderboardStats(rawData).totalPnl >= 0 
+                    !loading && stats.totalPnl >= 0 
                       ? "text-[var(--color-long)]" 
                       : "text-[var(--color-short)]"
                   }`}>
-                    {loading ? "Loading..." : formatDollarAmount(calculateLeaderboardStats(rawData).totalPnl)}
+                    {loading ? "Loading..." : formatDollarAmount(stats.totalPnl)}
                   </h3>
                 </div>
                 <div className={`${
-                  !loading && calculateLeaderboardStats(rawData).totalPnl >= 0 
+                  !loading && stats.totalPnl >= 0 
                     ? "bg-[var(--color-long)]/10" 
                     : "bg-[var(--color-short)]/10"
                 } p-3 rounded-full`}>
                   <DollarSign className={`h-5 w-5 ${
-                    !loading && calculateLeaderboardStats(rawData).totalPnl >= 0 
+                    !loading && stats.totalPnl >= 0 
                       ? "text-[var(--color-long)]" 
                       : "text-[var(--color-short)]"
                   }`} />
@@ -275,32 +287,174 @@ export function LeaderboardDashboard() {
             </div>
           </div>
 
-          {/* The actual leaderboard is commented out since it won't have data until the competition starts */}
-          {/* We'll uncomment and update this section when the competition begins */}
-          {/* 
-          <div className="space-y-8">
+          {/* Leaderboard Section */}
+          <div className="space-y-4">
             <h2 className="text-xl font-semibold">Leaderboard Rankings</h2>
-            <div className="border border-[var(--deposit-card-border)] rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Rank</TableHead>
-                    <TableHead>Trader</TableHead>
-                    <TableHead className="text-right">PnL</TableHead>
-                    <TableHead className="text-right">Volume</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center py-10">
-                      Competition has not started yet. Check back on March 24th!
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </div>
+            
+            {/* Competition Tabs */}
+            <Tabs 
+              defaultValue="pnl" 
+              onValueChange={(value) => setActiveCompetition(value as 'pnl' | 'volume')}
+              className="w-full"
+            >
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="pnl" className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  PnL Competition
+                </TabsTrigger>
+                <TabsTrigger value="volume" className="flex items-center gap-2">
+                  <BarChart4 className="h-4 w-4" />
+                  Volume Competition
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="pnl">
+                <div className="border border-[var(--deposit-card-border)] rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Rank</TableHead>
+                        <TableHead>Trader</TableHead>
+                        <TableHead className="text-right">PnL</TableHead>
+                        <TableHead className="text-right">Score</TableHead>
+                        <TableHead className="text-right">Trades</TableHead>
+                        <TableHead className="text-right">Prize</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {loading ? (
+                        <TableRow>
+                          <TableCell colSpan={6} className="h-24 text-center">
+                            <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                            <p className="mt-2 text-sm text-muted-foreground">Loading leaderboard data...</p>
+                          </TableCell>
+                        </TableRow>
+                      ) : sortedData.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} className="h-24 text-center">
+                            <p className="text-muted-foreground">No data available yet.</p>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        sortedData.map((trader, index) => (
+                          <TableRow key={trader.trader} className={`${
+                            trader.pnlRank && trader.pnlRank <= 3 ? "bg-[var(--deposit-card-background)]" : ""
+                          }`}>
+                            <TableCell>
+                              {trader.pnlRank ? (
+                                <div className="flex items-center">
+                                  {trader.pnlRank <= 3 ? (
+                                    <Trophy className={`mr-2 h-4 w-4 ${
+                                      trader.pnlRank === 1 ? "text-yellow-500" :
+                                      trader.pnlRank === 2 ? "text-gray-400" :
+                                      "text-amber-800"
+                                    }`} />
+                                  ) : null}
+                                  {trader.pnlRank}
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              {smartAccount?.address === trader.trader ? (
+                                <span className="font-bold text-primary">You</span>
+                              ) : (
+                                trader.trader.slice(0, 6) + '...' + trader.trader.slice(-4)
+                              )}
+                            </TableCell>
+                            <TableCell className={`text-right ${
+                              trader.pnl >= 0 ? "text-[var(--color-long)]" : "text-[var(--color-short)]"
+                            }`}>
+                              {formatDollarAmount(trader.pnl)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {trader.score}%
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {trader.trades}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {trader.pnlPrize ? formatDollarAmount(trader.pnlPrize) : "-"}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="volume">
+                <div className="border border-[var(--deposit-card-border)] rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Rank</TableHead>
+                        <TableHead>Trader</TableHead>
+                        <TableHead className="text-right">Volume</TableHead>
+                        <TableHead className="text-right">Trades</TableHead>
+                        <TableHead className="text-right">Prize</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {loading ? (
+                        <TableRow>
+                          <TableCell colSpan={5} className="h-24 text-center">
+                            <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                            <p className="mt-2 text-sm text-muted-foreground">Loading leaderboard data...</p>
+                          </TableCell>
+                        </TableRow>
+                      ) : sortedData.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={5} className="h-24 text-center">
+                            <p className="text-muted-foreground">No data available yet.</p>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        sortedData.map((trader, index) => (
+                          <TableRow key={trader.trader} className={`${
+                            trader.volumeRank && trader.volumeRank <= 2 ? "bg-[var(--deposit-card-background)]" : ""
+                          }`}>
+                            <TableCell>
+                              {trader.volumeRank ? (
+                                <div className="flex items-center">
+                                  {trader.volumeRank <= 2 ? (
+                                    <Trophy className={`mr-2 h-4 w-4 ${
+                                      trader.volumeRank === 1 ? "text-yellow-500" : "text-gray-400"
+                                    }`} />
+                                  ) : null}
+                                  {trader.volumeRank}
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              {smartAccount?.address === trader.trader ? (
+                                <span className="font-bold text-primary">You</span>
+                              ) : (
+                                trader.trader.slice(0, 6) + '...' + trader.trader.slice(-4)
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {formatDollarAmount(trader.volume)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {trader.trades}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {trader.volumePrize ? formatDollarAmount(trader.volumePrize) : "-"}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
-          */}
         </div>
       </div>
     </div>

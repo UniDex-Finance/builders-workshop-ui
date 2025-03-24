@@ -17,20 +17,34 @@ type OrderbookProps = {
 export function Orderbook({ pair, height }: OrderbookProps) {
   const { orderbook } = useTradeStream();
   const [selectedDepth, setSelectedDepth] = useState("10");
-  const [grouping, setGrouping] = useState("0.1");
+  const [grouping, setGrouping] = useState("0.01");
   const [denomination, setDenomination] = useState<"currency" | "usd">("currency");
   const orderbookContainerRef = useRef<HTMLDivElement>(null);
 
-  // Group orders by price level
+  // Group orders by price level with special handling for 0.01
   const groupOrders = (orders: OrderbookLevel[], groupSize: number) => {
-    const grouped = new Map<number, OrderbookLevel>();
+    const grouped = new Map<string, OrderbookLevel>();
     
     orders.forEach(order => {
-      // Round price to nearest group
-      const groupedPrice = Math.floor(order.price / groupSize) * groupSize;
+      let groupedPrice: number;
       
-      if (!grouped.has(groupedPrice)) {
-        grouped.set(groupedPrice, {
+      // Special handling for 0.01 grouping
+      if (groupSize === 0.01) {
+        // Convert to fixed 2 decimals and back to number - removes floating point errors
+        const fixed = parseFloat(order.price.toFixed(2));
+        // Now round down to nearest 0.01
+        groupedPrice = Math.floor(fixed * 100) / 100;
+      } else {
+        // Use the original algorithm for other grouping sizes
+        const roundFactor = 1 / groupSize;
+        groupedPrice = Math.floor(order.price * roundFactor) / roundFactor;
+      }
+      
+      // Use string key to avoid floating point key issues
+      const priceKey = groupedPrice.toString();
+      
+      if (!grouped.has(priceKey)) {
+        grouped.set(priceKey, {
           price: groupedPrice,
           size: 0,
           total: 0,
@@ -38,7 +52,7 @@ export function Orderbook({ pair, height }: OrderbookProps) {
         });
       }
       
-      const existing = grouped.get(groupedPrice)!;
+      const existing = grouped.get(priceKey)!;
       existing.size += order.size;
       existing.numOrders += order.numOrders;
     });
@@ -88,17 +102,34 @@ export function Orderbook({ pair, height }: OrderbookProps) {
     return { asks: processedAsks, bids: processedBids, maxTotal };
   }, [groupedAsks, groupedBids]);
 
-  // Format number based on denomination
-  const formatNumber = (num: number, decimals: number = 1) => {
-    if (decimals === 2 && num >= 1) { // For USD values >= 1
+  // Map grouping values to decimal places
+  const getDecimalPlaces = () => {
+    switch (grouping) {
+      case "0.001": return 3;
+      case "0.01": return 2;
+      case "0.1": return 1;
+      case "1": return 0;
+      case "10": return 0;
+      default: return 1;
+    }
+  };
+
+  // Format number based on denomination and grouping
+  const formatNumber = (num: number, decimals: number | null = null, isPriceDisplay = false) => {
+    // Use explicit decimals or derive from grouping
+    const decimalPlaces = decimals !== null ? decimals : getDecimalPlaces();
+    
+    // Special case for USD values >= 1, but NOT for price display
+    if (decimalPlaces === 2 && num >= 1 && !isPriceDisplay) {
       return num.toLocaleString('en-US', {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
       });
     }
+    
     return num.toLocaleString('en-US', {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals
+      minimumFractionDigits: decimalPlaces,
+      maximumFractionDigits: decimalPlaces
     });
   };
 
@@ -198,7 +229,7 @@ export function Orderbook({ pair, height }: OrderbookProps) {
                   <span className={`font-mono text-xs ${
                     type === "asks" ? "text-red-400" : "text-green-400"
                   } pr-4 group-hover:text-foreground transition-colors`}>
-                    {formatNumber(order.price)}
+                    {formatNumber(order.price, null, true)}
                   </span>
                   <span className="text-muted-foreground font-mono text-xs px-2 group-hover:text-foreground transition-colors">
                     {formatSize(order.size, order.price)}
@@ -306,6 +337,22 @@ export function Orderbook({ pair, height }: OrderbookProps) {
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between border-b border-border px-2 py-1.5 h-8">
         <div className="flex items-center space-x-1">
+          <button
+            className={`text-xs px-2 py-0.5 rounded ${
+              grouping === "0.001" ? "bg-accent" : "hover:bg-accent/50"
+            }`}
+            onClick={() => setGrouping("0.001")}
+          >
+            0.001
+          </button>
+          <button
+            className={`text-xs px-2 py-0.5 rounded ${
+              grouping === "0.01" ? "bg-accent" : "hover:bg-accent/50"
+            }`}
+            onClick={() => setGrouping("0.01")}
+          >
+            0.01
+          </button>
           <button
             className={`text-xs px-2 py-0.5 rounded ${
               grouping === "0.1" ? "bg-accent" : "hover:bg-accent/50"

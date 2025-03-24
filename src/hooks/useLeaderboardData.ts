@@ -33,6 +33,12 @@ export const useLeaderboardData = () => {
         let hasNextPage = true;
         let afterCursor: string | null = null;
 
+        // Competition start: March 24, 2025 (00:00 UTC)
+        const competitionStart = Math.floor(new Date(Date.UTC(2025, 2, 24, 0, 0, 0, 0)).getTime() / 1000);
+        
+        // Competition end: April 20, 2025 (23:59 UTC)
+        const competitionEnd = Math.floor(new Date(Date.UTC(2025, 3, 20, 23, 59, 59, 999)).getTime() / 1000);
+
         while (hasNextPage) {
           const response: Response = await fetch(
             "https://v4-subgraph-production.up.railway.app/",
@@ -43,7 +49,7 @@ export const useLeaderboardData = () => {
                 query: `
 query GetLeaderboardData($after: String) {
   closedTrades(
-    where: {createdAt_gte: "1739664000", closedAt_lte: "1740787200"}
+    where: {createdAt_gte: "${competitionStart}", closedAt_lte: "${competitionEnd}"}
     limit: 50
     after: $after
   ) {

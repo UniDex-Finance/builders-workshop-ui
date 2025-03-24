@@ -11,6 +11,10 @@ export interface ProcessedTraderData {
   avgCollateral: number
   score: number
   isQualifying: boolean
+  pnlRank?: number
+  pnlPrize?: number
+  volumeRank?: number
+  volumePrize?: number
 }
 
 export interface LeaderboardStats {
@@ -68,10 +72,20 @@ export const formatDollarAmount = (amount: number, options?: Intl.NumberFormatOp
   return `$${amount.toLocaleString('en-US', safeOptions)}`;
 };
 
-const PRIZE_DISTRIBUTION = {
-  1: 3500,
+const PNL_PRIZE_DISTRIBUTION = {
+  1: 3000,
   2: 1000,
   3: 500,
+  4: 100,
+  5: 100,
+  6: 100,
+  7: 100,
+  8: 100,
+}
+
+const VOLUME_PRIZE_DISTRIBUTION = {
+  1: 1500,
+  2: 1000,
 }
 
 // Helper function to count trades by duration thresholds and collateral
@@ -223,6 +237,7 @@ export const processLeaderboardData = (rawData: TradeItem[]): ProcessedTraderDat
     acc[user].validTrades.push({
       pnl,
       maxCollateral,
+      size,
       returnPercentage: (pnl / maxCollateral) * 100
     })
 
@@ -248,6 +263,7 @@ export const processLeaderboardData = (rawData: TradeItem[]): ProcessedTraderDat
     validTrades: Array<{
       pnl: number
       maxCollateral: number
+      size: number
       returnPercentage: number
     }>
   }>)
@@ -263,9 +279,11 @@ export const processLeaderboardData = (rawData: TradeItem[]): ProcessedTraderDat
         sum + trade.returnPercentage, 0
       ) / trader.validTrades.length
 
-      // Check if trader qualifies (at least 3 trades AND $50+ positive PnL)
-      const isQualifying = trader.validTrades.length >= 3 && trader.pnl >= 50;
-
+      // Check if trader qualifies for PNL competition (at least 3 trades with average return >= 10%)
+      const isPnlQualifying = trader.validTrades.length >= 3 && score >= 10 && trader.pnl > 0;
+      
+      // Check if trader qualifies for volume competition (at least 3 trades)
+      const isVolumeQualifying = trader.validTrades.length >= 3;
 
       return {
         trader: trader.trader,
@@ -275,33 +293,55 @@ export const processLeaderboardData = (rawData: TradeItem[]): ProcessedTraderDat
         collateral: Number(trader.maxCollateral.toFixed(2)),
         avgCollateral: Number(avgCollateral.toFixed(2)),
         score: Number(score.toFixed(2)),
-        isQualifying
+        isQualifying: isPnlQualifying || isVolumeQualifying,
+        isPnlQualifying,
+        isVolumeQualifying
       }
     });
 
-  // Filter and sort qualifying traders to determine ranks
-  const qualifyingTraders = allTraders
-    .filter(trader => trader.isQualifying)
-    .sort((a, b) => b.score - a.score);
+  // Sort traders for PNL competition
+  const pnlQualifyingTraders = allTraders
+    .filter(trader => trader.isPnlQualifying)
+    .sort((a, b) => b.pnl - a.pnl);
 
-  // Assign ranks to qualifying traders
-  const rankMap = new Map();
-  qualifyingTraders.forEach((trader, index) => {
-    rankMap.set(trader.trader, {
+  // Sort traders for volume competition
+  const volumeQualifyingTraders = allTraders
+    .filter(trader => trader.isVolumeQualifying)
+    .sort((a, b) => b.volume - a.volume);
+
+  // Assign PNL ranks
+  const pnlRankMap = new Map();
+  pnlQualifyingTraders.forEach((trader, index) => {
+    pnlRankMap.set(trader.trader, {
       rank: index + 1,
-      prize: PRIZE_DISTRIBUTION[index + 1 as keyof typeof PRIZE_DISTRIBUTION],
+      prize: PNL_PRIZE_DISTRIBUTION[index + 1 as keyof typeof PNL_PRIZE_DISTRIBUTION],
     });
   });
 
-  // Sort all traders by score
+  // Assign volume ranks
+  const volumeRankMap = new Map();
+  volumeQualifyingTraders.forEach((trader, index) => {
+    volumeRankMap.set(trader.trader, {
+      rank: index + 1,
+      prize: VOLUME_PRIZE_DISTRIBUTION[index + 1 as keyof typeof VOLUME_PRIZE_DISTRIBUTION],
+    });
+  });
+
+  // Sort all traders by score by default (original sorting)
   return allTraders
     .sort((a, b) => b.score - a.score)
     .map(trader => {
-      const rankInfo = rankMap.get(trader.trader) || { rank: 0, prize: undefined };
+      const pnlRankInfo = pnlRankMap.get(trader.trader) || { rank: 0, prize: undefined };
+      const volumeRankInfo = volumeRankMap.get(trader.trader) || { rank: 0, prize: undefined };
+      
       return {
         ...trader,
-        rank: rankInfo.rank,
-        prize: rankInfo.prize,
+        rank: pnlRankInfo.rank, // Default to PNL rank for backwards compatibility
+        prize: pnlRankInfo.prize, // Default to PNL prize for backwards compatibility
+        pnlRank: pnlRankInfo.rank,
+        pnlPrize: pnlRankInfo.prize,
+        volumeRank: volumeRankInfo.rank,
+        volumePrize: volumeRankInfo.prize,
       }
     });
 } 
