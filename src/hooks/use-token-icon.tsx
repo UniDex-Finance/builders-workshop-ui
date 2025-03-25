@@ -34,7 +34,7 @@ export const SUPPORTED_PAIRS = {
   'DYDX/USD': 'DYDX-USD.webp',
   'DYM/USD': 'DYM-USD.png',
   'ENS/USD': 'ENS-USD.webp',
-  'FTM/USD': 'FTM-USD.svg',
+  'S/USD': 'S-USD.svg',
   'GMX/USD': 'GMX-USD.svg',
   'INJ/USD': 'INJ-USD.png',
   'JTO/USD': 'JTO-USD.webp',

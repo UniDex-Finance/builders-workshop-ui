@@ -2,7 +2,7 @@
 export const GTRADE_PAIR_MAPPING: { [key: string]: number } = {
   'BTC/USD': 0,
   'ETH/USD': 1,
-  'FTM/USD': 53,
+  'S/USD': 53,
   'SOL/USD': 33,
   'DOGE/USD': 3,
   'AVAX/USD': 102,

@@ -16,7 +16,7 @@ const DEFAULT_PRECISION: PrecisionConfig = {
 const PRECISION_OVERRIDES: Record<string, PrecisionConfig> = {
   'BTC/USD': { minDecimals: 2, maxDecimals: 2 },
   'ETH/USD': { minDecimals: 2, maxDecimals: 2 },
-  'FTM/USD': { minDecimals: 4, maxDecimals: 4 },
+  'S/USD': { minDecimals: 4, maxDecimals: 4 },
   'SOL/USD': { minDecimals: 3, maxDecimals: 3 },
   'DOGE/USD': { minDecimals: 4, maxDecimals: 4 },
   'PEPE/USD': { minDecimals: 9, maxDecimals: 9 },

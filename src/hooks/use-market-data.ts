@@ -23,7 +23,7 @@ export const TRADING_PAIRS: { [key: string]: string } = {
 export const PAIR_FULL_NAMES: { [key: string]: string } = {
   'BTC/USD': 'Bitcoin to US Dollar',
   'ETH/USD': 'Ethereum to US Dollar',
-  'S/USD': 'Solana to US Dollar',
+  'S/USD': 'Sonic to US Dollar',
   'SOL/USD': 'Solana to US Dollar',
   'DOGE/USD': 'Dogecoin to US Dollar',
   'AVAX/USD': 'Avalanche to US Dollar',
