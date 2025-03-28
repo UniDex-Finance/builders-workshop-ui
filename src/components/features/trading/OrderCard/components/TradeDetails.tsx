@@ -3,6 +3,7 @@ import Image from "next/image";
 import { TradeDetails as TradeDetailsType, RouteId, TradeDetailsProps } from "../types";
 import * as HoverCard from '@radix-ui/react-hover-card';
 import { useGetGasPrice } from '@/hooks/trading-hooks/unidex-hooks/use-get-gasprice';
+import { usePairPrecision } from '@/hooks/use-pair-precision';
 
 export function TradeDetails({ 
   details, 
@@ -16,10 +17,7 @@ export function TradeDetails({
 }: TradeDetailsProps) {
   const { entryPrice, liquidationPrice, fees } = details;
   const { gasCost } = useGetGasPrice();
-
-  const formatNumber = (value: number) => {
-    return new Intl.NumberFormat('en-US').format(value);
-  };
+  const { formatPairPrice } = usePairPrecision();
 
   const getRouteLogo = (routeId: RouteId) => {
     switch (routeId) {
@@ -162,13 +160,13 @@ export function TradeDetails({
             </HoverCard.Content>
           </HoverCard.Portal>
         </HoverCard.Root>
-        <span>${entryPrice ? formatNumber(parseFloat(entryPrice.toFixed(6))) : "0.00"}</span>
+        <span>${entryPrice != null && pair ? formatPairPrice(pair, entryPrice) : "..."}</span>
       </div>
       
       <div className="flex justify-between">
         <span>Liquidation Price</span>
         <span className="text-short">
-          ${liquidationPrice ? formatNumber(parseFloat(liquidationPrice.toFixed(6))) : "0.00"}
+          ${liquidationPrice != null && pair ? formatPairPrice(pair, liquidationPrice) : "..."}
         </span>
       </div>
       
@@ -236,7 +234,7 @@ export function TradeDetails({
         </HoverCard.Root>
         <span className={fees.hourlyInterest >= 0 ? "text-short" : "text-long"}>
           {fees.hourlyInterest >= 0 ? "-" : "+"}$
-          {formatNumber(Math.abs(parseFloat(fees.hourlyInterest.toFixed(2))))} (
+          {fees.hourlyInterest != null && pair ? formatPairPrice(pair, Math.abs(fees.hourlyInterest)) : '...'} (
           {Math.abs(fees.hourlyInterestPercent).toFixed(4)}%)
         </span>
       </div>

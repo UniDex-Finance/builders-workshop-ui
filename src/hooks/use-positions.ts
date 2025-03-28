@@ -85,9 +85,9 @@ function calculateLiquidationPrice(
   const requiredPriceDiff = (targetPnL * entryPrice) / size;
 
   if (position.isLong) {
-    return (entryPrice + requiredPriceDiff).toFixed(2);
+    return (entryPrice + requiredPriceDiff).toFixed(10);
   } else {
-    return (entryPrice - requiredPriceDiff).toFixed(2);
+    return (entryPrice - requiredPriceDiff).toFixed(10);
   }
 }
 
@@ -158,55 +158,10 @@ function calculateGTradeLiquidationPrice(
   const requiredPriceDiff = (targetPnL * entryPrice) / size;
 
   if (position.isLong) {
-    return (entryPrice + requiredPriceDiff).toFixed(2);
+    return (entryPrice + requiredPriceDiff).toFixed(10);
   } else {
-    return (entryPrice - requiredPriceDiff).toFixed(2);
+    return (entryPrice - requiredPriceDiff).toFixed(10);
   }
-}
-
-function calculateGTradePnL(
-  position: {
-    side: number;
-    notionalValue: number;
-    avgEntryPrice: number;
-  },
-  currentPrice: number | undefined
-): { pnl: string; fees: { positionFee: string; borrowFee: string; fundingFee: string; } } {
-  // Guard against undefined price
-  if (!currentPrice) {
-    return {
-      pnl: 'Loading...',
-      fees: { positionFee: '0', borrowFee: '0', fundingFee: '0' }
-    };
-  }
-
-  const entryPrice = position.avgEntryPrice;
-  const size = position.notionalValue;
-  
-  // Calculate price difference based on position side (0 = long, 1 = short)
-  const priceDiff = position.side === 0 ? 
-    (currentPrice - entryPrice) :
-    (entryPrice - currentPrice);
-
-  // Calculate raw PnL
-  const rawPnL = (priceDiff * size / entryPrice);
-  
-  // Calculate position fee (0.06% of size)
-  const positionFee = size * 0.0006;
-  
-  // Calculate final PnL
-  const finalPnL = rawPnL - positionFee;
-
-  return {
-    pnl: finalPnL >= 0 ? 
-      `+$${finalPnL.toFixed(2)}` : 
-      `-$${Math.abs(finalPnL).toFixed(2)}`,
-    fees: {
-      positionFee: positionFee.toFixed(2),
-      borrowFee: '0',  // No borrow fees for gTrade
-      fundingFee: '0'  // No funding fees for gTrade
-    }
-  };
 }
 
 export function usePositions() {

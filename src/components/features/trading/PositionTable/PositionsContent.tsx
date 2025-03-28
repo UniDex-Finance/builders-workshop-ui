@@ -16,6 +16,7 @@ import { PositionCollateralDialog } from "./PositionCollateralDialog";
 import { PositionSizeDialog } from "./PositionSizeDialog";
 import * as HoverCard from '@radix-ui/react-hover-card';
 import { TokenIcon } from "../../../../hooks/use-token-icon";
+import { usePairPrecision } from '@/hooks/use-pair-precision';
 
 interface PositionsContentProps {
   positions: Position[];
@@ -48,6 +49,7 @@ export function PositionsContent({
   const [isCollateralDialogOpen, setIsCollateralDialogOpen] = useState(false);
   const [selectedCollateralPosition, setSelectedCollateralPosition] = useState<Position | null>(null);
   const [isSizeDialogOpen, setIsSizeDialogOpen] = useState(false);
+  const { formatPairPrice } = usePairPrecision();
 
   const formatNumber = (value: string | number) => {
     const numValue = typeof value === "string" ? parseFloat(value) : value;
@@ -312,21 +314,21 @@ export function PositionsContent({
                 </TableCell>
                 <TableCell className="flex justify-between md:table-cell">
                   <span className="md:hidden">Entry Price:</span>
-                  <div>${formatNumber(position.entryPrice)}</div>
+                  <div>${position.entryPrice != null ? formatPairPrice(position.market, parseFloat(position.entryPrice)) : '...'}</div>
                 </TableCell>
                 <TableCell className="flex justify-between md:table-cell">
                   <span className="md:hidden">Market Price:</span>
                   <div>
-                    <div>{currentPrice ? `$${formatNumber(currentPrice.toFixed(2))}` : "Loading..."}</div>
+                    <div>{currentPrice != null ? `$${formatPairPrice(position.market, currentPrice)}` : "Loading..."}</div>
                     <div className="hidden text-short md:block">
-                      ${formatNumber(position.liquidationPrice)}
+                      ${position.liquidationPrice != null ? formatPairPrice(position.market, parseFloat(position.liquidationPrice)) : '...'}
                     </div>
                   </div>
                 </TableCell>
                 <TableCell className="flex justify-between md:hidden">
                   <span>Liquidation Price:</span>
                   <div className="text-short">
-                    ${formatNumber(position.liquidationPrice)}
+                    ${position.liquidationPrice != null ? formatPairPrice(position.market, parseFloat(position.liquidationPrice)) : '...'}
                   </div>
                 </TableCell>
                 <TableCell 
@@ -336,13 +338,13 @@ export function PositionsContent({
                   <span className="md:hidden">Stop Loss:</span>
                   <div>
                     <div className="text-short">
-                      {triggerOrder?.stopLoss
-                        ? `$${formatNumber(triggerOrder.stopLoss.price)} (${triggerOrder.stopLoss.size}%)`
+                      {triggerOrder?.stopLoss?.price != null
+                        ? `$${formatPairPrice(position.market, parseFloat(triggerOrder.stopLoss.price))} (${triggerOrder.stopLoss.size}%)`
                         : "-"}
                     </div>
                     <div className="hidden text-long md:block">
-                      {triggerOrder?.takeProfit
-                        ? `$${formatNumber(triggerOrder.takeProfit.price)} (${triggerOrder.takeProfit.size}%)`
+                      {triggerOrder?.takeProfit?.price != null
+                        ? `$${formatPairPrice(position.market, parseFloat(triggerOrder.takeProfit.price))} (${triggerOrder.takeProfit.size}%)`
                         : "-"}
                     </div>
                   </div>
@@ -353,8 +355,8 @@ export function PositionsContent({
                 >
                   <span>Take Profit:</span>
                   <div className="text-long">
-                    {triggerOrder?.takeProfit
-                      ? `$${formatNumber(triggerOrder.takeProfit.price)} (${triggerOrder.takeProfit.size}%)`
+                    {triggerOrder?.takeProfit?.price != null
+                      ? `$${formatPairPrice(position.market, parseFloat(triggerOrder.takeProfit.price))} (${triggerOrder.takeProfit.size}%)`
                       : "-"}
                   </div>
                 </TableCell>

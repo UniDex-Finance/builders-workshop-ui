@@ -13,6 +13,7 @@ import { usePrices } from "../../../../lib/websocket-price-context";
 import { useState } from "react";
 import { PositionSizeDialog } from "./PositionSizeDialog";
 import { TokenIcon } from "../../../../hooks/use-token-icon";
+import { usePairPrecision } from '@/hooks/use-pair-precision';
 
 interface PositionDetailsProps {
   position: Position;
@@ -43,6 +44,7 @@ export function PositionDetails({
   const { prices } = usePrices();
   const basePair = position.market.split("/")[0].toLowerCase();
   const currentPrice = prices[basePair]?.price;
+  const { formatPairPrice } = usePairPrecision();
 
   const calculateFinalPnl = () => {
     return parseFloat(position.pnl.replace(/[^0-9.-]/g, "")).toFixed(2);
@@ -145,17 +147,17 @@ export function PositionDetails({
 
           <div className="flex items-center justify-between">
             <span className="text-zinc-400">Entry Price</span>
-            <span>{position.entryPrice}</span>
+            <span>${position.entryPrice != null ? formatPairPrice(position.market, parseFloat(position.entryPrice)) : "..."}</span>
           </div>
 
           <div className="flex items-center justify-between">
             <span className="text-zinc-400">Current Price</span>
-            <span>{currentPrice?.toFixed(2) || "Loading..."}</span>
+            <span>${currentPrice != null ? formatPairPrice(position.market, currentPrice) : "Loading..."}</span>
           </div>
 
           <div className="flex items-center justify-between">
             <span className="text-zinc-400">Liquidation Price</span>
-            <span className="text-short">{position.liquidationPrice}</span>
+            <span className="text-short">${position.liquidationPrice != null ? formatPairPrice(position.market, parseFloat(position.liquidationPrice)) : "..."}</span>
           </div>
 
           <div className="flex items-center justify-between">

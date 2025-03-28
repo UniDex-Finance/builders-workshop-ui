@@ -19,6 +19,7 @@ import { useReferralContract } from "../../../../hooks/use-referral-contract";
 import { useRouting, RouteId } from '../../../../hooks/trading-hooks/use-routing';
 import { toast } from "@/hooks/use-toast";
 import { useLimitRouting } from '../../../../hooks/trading-hooks/use-limit-routing';
+import { usePairPrecision } from '@/hooks/use-pair-precision';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -82,6 +83,7 @@ export function OrderCard({
   const [tempLeverageValue, setTempLeverageValue] = useState(leverage);
   const [detailsExpanded, setDetailsExpanded] = useState(false);
   const [isLeverageInputEditing, setIsLeverageInputEditing] = useState(false);
+  const { formatPairPrice } = usePairPrecision();
 
   const {
     formState,
@@ -199,6 +201,7 @@ export function OrderCard({
   });
 
   const market = allMarkets.find((m) => m.assetId === assetId);
+  const currentPair = market?.pair || '';
 
   useEffect(() => {
     const pair = market?.pair;
@@ -731,7 +734,7 @@ export function OrderCard({
             {/* Liquidation Price */}
             <div className="flex justify-between text-xs">
               <span className="text-muted-foreground">Liquidation Price</span>
-              <span className="text-short">${tradeDetails.liquidationPrice ? Number(tradeDetails.liquidationPrice.toFixed(2)).toLocaleString() : "0.00"}</span>
+              <span className="text-short">${tradeDetails.liquidationPrice ? formatPairPrice(currentPair, tradeDetails.liquidationPrice) : "..."}</span>
             </div>
             
             {/* Trading Fee */}
@@ -756,7 +759,7 @@ export function OrderCard({
                 {/* Entry Price */}
                 <div className="flex justify-between text-xs">
                   <span className="text-muted-foreground">Entry Price</span>
-                  <span>${tradeDetails.entryPrice ? Number(tradeDetails.entryPrice.toFixed(2)).toLocaleString() : "0.00"}</span>
+                  <span>${tradeDetails.entryPrice ? formatPairPrice(currentPair, tradeDetails.entryPrice) : "..."}</span>
                 </div>
                 
                 {/* Hourly Interest */}
