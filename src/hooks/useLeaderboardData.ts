@@ -6,6 +6,8 @@ export interface TradeItem {
   pnl: string;
   positionFee: string;
   size: string;
+  maxSize: string;
+  referralAddress: string | null;
   isLong: boolean;
   isLiquidated: boolean;
   id: string;
@@ -59,6 +61,8 @@ query GetLeaderboardData($after: String) {
       pnl
       positionFee
       size
+      maxSize
+      referralAddress
       isLong
       isLiquidated
       id
