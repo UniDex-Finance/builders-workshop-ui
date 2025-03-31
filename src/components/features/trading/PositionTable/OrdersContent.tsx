@@ -48,10 +48,13 @@ export function OrdersContent({
     triggers: position.triggers.filter(trigger => trigger.status === TriggerStatus.OPEN)
   })).filter(position => position.triggers.length > 0);
 
+  // Only use fallback if detailedTriggers is undefined, not when it's empty
+  const useDetailedTriggers = !!detailedTriggers;
+  
   const hasOpenOrders = 
     orders.length > 0 ||
-    (openDetailedTriggers && openDetailedTriggers.length > 0) ||
-    ((!openDetailedTriggers || openDetailedTriggers.length === 0) && triggerOrders && triggerOrders.length > 0);
+    (useDetailedTriggers && openDetailedTriggers && openDetailedTriggers.length > 0) ||
+    (!useDetailedTriggers && triggerOrders && triggerOrders.length > 0);
 
   return (
     <>
@@ -124,7 +127,7 @@ export function OrdersContent({
               </TableRow>
             ))}
 
-            {/* Detailed Trigger Orders - replacing the old trigger orders display */}
+            {/* Detailed Trigger Orders */}
             {openDetailedTriggers?.flatMap((position) => 
               position.triggers.map((trigger) => (
                 <TableRow key={`detailed-trigger-${position.positionId}-${trigger.orderId}`}>
@@ -163,8 +166,8 @@ export function OrdersContent({
               ))
             )}
 
-            {/* Fallback to old trigger orders if detailed ones are not available */}
-            {(!openDetailedTriggers || openDetailedTriggers.length === 0) && triggerOrders?.map((order) => (
+            {/* Fallback to old trigger orders ONLY if detailed ones are not available (undefined) */}
+            {!useDetailedTriggers && triggerOrders?.map((order) => (
               <TableRow key={`trigger-${order.positionId}`}>
                 <TableCell>{order.market}</TableCell>
                 <TableCell>Trigger</TableCell>
