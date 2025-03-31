@@ -5,7 +5,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../../ui/table";
-import { Order, TriggerOrder } from "../../../../hooks/use-orders";
+import { Order, TriggerOrder, DetailedTriggerInfo } from "../../../../hooks/use-orders";
 import { X } from "lucide-react";
 import { Button } from "../../../ui/button";
 import { useCancelOrderActions } from "../../../../hooks/trading-hooks/unidex-hooks/use-cancel-order-actions";
@@ -13,17 +13,43 @@ import { useCancelOrderActions } from "../../../../hooks/trading-hooks/unidex-ho
 interface OrdersContentProps {
   orders: Order[];
   triggerOrders: TriggerOrder[] | undefined;
+  detailedTriggers: DetailedTriggerInfo[] | undefined;
   loading: boolean;
+  loadingTriggers: boolean;
   error: Error | null;
+}
+
+// Trigger status enum definition
+enum TriggerStatus {
+  NONE = 0,
+  PENDING = 1,
+  OPEN = 2,
+  TRIGGERED = 3,
+  CANCELLED = 4
 }
 
 export function OrdersContent({
   orders,
   triggerOrders,
+  detailedTriggers,
   loading,
+  loadingTriggers,
   error,
 }: OrdersContentProps) {
-  const { cancelOrder, cancellingOrders } = useCancelOrderActions();
+  const { cancelOrder, cancelTriggerOrder, cancellingOrders } = useCancelOrderActions();
+
+  const isLoading = loading || loadingTriggers;
+
+  // Filter detailed triggers to only show those with status === OPEN (2)
+  const openDetailedTriggers = detailedTriggers?.map(position => ({
+    ...position,
+    triggers: position.triggers.filter(trigger => trigger.status === TriggerStatus.OPEN)
+  })).filter(position => position.triggers.length > 0);
+
+  const hasOpenOrders = 
+    orders.length > 0 ||
+    (openDetailedTriggers && openDetailedTriggers.length > 0) ||
+    ((!openDetailedTriggers || openDetailedTriggers.length === 0) && triggerOrders && triggerOrders.length > 0);
 
   return (
     <>
@@ -42,7 +68,7 @@ export function OrdersContent({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {loading ? (
+        {isLoading ? (
           <TableRow>
             <TableCell colSpan={9} className="text-center">
               Loading orders...
@@ -54,7 +80,7 @@ export function OrdersContent({
               {error.message}
             </TableCell>
           </TableRow>
-        ) : orders.length === 0 && (!triggerOrders || triggerOrders.length === 0) ? (
+        ) : !hasOpenOrders ? (
           <TableRow>
             <TableCell colSpan={9} className="text-center">
               No open orders
@@ -96,8 +122,47 @@ export function OrdersContent({
               </TableRow>
             ))}
 
-            {/* Trigger Orders */}
-            {triggerOrders?.map((order) => (
+            {/* Detailed Trigger Orders - replacing the old trigger orders display */}
+            {openDetailedTriggers?.flatMap((position) => 
+              position.triggers.map((trigger) => (
+                <TableRow key={`detailed-trigger-${position.positionId}-${trigger.orderId}`}>
+                  <TableCell>{position.market}</TableCell>
+                  <TableCell>{trigger.isTP ? "Take Profit" : "Stop Loss"}</TableCell>
+                  <TableCell className={position.isLong ? "text-long" : "text-short"}>
+                    {trigger.amountPercent}%
+                  </TableCell>
+                  <TableCell>-</TableCell>
+                  <TableCell>-</TableCell>
+                  <TableCell>-</TableCell>
+                  <TableCell className="text-short">
+                    {!trigger.isTP ? trigger.price : "-"}
+                  </TableCell>
+                  <TableCell className="text-long">
+                    {trigger.isTP ? trigger.price : "-"}
+                  </TableCell>
+                  <TableCell>{trigger.createdAt}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={cancellingOrders[`${position.positionId}-${trigger.orderId}`]}
+                      onClick={() => 
+                        cancelTriggerOrder(
+                          position.positionId, 
+                          trigger.orderId, 
+                          `${trigger.isTP ? "Take Profit" : "Stop Loss"} at ${trigger.price} (${trigger.amountPercent}%)`
+                        )
+                      }
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+
+            {/* Fallback to old trigger orders if detailed ones are not available */}
+            {(!openDetailedTriggers || openDetailedTriggers.length === 0) && triggerOrders?.map((order) => (
               <TableRow key={`trigger-${order.positionId}`}>
                 <TableCell>{order.market}</TableCell>
                 <TableCell>Trigger</TableCell>

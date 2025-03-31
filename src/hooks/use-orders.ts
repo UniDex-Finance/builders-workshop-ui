@@ -39,6 +39,20 @@ export interface TriggerOrder {
   timestamp: string;  // Add this field
 }
 
+export interface DetailedTriggerInfo {
+  positionId: string;
+  market: string;
+  isLong: boolean;
+  triggers: Array<{
+    orderId: number;
+    isTP: boolean;
+    price: string;
+    amountPercent: string;
+    status: number;
+    createdAt: string;
+  }>;
+}
+
 interface ContractPosition {
   owner: `0x${string}`;
   refer: `0x${string}`;
@@ -111,6 +125,7 @@ function getOrderType(positionType: bigint, stepType: bigint): string {
 export function useOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [triggerOrders, setTriggerOrders] = useState<TriggerOrder[]>([]);
+  const [detailedTriggers, setDetailedTriggers] = useState<DetailedTriggerInfo[]>([]);
   const { prices } = usePrices();
   const { smartAccount } = useSmartAccount();
 
@@ -136,6 +151,19 @@ export function useOrders() {
       refetchInterval: 5000
     },
     chainId: arbitrum.id // Explicitly set chainId to Arbitrum
+  });
+
+  // New function to get detailed trigger orders
+  const { data: detailedTriggerData, isLoading: isLoadingTriggers, refetch: refetchTriggers } = useReadContract({
+    address: LENS_CONTRACT_ADDRESS,
+    abi: lensAbi,
+    functionName: 'getUserTriggerOrders',
+    args: smartAccount?.address ? [smartAccount.address as `0x${string}`] : undefined,
+    query: {
+      enabled: Boolean(smartAccount?.address),
+      refetchInterval: 5000
+    },
+    chainId: arbitrum.id
   });
 
   // Process trigger orders from positions
@@ -240,11 +268,50 @@ export function useOrders() {
     setOrders(formattedOrders);
   }, [contractResult, prices]);
 
+  // Process detailed trigger data
+  useEffect(() => {
+    if (!detailedTriggerData || !Array.isArray(detailedTriggerData)) {
+      setDetailedTriggers([]);
+      return;
+    }
+
+    const [posIds, positions, positionTriggers] = detailedTriggerData;
+    
+    const formattedDetailedTriggers = posIds.map((posId, index) => {
+      const position = positions[index];
+      const triggerData = positionTriggers[index];
+      
+      const tokenId = position.tokenId.toString();
+      const market = TRADING_PAIRS[tokenId] || `Token${tokenId}/USD`;
+      
+      const triggers = triggerData?.triggers?.map((trigger, triggerId) => ({
+        orderId: triggerId,
+        isTP: trigger.isTP,
+        price: Number(formatUnits(trigger.price, SCALING_FACTOR)).toFixed(10),
+        amountPercent: Number(formatUnits(trigger.amountPercent, 3)).toFixed(2),
+        status: Number(trigger.status),
+        createdAt: new Date(Number(trigger.createdAt) * 1000).toLocaleString()
+      })) || [];
+      
+      return {
+        positionId: posId.toString(),
+        market,
+        isLong: position.isLong,
+        triggers
+      };
+    });
+    
+    setDetailedTriggers(formattedDetailedTriggers);
+  }, [detailedTriggerData]);
+
   return {
     orders,
     triggerOrders,
+    detailedTriggers,
     loading: isLoading,
+    loadingTriggers: isLoadingTriggers,
     error: isError ? new Error('Failed to fetch orders') : null,
-    refetch
+    refetch,
+    refetchTriggers
   };
 }

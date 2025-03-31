@@ -27,8 +27,12 @@ export function PositionsTable({ address }: PositionsTableProps) {
   const {
     orders,
     triggerOrders,
+    detailedTriggers,
     loading: ordersLoading,
+    loadingTriggers,
     error: ordersError,
+    refetch,
+    refetchTriggers
   } = useOrders();
   const { closePosition, closingPositions } = usePositionActions();
   const [activeTab, setActiveTab] = useState<ActiveTab>("positions");
@@ -36,6 +40,14 @@ export function PositionsTable({ address }: PositionsTableProps) {
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
   const cellRefs = useRef<{ [key: string]: HTMLTableCellElement | null }>({});
   const { prices } = usePrices();
+
+  // Fetch trigger orders data when tab changes to orders
+  useEffect(() => {
+    if (activeTab === "orders") {
+      refetch();
+      refetchTriggers();
+    }
+  }, [activeTab, refetch, refetchTriggers]);
 
   useEffect(() => {
     const container = document.createElement("div");
@@ -147,7 +159,9 @@ export function PositionsTable({ address }: PositionsTableProps) {
                 <OrdersContent
                   orders={orders}
                   triggerOrders={triggerOrders}
+                  detailedTriggers={detailedTriggers}
                   loading={ordersLoading}
+                  loadingTriggers={loadingTriggers}
                   error={ordersError}
                 />
               )}
