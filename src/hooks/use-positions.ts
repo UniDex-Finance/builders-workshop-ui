@@ -296,7 +296,7 @@ export function usePositions() {
                 positionId: posIds[index].toString(),
                 market,
                 size: Number(formatUnits(position.size, SCALING_FACTOR)).toFixed(2),
-                entryPrice: entryPrice.toFixed(2),
+                entryPrice: entryPrice.toString(),
                 markPrice: currentPrice ? currentPrice.toFixed(2) : 'Loading...',
                 pnl,
                 isLong: position.isLong,

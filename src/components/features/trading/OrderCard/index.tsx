@@ -555,7 +555,9 @@ export function OrderCard({
                 // Market mode - non-editable execution price
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">
-                    {tradeDetails.entryPrice ? Number(tradeDetails.entryPrice.toFixed(2)).toLocaleString() : "0.00"}
+                    {tradeDetails.entryPrice 
+                      ? formatPairPrice(currentPair, tradeDetails.entryPrice)
+                      : "0.00"}
                   </span>
                   <span className="text-xs text-muted-foreground">USD</span>
                 </div>

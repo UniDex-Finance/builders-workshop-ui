@@ -7,7 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { usePositionActions } from "@/hooks/trading-hooks/unidex-hooks/use-position-actions";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { usePairPrecision } from '@/hooks/use-pair-precision';
 
 interface Position {  
   id: number;
@@ -39,6 +40,17 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
   const [slPrice, setSlPrice] = useState("");
   const [slLoss, setSlLoss] = useState("");
   const { addTPSL, settingTPSL } = usePositionActions();
+  const { formatPairPrice, getPrecision } = usePairPrecision();
+  
+  // Get pair-specific precision settings
+  const pairPrecision = useMemo(() => {
+    return getPrecision(position.symbol);
+  }, [position.symbol, getPrecision]);
+  
+  // Calculate step value based on pair precision
+  const priceStep = useMemo(() => {
+    return `0.${"0".repeat(pairPrecision.maxDecimals - 1)}1`;
+  }, [pairPrecision]);
 
   const getNumericValue = (value: string) => {
     return parseFloat(value.replace(/[^0-9.-]/g, ""));
@@ -83,18 +95,24 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
     const requiredPriceMovementPercent = gainPercentage / leverage;
     
     if (isTP) {
-      // For take profit, keep the same logic
+      // For take profit, calculate full precision price
       const newPrice = position.isLong ?
         position.entryPrice * (1 + requiredPriceMovementPercent / 100) :
         position.entryPrice * (1 - requiredPriceMovementPercent / 100);
-      setTpPrice(newPrice.toFixed(2));
+      
+      // Format the price to display with proper precision
+      const decimals = pairPrecision.maxDecimals;
+      setTpPrice(newPrice.toFixed(decimals));
       setTpGain(gainStr);
     } else {
-      // For stop loss, move price in opposite direction
+      // For stop loss, calculate full precision price
       const newPrice = position.isLong ?
         position.entryPrice * (1 - requiredPriceMovementPercent / 100) :
         position.entryPrice * (1 + requiredPriceMovementPercent / 100);
-      setSlPrice(newPrice.toFixed(2));
+      
+      // Format the price to display with proper precision
+      const decimals = pairPrecision.maxDecimals;
+      setSlPrice(newPrice.toFixed(decimals));
       setSlLoss(gainStr);
     }
   };
@@ -118,6 +136,7 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
         percentageDiff * leverage : 
         -percentageDiff * leverage;
       
+      // Store price with proper formatting
       setTpPrice(priceStr);
       setTpGain(gainPercentage.toFixed(2));
     } else {
@@ -128,6 +147,7 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
         -percentageDiff * leverage : 
         percentageDiff * leverage;
       
+      // Store price with proper formatting
       setSlPrice(priceStr);
       setSlLoss(Math.abs(lossPercentage).toFixed(2));
     }
@@ -160,7 +180,7 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
 
     return (
       <div className="mb-4 text-sm text-gray-400">
-        If the price reaches {tpPrice}, 
+        If the price reaches ${formatPairPrice(position.symbol, parseFloat(tpPrice))}, 
         a market order will trigger with an profit of{" "}
         <span className="text-emerald-500">
           ${Math.abs(pnl).toFixed(2)}
@@ -186,7 +206,7 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
 
     return (
       <div className="mb-4 text-sm text-gray-400">
-        If the price reaches {slPrice}, 
+        If the price reaches ${formatPairPrice(position.symbol, parseFloat(slPrice))}, 
         a market order will trigger with an loss of{" "}
         <span className="text-short">
           ${Math.abs(pnl).toFixed(2)}
@@ -240,15 +260,21 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
               </div>
               <div className="flex justify-between text-gray-400">
                 <span>Liquidation Price</span>
-                <span className="text-short">{position.liquidationPrice}</span>
+                <span className="text-short">
+                  ${formatPairPrice(position.symbol, parseFloat(position.liquidationPrice))}
+                </span>
               </div>
               <div className="flex justify-between text-gray-400">
                 <span>Entry Price</span>
-                <span className="text-white">${position.entryPrice.toFixed(2)}</span>
+                <span className="text-white">
+                  ${formatPairPrice(position.symbol, position.entryPrice)}
+                </span>
               </div>
               <div className="flex justify-between text-gray-400">
                 <span>Market Price</span>
-                <span className="text-white">${position.markPrice.toFixed(2)}</span>
+                <span className="text-white">
+                  ${formatPairPrice(position.symbol, position.markPrice)}
+                </span>
               </div>
             </div>
 
@@ -266,7 +292,7 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
                       onChange={(e) => handlePriceChange(e.target.value, true)}
                       className="text-white bg-transparent border-gray-800"
                       type="number"
-                      step="0.01"
+                      step={priceStep}
                     />
                   </div>
                   <div>
@@ -279,7 +305,7 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
                       onChange={(e) => handleGainChange(e.target.value, true)}
                       className="text-white bg-transparent border-gray-800"
                       type="number"
-                      step="0.01"
+                      step="1"
                     />
                   </div>
                 </div>
@@ -299,7 +325,7 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
                       onChange={(e) => handlePriceChange(e.target.value, false)}
                       className="text-white bg-transparent border-gray-800"
                       type="number"
-                      step="0.01"
+                      step={priceStep}
                     />
                   </div>
                   <div>
@@ -312,7 +338,7 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
                       onChange={(e) => handleGainChange(e.target.value, false)}
                       className="text-white bg-transparent border-gray-800"
                       type="number"
-                      step="0.01"
+                      step="1"
                     />
                   </div>
                 </div>
