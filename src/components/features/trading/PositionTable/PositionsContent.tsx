@@ -1,5 +1,5 @@
 import { Position } from "../../../../hooks/use-positions";
-import { TriggerOrder } from "../../../../hooks/use-orders";
+import { TriggerOrder, DetailedTriggerInfo } from "../../../../hooks/use-orders";
 import { Button } from "../../../ui/button";
 import {
   TableBody,
@@ -18,9 +18,29 @@ import * as HoverCard from '@radix-ui/react-hover-card';
 import { TokenIcon } from "../../../../hooks/use-token-icon";
 import { usePairPrecision } from '@/hooks/use-pair-precision';
 
+// Trigger status enum definition
+enum TriggerStatus {
+  NONE = 0,
+  PENDING = 1,
+  OPEN = 2,
+  TRIGGERED = 3,
+  CANCELLED = 4
+}
+
+// Combined type for handling both TriggerOrders and detailed trigger information
+type TriggerOrderWithStatus = TriggerOrder | {
+  orderId: number;
+  isTP: boolean;
+  price: number;
+  amountPercent: string;
+  status: number;
+  createdAt: string;
+};
+
 interface PositionsContentProps {
   positions: Position[];
   triggerOrders?: TriggerOrder[];
+  detailedTriggers?: DetailedTriggerInfo[];
   loading: boolean;
   error: Error | null;
   closingPositions: { [key: string]: boolean };
@@ -33,6 +53,7 @@ interface PositionsContentProps {
 export function PositionsContent({
   positions,
   triggerOrders = [],
+  detailedTriggers = [],
   loading,
   error,
   closingPositions,
@@ -125,6 +146,42 @@ export function PositionsContent({
     e.stopPropagation();
     setSelectedCollateralPosition(position);
     setIsCollateralDialogOpen(true);
+  };
+
+  // Helper function to get active trigger orders for a position
+  const getActiveTriggerOrdersForPosition = (positionId: string): TriggerOrderWithStatus[] => {
+    // First try to get from detailed triggers which has status information
+    const positionDetailedTriggers = detailedTriggers.find(t => t.positionId === positionId);
+    
+    if (positionDetailedTriggers) {
+      // Filter only OPEN triggers
+      return positionDetailedTriggers.triggers
+        .filter(t => t.status === TriggerStatus.OPEN)
+        .map(t => ({...t}));
+    }
+
+    // For legacy trigger orders (no status field), we need to find corresponding detailed triggers
+    // to check if they're open or not
+    const legacyTriggerOrders = triggerOrders.filter(t => t.positionId === positionId);
+    
+    // If we have both legacy trigger orders and detailed trigger information, 
+    // we should filter out the canceled/triggered orders from the legacy list
+    if (legacyTriggerOrders.length > 0 && detailedTriggers.length > 0) {
+      // Look through all detailed triggers to find any that match this position
+      const allDetailedTriggers = detailedTriggers.flatMap(dt => 
+        dt.positionId === positionId 
+          ? dt.triggers.filter(t => t.status === TriggerStatus.OPEN)
+          : []
+      );
+      
+      // If we found detailed triggers info, only return those that are OPEN
+      if (allDetailedTriggers.length > 0) {
+        return allDetailedTriggers;
+      }
+    }
+    
+    // Fallback: return legacy trigger orders if we couldn't find detailed status info
+    return legacyTriggerOrders;
   };
 
   return (
@@ -233,9 +290,33 @@ export function PositionsContent({
             const pnlPercentage = calculatePnLPercentage(pnlValue, position.margin);
             const basePair = position.market.split("/")[0].toLowerCase();
             const currentPrice = prices[basePair]?.price;
-            const triggerOrder = triggerOrders.find(
-              (order) => order.positionId === position.positionId
-            );
+            
+            // Get active trigger orders for this position
+            const activeTriggerOrders = getActiveTriggerOrdersForPosition(position.positionId);
+            
+            // Get the first stop loss and take profit orders if they exist
+            const stopLossOrders = activeTriggerOrders.filter(o => {
+              if ('isTP' in o) {
+                return o.isTP === false;
+              } else if ('stopLoss' in o && 'takeProfit' in o) {
+                return o.stopLoss && !o.takeProfit;
+              }
+              return false;
+            });
+            
+            const takeProfitOrders = activeTriggerOrders.filter(o => {
+              if ('isTP' in o) {
+                return o.isTP === true;
+              } else if ('stopLoss' in o && 'takeProfit' in o) {
+                return !o.stopLoss && o.takeProfit;
+              }
+              return false;
+            });
+            
+            // Count additional orders beyond the first SL and TP
+            const additionalOrders = activeTriggerOrders.length - 
+              (stopLossOrders.length > 0 ? 1 : 0) - 
+              (takeProfitOrders.length > 0 ? 1 : 0);
             
             const isGtrade = position.positionId.toString().startsWith("g");
             if (isGtrade && (isNaN(pnlValue) || pnlValue === 0)) {
@@ -338,14 +419,28 @@ export function PositionsContent({
                   <span className="md:hidden">Stop Loss:</span>
                   <div>
                     <div className="text-short">
-                      {triggerOrder?.stopLoss?.price != null
-                        ? `$${formatPairPrice(position.market, parseFloat(triggerOrder.stopLoss.price))} (${triggerOrder.stopLoss.size}%)`
-                        : "-"}
+                      {stopLossOrders.length > 1 
+                        ? `${stopLossOrders.length} Open Orders` 
+                        : stopLossOrders.length > 0 
+                          ? ('stopLoss' in stopLossOrders[0] && stopLossOrders[0].stopLoss 
+                              ? `$${formatPairPrice(position.market, parseFloat(stopLossOrders[0].stopLoss.price))} (${stopLossOrders[0].stopLoss.size}%)` 
+                              : 'price' in stopLossOrders[0] 
+                                ? `$${formatPairPrice(position.market, stopLossOrders[0].price)} (${stopLossOrders[0].amountPercent}%)` 
+                                : "-"
+                            ) 
+                          : "-"}
                     </div>
                     <div className="hidden text-long md:block">
-                      {triggerOrder?.takeProfit?.price != null
-                        ? `$${formatPairPrice(position.market, parseFloat(triggerOrder.takeProfit.price))} (${triggerOrder.takeProfit.size}%)`
-                        : "-"}
+                      {takeProfitOrders.length > 1 
+                        ? `${takeProfitOrders.length} Open Orders` 
+                        : takeProfitOrders.length > 0 
+                          ? ('takeProfit' in takeProfitOrders[0] && takeProfitOrders[0].takeProfit 
+                              ? `$${formatPairPrice(position.market, parseFloat(takeProfitOrders[0].takeProfit.price))} (${takeProfitOrders[0].takeProfit.size}%)` 
+                              : 'price' in takeProfitOrders[0] 
+                                ? `$${formatPairPrice(position.market, takeProfitOrders[0].price)} (${takeProfitOrders[0].amountPercent}%)` 
+                                : "-"
+                            ) 
+                          : "-"}
                     </div>
                   </div>
                 </TableCell>
@@ -355,8 +450,15 @@ export function PositionsContent({
                 >
                   <span>Take Profit:</span>
                   <div className="text-long">
-                    {triggerOrder?.takeProfit?.price != null
-                      ? `$${formatPairPrice(position.market, parseFloat(triggerOrder.takeProfit.price))} (${triggerOrder.takeProfit.size}%)`
+                    {takeProfitOrders.length > 1 
+                      ? `${takeProfitOrders.length} Open Orders` 
+                      : takeProfitOrders.length > 0 
+                        ? ('takeProfit' in takeProfitOrders[0] && takeProfitOrders[0].takeProfit 
+                            ? `$${formatPairPrice(position.market, parseFloat(takeProfitOrders[0].takeProfit.price))} (${takeProfitOrders[0].takeProfit.size}%)` 
+                            : 'price' in takeProfitOrders[0] 
+                              ? `$${formatPairPrice(position.market, takeProfitOrders[0].price)} (${takeProfitOrders[0].amountPercent}%)` 
+                              : "-"
+                        ) 
                       : "-"}
                   </div>
                 </TableCell>
@@ -392,9 +494,7 @@ export function PositionsContent({
 
       <PositionDialog
         position={selectedPosition}
-        triggerOrder={triggerOrders.find(
-          (order) => order.positionId === selectedPosition?.positionId
-        )}
+        triggerOrders={selectedPosition ? getActiveTriggerOrdersForPosition(selectedPosition.positionId) : []}
         isOpen={isDialogOpen}
         onClose={() => {
           setIsDialogOpen(false);

@@ -46,7 +46,7 @@ export interface DetailedTriggerInfo {
   triggers: Array<{
     orderId: number;
     isTP: boolean;
-    price: string;
+    price: number;
     amountPercent: string;
     status: number;
     createdAt: string;
@@ -287,7 +287,7 @@ export function useOrders() {
       const triggers = triggerData?.triggers?.map((trigger, triggerId) => ({
         orderId: triggerId,
         isTP: trigger.isTP,
-        price: Number(formatUnits(trigger.price, SCALING_FACTOR)).toFixed(10),
+        price: Number(formatUnits(trigger.price, SCALING_FACTOR)),
         amountPercent: Number(formatUnits(trigger.amountPercent, 3)).toFixed(2),
         status: Number(trigger.status),
         createdAt: new Date(Number(trigger.createdAt) * 1000).toLocaleString()

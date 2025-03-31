@@ -9,6 +9,7 @@ import { Order, TriggerOrder, DetailedTriggerInfo } from "../../../../hooks/use-
 import { X } from "lucide-react";
 import { Button } from "../../../ui/button";
 import { useCancelOrderActions } from "../../../../hooks/trading-hooks/unidex-hooks/use-cancel-order-actions";
+import { usePairPrecision } from "../../../../hooks/use-pair-precision";
 
 interface OrdersContentProps {
   orders: Order[];
@@ -37,6 +38,7 @@ export function OrdersContent({
   error,
 }: OrdersContentProps) {
   const { cancelOrder, cancelTriggerOrder, cancellingOrders } = useCancelOrderActions();
+  const { formatPairPrice } = usePairPrecision();
 
   const isLoading = loading || loadingTriggers;
 
@@ -135,10 +137,10 @@ export function OrdersContent({
                   <TableCell>-</TableCell>
                   <TableCell>-</TableCell>
                   <TableCell className="text-short">
-                    {!trigger.isTP ? trigger.price : "-"}
+                    {!trigger.isTP ? formatPairPrice(position.market, trigger.price) : "-"}
                   </TableCell>
                   <TableCell className="text-long">
-                    {trigger.isTP ? trigger.price : "-"}
+                    {trigger.isTP ? formatPairPrice(position.market, trigger.price) : "-"}
                   </TableCell>
                   <TableCell>{trigger.createdAt}</TableCell>
                   <TableCell>
@@ -150,7 +152,7 @@ export function OrdersContent({
                         cancelTriggerOrder(
                           position.positionId, 
                           trigger.orderId, 
-                          `${trigger.isTP ? "Take Profit" : "Stop Loss"} at ${trigger.price} (${trigger.amountPercent}%)`
+                          `${trigger.isTP ? "Take Profit" : "Stop Loss"} at ${formatPairPrice(position.market, trigger.price)} (${trigger.amountPercent}%)`
                         )
                       }
                     >
@@ -172,12 +174,12 @@ export function OrdersContent({
                 <TableCell>-</TableCell>
                 <TableCell className="text-short">
                   {order.stopLoss
-                    ? `${order.stopLoss.price} (${order.stopLoss.size}%)`
+                    ? `${formatPairPrice(order.market, parseFloat(order.stopLoss.price))} (${order.stopLoss.size}%)`
                     : "-"}
                 </TableCell>
                 <TableCell className="text-long">
                   {order.takeProfit
-                    ? `${order.takeProfit.price} (${order.takeProfit.size}%)`
+                    ? `${formatPairPrice(order.market, parseFloat(order.takeProfit.price))} (${order.takeProfit.size}%)`
                     : "-"}
                 </TableCell>
                 <TableCell>{order.timestamp}</TableCell>

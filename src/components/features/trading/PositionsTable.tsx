@@ -49,6 +49,16 @@ export function PositionsTable({ address }: PositionsTableProps) {
     }
   }, [activeTab, refetch, refetchTriggers]);
 
+  // Also fetch trigger orders regularly for positions tab
+  useEffect(() => {
+    if (activeTab === "positions") {
+      const interval = setInterval(() => {
+        refetchTriggers();
+      }, 5000); // refresh every 10 seconds
+      return () => clearInterval(interval);
+    }
+  }, [activeTab, refetchTriggers]);
+
   useEffect(() => {
     const container = document.createElement("div");
     container.style.position = "fixed";
@@ -146,6 +156,7 @@ export function PositionsTable({ address }: PositionsTableProps) {
                 <PositionsContent
                   positions={positions}
                   triggerOrders={triggerOrders}
+                  detailedTriggers={detailedTriggers}
                   loading={positionsLoading}
                   error={positionsError}
                   closingPositions={closingPositions}

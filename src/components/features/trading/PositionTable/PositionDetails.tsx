@@ -15,9 +15,23 @@ import { PositionSizeDialog } from "./PositionSizeDialog";
 import { TokenIcon } from "../../../../hooks/use-token-icon";
 import { usePairPrecision } from '@/hooks/use-pair-precision';
 
+// Combined type for trigger orders
+type TriggerOrderWithStatus = TriggerOrder | {
+  orderId: number;
+  isTP: boolean;
+  price: number;
+  amountPercent: string;
+  status: number;
+  createdAt: string;
+};
+
 interface PositionDetailsProps {
   position: Position;
-  triggerOrder?: TriggerOrder;
+  stopLossOrder?: TriggerOrderWithStatus;
+  takeProfitOrder?: TriggerOrderWithStatus;
+  additionalOrders: number;
+  // Add an array of all trigger orders
+  allTriggerOrders?: TriggerOrderWithStatus[];
   onClose: () => void;
   onClosePosition: (position: Position) => void;
   isClosing: boolean;
@@ -30,7 +44,10 @@ interface PositionDetailsProps {
 
 export function PositionDetails({
   position,
-  triggerOrder,
+  stopLossOrder,
+  takeProfitOrder,
+  additionalOrders,
+  allTriggerOrders = [],
   onClose,
   onClosePosition,
   isClosing,
@@ -88,6 +105,52 @@ export function PositionDetails({
 
   const pnlValue = parseFloat(calculateFinalPnl());
   const leverage = calculateLeverage();
+
+  // Helper functions to extract price and size from different trigger order formats
+  const getOrderPrice = (order: TriggerOrderWithStatus | undefined, isTP: boolean) => {
+    if (!order) return null;
+    
+    if ('takeProfit' in order && 'stopLoss' in order) {
+      return isTP 
+        ? (order.takeProfit?.price || null)
+        : (order.stopLoss?.price || null);
+    } else if ('price' in order) {
+      return order.price.toString();
+    }
+    return null;
+  };
+
+  const getOrderSize = (order: TriggerOrderWithStatus | undefined, isTP: boolean) => {
+    if (!order) return null;
+    
+    if ('takeProfit' in order && 'stopLoss' in order) {
+      return isTP 
+        ? (order.takeProfit?.size || null)
+        : (order.stopLoss?.size || null);
+    } else if ('amountPercent' in order) {
+      return order.amountPercent;
+    }
+    return null;
+  };
+
+  // Get stop loss and take profit orders
+  const getStopLossPrice = () => getOrderPrice(stopLossOrder, false);
+  const getStopLossSize = () => getOrderSize(stopLossOrder, false);
+  const getTakeProfitPrice = () => getOrderPrice(takeProfitOrder, true);
+  const getTakeProfitSize = () => getOrderSize(takeProfitOrder, true);
+
+  // Group trigger orders
+  const stopLossOrders = allTriggerOrders.filter(order => {
+    if ('isTP' in order) return !order.isTP;
+    if ('stopLoss' in order && 'takeProfit' in order) return order.stopLoss && !order.takeProfit;
+    return false;
+  });
+  
+  const takeProfitOrders = allTriggerOrders.filter(order => {
+    if ('isTP' in order) return order.isTP;
+    if ('stopLoss' in order && 'takeProfit' in order) return !order.stopLoss && order.takeProfit;
+    return false;
+  });
 
   return (
     <>
@@ -160,23 +223,55 @@ export function PositionDetails({
             <span className="text-short">${position.liquidationPrice != null ? formatPairPrice(position.market, parseFloat(position.liquidationPrice)) : "..."}</span>
           </div>
 
-          <div className="flex items-center justify-between">
-            <span className="text-zinc-400">Stop Loss</span>
-            <span className="text-short">
-              {triggerOrder?.stopLoss
-                ? `${triggerOrder.stopLoss.price} (${triggerOrder.stopLoss.size}%)`
-                : "-"}
-            </span>
-          </div>
+          {/* Stop Loss Orders Section */}
+          {stopLossOrders.length === 0 ? (
+            <div className="flex items-center justify-between">
+              <span className="text-zinc-400">Stop Loss</span>
+              <span className="text-short">-</span>
+            </div>
+          ) : (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-zinc-400">Stop Loss</span>
+              </div>
+              {stopLossOrders.map((order, index) => {
+                const price = getOrderPrice(order, false);
+                const size = getOrderSize(order, false);
+                return (
+                  <div key={`sl-${index}`} className="flex items-center justify-end mb-1 text-short">
+                    {price ? 
+                      `$${formatPairPrice(position.market, parseFloat(price))} (${size}%)`
+                      : "-"}
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
-          <div className="flex items-center justify-between">
-            <span className="text-zinc-400">Take Profit</span>
-            <span className="text-long">
-              {triggerOrder?.takeProfit
-                ? `${triggerOrder.takeProfit.price} (${triggerOrder.takeProfit.size}%)`
-                : "-"}
-            </span>
-          </div>
+          {/* Take Profit Orders Section */}
+          {takeProfitOrders.length === 0 ? (
+            <div className="flex items-center justify-between">
+              <span className="text-zinc-400">Take Profit</span>
+              <span className="text-long">-</span>
+            </div>
+          ) : (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-zinc-400">Take Profit</span>
+              </div>
+              {takeProfitOrders.map((order, index) => {
+                const price = getOrderPrice(order, true);
+                const size = getOrderSize(order, true);
+                return (
+                  <div key={`tp-${index}`} className="flex items-center justify-end mb-1 text-long">
+                    {price ? 
+                      `$${formatPairPrice(position.market, parseFloat(price))} (${size}%)`
+                      : "-"}
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           <div className="flex items-center justify-between">
             <span className="text-zinc-400">Position Fee</span>

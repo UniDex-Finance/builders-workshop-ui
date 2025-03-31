@@ -9,9 +9,19 @@ import {
 import { PositionDetails } from "./PositionDetails";
 import { PositionSizeDialog } from "./PositionSizeDialog";
 
+// Combined type for trigger orders
+type TriggerOrderWithStatus = TriggerOrder | {
+  orderId: number;
+  isTP: boolean;
+  price: number;
+  amountPercent: string;
+  status: number;
+  createdAt: string;
+};
+
 interface PositionDialogProps {
   position: Position | null;
-  triggerOrder?: TriggerOrder;
+  triggerOrders?: Array<TriggerOrderWithStatus>;
   isOpen: boolean;
   onClose: () => void;
   onClosePosition: (position: Position) => void;
@@ -22,7 +32,7 @@ interface PositionDialogProps {
 
 export function PositionDialog({
   position,
-  triggerOrder,
+  triggerOrders = [],
   isOpen,
   onClose,
   onClosePosition,
@@ -39,6 +49,22 @@ export function PositionDialog({
     setIsSizeDialogOpen(true);
   };
 
+  // Find the first stop loss and take profit orders
+  const stopLossOrder = triggerOrders.find(order => 
+    (order as any).isTP === false || 
+    ((order as TriggerOrder).stopLoss && !(order as TriggerOrder).takeProfit)
+  );
+  
+  const takeProfitOrder = triggerOrders.find(order => 
+    (order as any).isTP === true || 
+    (!(order as TriggerOrder).stopLoss && (order as TriggerOrder).takeProfit)
+  );
+
+  // Count additional orders
+  const additionalOrders = triggerOrders.length - 
+    (stopLossOrder ? 1 : 0) - 
+    (takeProfitOrder ? 1 : 0);
+
   return (
     <>
       <Dialog open={isOpen} modal={true}>
@@ -49,7 +75,10 @@ export function PositionDialog({
         >
           <PositionDetails
             position={position}
-            triggerOrder={triggerOrder}
+            stopLossOrder={stopLossOrder}
+            takeProfitOrder={takeProfitOrder}
+            additionalOrders={additionalOrders}
+            allTriggerOrders={triggerOrders}
             onClose={onClose}
             onClosePosition={onClosePosition}
             isClosing={isClosing}
