@@ -5,7 +5,7 @@ import { KERNEL_V3_1 } from "@zerodev/sdk/constants";
 import { createKernelAccount, createKernelAccountClient, createZeroDevPaymasterClient  } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { walletClientToSmartAccountSigner } from 'permissionless';
-import { http, createPublicClient} from 'viem';
+import { http, createPublicClient, fallback } from 'viem';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { toECDSASigner } from "@zerodev/permissions/signers";
 import {
@@ -26,7 +26,11 @@ const ARBITRUM_RPC = process.env.NEXT_PUBLIC_ARBITRUM_RPC || "https://arb1.arbit
 // Create a dedicated Arbitrum public client
 const arbitrumPublicClient = createPublicClient({
   chain: arbitrum,
-  transport: http(ARBITRUM_RPC)
+  transport: fallback([
+    http(ARBITRUM_RPC),                 // Try ENV variable first
+    http('https://rpc.ankr.com/arbitrum'), // Fallback 1
+    http('https://arb1.arbitrum.io/rpc')  // Fallback 2 (original default)
+  ])
 });
 
 export function useSmartAccount() {

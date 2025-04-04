@@ -54,7 +54,7 @@ export function PositionsTable({ address }: PositionsTableProps) {
     if (activeTab === "positions") {
       const interval = setInterval(() => {
         refetchTriggers();
-      }, 5000); // refresh every 10 seconds
+      }, 5000); // refresh every 5 seconds
       return () => clearInterval(interval);
     }
   }, [activeTab, refetchTriggers]);
