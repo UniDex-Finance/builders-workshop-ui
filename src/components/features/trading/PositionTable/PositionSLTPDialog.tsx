@@ -48,6 +48,8 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
   const [showTpDropdown, setShowTpDropdown] = useState(false);
   const [showSlDropdown, setShowSlDropdown] = useState(false);
   const [isSlInvalidDueToLiquidation, setIsSlInvalidDueToLiquidation] = useState(false);
+  const [isTpClosePercentInvalid, setIsTpClosePercentInvalid] = useState(false);
+  const [isSlClosePercentInvalid, setIsSlClosePercentInvalid] = useState(false);
   const { addTPSL, settingTPSL } = usePositionActions();
   const { formatPairPrice, getPrecision } = usePairPrecision();
   
@@ -135,6 +137,27 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
   useEffect(() => {
     setIsSlInvalidDueToLiquidation(checkSlValidity());
   }, [slPrice, position.liquidationPrice, position.isLong]); // Dependencies
+
+  // Validation function for close percentage
+  const validateClosePercent = (percentStr: string): boolean => {
+    // Allow empty string (will default to 100 on submit)
+    if (percentStr.trim() === "") {
+      return true; // Valid (empty)
+    }
+    const percentNum = parseFloat(percentStr);
+    // Check if it's a number and within the 1-100 range
+    return !isNaN(percentNum) && percentNum >= 1 && percentNum <= 100;
+  };
+  
+  // Effect to validate TP Close Percentage
+  useEffect(() => {
+    setIsTpClosePercentInvalid(!validateClosePercent(tpClosePercent));
+  }, [tpClosePercent]);
+
+  // Effect to validate SL Close Percentage
+  useEffect(() => {
+    setIsSlClosePercentInvalid(!validateClosePercent(slClosePercent));
+  }, [slClosePercent]);
 
   // Keep the old function name for isSubmitDisabled compatibility
   const isStopLossBelowLiquidation = (): boolean => {
@@ -376,7 +399,6 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
 
     // Condition 2: Disable if neither TP nor SL price/value is set
     const isTpSet = !!tpPrice || (tpTriggerType === 'pnl' && !!tpPnl);
-    // Use slPrice state directly for SL check now
     const isSlSet = !!slPrice; 
     if (!isTpSet && !isSlSet) {
       // console.log("Submit Disabled: No TP or SL value set.");
@@ -384,13 +406,16 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
     }
     
     // Condition 3: Disable if SL is invalid due to liquidation
-    // This now covers distance > 90%, PNL > margin implicitly if they result in an invalid price
     if (isSlInvalidDueToLiquidation) {
       // console.log("Submit Disabled: SL is invalid due to liquidation.");
       return true;
     }
 
-    // Removed previous conditions 3 & 4 as they are covered by the liquidation check
+    // Condition 4: Disable if Close Percentages are invalid
+    if (isTpClosePercentInvalid || isSlClosePercentInvalid) {
+      // console.log("Submit Disabled: Invalid Close Percentage.");
+      return true;
+    }
 
     // If none of the above conditions are met, the button should be enabled
     // console.log("Submit Enabled: Conditions met.");
@@ -551,7 +576,7 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
               </div>
               <div className="col-span-2">
                 <div className="text-gray-400 text-xs mb-1">Close %</div>
-                <div className="flex bg-secondary rounded-md overflow-hidden">
+                <div className={`flex bg-secondary rounded-md overflow-hidden border ${isTpClosePercentInvalid ? 'border-red-500' : 'border-transparent'}`}>
                   <input
                     type="text"
                     value={tpClosePercent}
@@ -563,6 +588,12 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
                 </div>
               </div>
             </div>
+
+            {isTpClosePercentInvalid && (
+              <div className="text-xs text-red-500 mb-2 text-right col-start-11 col-span-2">
+                Must be 1-100%
+              </div>
+            )}
 
             <div className="flex justify-between text-xs mb-4">
               <span className="text-gray-400">
@@ -662,7 +693,7 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
               </div>
               <div className="col-span-2">
                 <div className="text-gray-400 text-xs mb-1">Close %</div>
-                <div className="flex bg-secondary rounded-md overflow-hidden">
+                <div className={`flex bg-secondary rounded-md overflow-hidden border ${isSlClosePercentInvalid ? 'border-red-500' : 'border-transparent'}`}>
                   <input
                     type="text"
                     value={slClosePercent}
@@ -675,11 +706,22 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
               </div>
             </div>
 
-            {isSlInvalidDueToLiquidation && (
-              <div className="text-xs text-red-500 mb-2">
-                Liquidation may occur before stop loss is hit. Adjust SL price.
+            <div className="flex justify-between text-xs mb-2">
+              <div className="flex-1">
+                {isSlInvalidDueToLiquidation && (
+                  <div className="text-red-500">
+                    Liquidation may occur before stop loss is hit. Adjust SL price.
+                  </div>
+                )}
               </div>
-            )}
+              <div className="flex-shrink-0 text-right">
+                {isSlClosePercentInvalid && (
+                  <div className="text-red-500">
+                    Must be 1-100%
+                  </div>
+                )}
+              </div>
+            </div>
 
             <div className="flex justify-between text-xs mb-4">
               <span className="text-gray-400">
