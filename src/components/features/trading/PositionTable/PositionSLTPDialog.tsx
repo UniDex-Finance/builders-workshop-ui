@@ -41,6 +41,8 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
   const [slDistance, setSlDistance] = useState("");
   const [tpPnl, setTpPnl] = useState("");
   const [slPnl, setSlPnl] = useState("");
+  const [tpClosePercent, setTpClosePercent] = useState("100");
+  const [slClosePercent, setSlClosePercent] = useState("100");
   const [tpTriggerType, setTpTriggerType] = useState<"distance" | "pnl">("distance");
   const [slTriggerType, setSlTriggerType] = useState<"distance" | "pnl">("distance");
   const [showTpDropdown, setShowTpDropdown] = useState(false);
@@ -326,29 +328,43 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
       return;
     }
 
+    // Parse close percentages, default to 100 if invalid or empty
+    const takeProfitClosePercent = parseFloat(tpClosePercent) || 100;
+    const stopLossClosePercent = parseFloat(slClosePercent) || 100;
+    
+    // Ensure percentages are within valid range (e.g., 0-100) - optional validation
+    const validTpPercent = Math.max(0, Math.min(100, takeProfitClosePercent));
+    const validSlPercent = Math.max(0, Math.min(100, stopLossClosePercent));
+
     await addTPSL(
       position.id,
       tp,
       sl,
-      parseFloat(tpDistance),
-      parseFloat(slDistance)
+      // Pass the parsed (and potentially validated) percentages
+      validTpPercent,
+      validSlPercent
     );
 
     onClose();
   };
 
-  // Calculate estimated maximum profit
+  // Calculate estimated maximum profit scaled by close percentage
   const calculateEstimatedMaxProfit = () => {
     if (!tpPrice) return "0.00";
-    const pnl = calculatePnL(tpPrice);
-    return pnl.toFixed(2);
+    const fullPnl = calculatePnL(tpPrice);
+    const closePercent = parseFloat(tpClosePercent) || 100; // Default to 100 if invalid
+    const scaledPnl = fullPnl * (closePercent / 100);
+    return scaledPnl.toFixed(2);
   };
 
-  // Calculate estimated maximum loss
+  // Calculate estimated maximum loss scaled by close percentage
   const calculateEstimatedMaxLoss = () => {
     if (!slPrice) return "0.00";
-    const pnl = calculatePnL(slPrice);
-    return pnl.toFixed(2);
+    const fullPnl = calculatePnL(slPrice);
+    const closePercent = parseFloat(slClosePercent) || 100; // Default to 100 if invalid
+    const scaledPnl = fullPnl * (closePercent / 100);
+    // Ensure the loss is shown as a negative or zero value correctly
+    return scaledPnl.toFixed(2);
   };
 
   const isSubmitDisabled = (): boolean => {
@@ -462,8 +478,8 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
                 <ChevronDown className="h-4 w-4 text-gray-400 ml-1" />
               </div>
               <div className="relative">
-                <div 
-                  className="flex items-center cursor-pointer" 
+                <div
+                  className="flex items-center cursor-pointer"
                   onClick={() => setShowTpDropdown(!showTpDropdown)}
                 >
                   <span className="text-sm text-[var(--primary-color)]">
@@ -472,9 +488,9 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
                   <ChevronDown className="h-4 w-4 text-gray-400 ml-1" />
                 </div>
                 {showTpDropdown && (
-                  <div className="absolute right-0 top-full mt-1 bg-secondary rounded-md shadow-lg z-10">
-                    <div 
-                      className="py-2 px-4 hover:bg-accent cursor-pointer"
+                  <div className="absolute right-0 top-full mt-1 bg-secondary rounded-md shadow-lg z-10 min-w-[12rem]">
+                    <div
+                      className="py-2 px-4 hover:bg-accent cursor-pointer text-sm"
                       onClick={() => {
                         setTpTriggerType("distance");
                         setShowTpDropdown(false);
@@ -482,8 +498,8 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
                     >
                       Trigger by distance
                     </div>
-                    <div 
-                      className="py-2 px-4 hover:bg-accent cursor-pointer"
+                    <div
+                      className="py-2 px-4 hover:bg-accent cursor-pointer text-sm"
                       onClick={() => {
                         setTpTriggerType("pnl");
                         setShowTpDropdown(false);
@@ -496,52 +512,71 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
               </div>
             </div>
 
-            <div className="grid grid-cols-12 gap-4 mb-2">
-              <div className="col-span-7">
+            <div className="grid grid-cols-12 gap-3 mb-2">
+              <div className="col-span-5">
                 <div className="text-gray-400 text-xs mb-1">Trigger</div>
                 <div className="flex bg-secondary rounded-md overflow-hidden">
-                  <div className="bg-secondary px-3 py-2 text-gray-400">$</div>
+                  <div className="bg-secondary px-2 py-2 text-gray-400">$</div>
                   <input
                     type="text"
                     value={tpPrice}
                     onChange={(e) => handlePriceChange(e.target.value, true)}
-                    className="bg-transparent flex-1 p-2 outline-none"
+                    className="bg-transparent flex-1 py-2 pr-2 pl-1 outline-none"
+                    placeholder="Price"
                     step={priceStep}
                   />
                 </div>
               </div>
               <div className="col-span-5">
                 <div className="text-gray-400 text-xs mb-1">
-                  {tpTriggerType === "distance" ? "Entry distance (%)" : "Target P&L"}
+                  {tpTriggerType === "distance" ? "Distance (%)" : "Target P&L"}
                 </div>
                 <div className="flex bg-secondary rounded-md overflow-hidden">
-                  <div className="bg-secondary px-3 py-2 text-white">
+                  <div className="bg-secondary px-2 py-2 text-white">
                     {tpTriggerType === "distance" ? "+" : "$"}
                   </div>
                   <input
                     type="text"
                     value={tpTriggerType === "distance" ? tpDistance : tpPnl}
-                    onChange={(e) => tpTriggerType === "distance" 
-                      ? handleTpDistanceChange(e.target.value) 
+                    onChange={(e) => tpTriggerType === "distance"
+                      ? handleTpDistanceChange(e.target.value)
                       : handleTpPnlChange(e.target.value)}
-                    className="bg-transparent flex-1 p-2 outline-none"
-                    placeholder={tpTriggerType === "distance" ? "Percentage" : "Amount"}
+                    className={`bg-transparent flex-1 py-2 pl-1 ${tpTriggerType === "distance" ? 'pr-1' : 'pr-2'} outline-none`}
+                    placeholder={tpTriggerType === "distance" ? "%" : "USD"}
                   />
-                  <div className={`bg-secondary px-3 py-2 ${tpTriggerType === "distance" ? "text-white font-medium" : "text-gray-400"}`}>
-                    {tpTriggerType === "distance" ? "%" : ""}
-                  </div>
+                  {tpTriggerType === "distance" && (
+                    <div className="bg-secondary pl-1 pr-2 py-2 text-gray-400">%</div>
+                  )}
+                </div>
+              </div>
+              <div className="col-span-2">
+                <div className="text-gray-400 text-xs mb-1">Close %</div>
+                <div className="flex bg-secondary rounded-md overflow-hidden">
+                  <input
+                    type="text"
+                    value={tpClosePercent}
+                    onChange={(e) => setTpClosePercent(e.target.value)}
+                    className="bg-transparent flex-1 py-2 pl-3.5 pr-1 outline-none"
+                    placeholder="100"
+                  />
+                  <div className="bg-secondary pl-1 pr-2 py-2 text-gray-400">%</div>
                 </div>
               </div>
             </div>
 
             <div className="flex justify-between text-xs mb-4">
               <span className="text-gray-400">
-                {tpTriggerType === "distance" ? "Est. maximum profit" : "Est. percentage profit"}
+                {tpTriggerType === "distance" 
+                  ? `Est. profit at ${tpClosePercent}% close` 
+                  : `Est. percentage profit at ${tpClosePercent}% close`}
               </span>
               <span className="text-long">
-                {tpTriggerType === "distance" 
-                  ? `+${calculateEstimatedMaxProfit()} USD` 
-                  : `+${tpGain}%`}
+                {tpTriggerType === "distance"
+                  ? `+${calculateEstimatedMaxProfit()} USD`
+                  : `+${(
+                      (parseFloat(tpGain || '0') * (parseFloat(tpClosePercent || '100') / 100))
+                    ).toFixed(2)}%`
+                }
               </span>
             </div>
           </div>
@@ -554,8 +589,8 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
                 <ChevronDown className="h-4 w-4 text-gray-400 ml-1" />
               </div>
               <div className="relative">
-                <div 
-                  className="flex items-center cursor-pointer" 
+                <div
+                  className="flex items-center cursor-pointer"
                   onClick={() => setShowSlDropdown(!showSlDropdown)}
                 >
                   <span className="text-sm text-[var(--primary-color)]">
@@ -564,9 +599,9 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
                   <ChevronDown className="h-4 w-4 text-gray-400 ml-1" />
                 </div>
                 {showSlDropdown && (
-                  <div className="absolute right-0 top-full mt-1 bg-secondary rounded-md shadow-lg z-10">
-                    <div 
-                      className="py-2 px-4 hover:bg-accent cursor-pointer"
+                  <div className="absolute right-0 top-full mt-1 bg-secondary rounded-md shadow-lg z-10 min-w-[12rem]">
+                    <div
+                      className="py-2 px-4 hover:bg-accent cursor-pointer text-sm"
                       onClick={() => {
                         setSlTriggerType("distance");
                         setShowSlDropdown(false);
@@ -574,8 +609,8 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
                     >
                       Trigger by distance
                     </div>
-                    <div 
-                      className="py-2 px-4 hover:bg-accent cursor-pointer"
+                    <div
+                      className="py-2 px-4 hover:bg-accent cursor-pointer text-sm"
                       onClick={() => {
                         setSlTriggerType("pnl");
                         setShowSlDropdown(false);
@@ -588,40 +623,54 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
               </div>
             </div>
 
-            <div className="grid grid-cols-12 gap-4 mb-2">
-              <div className="col-span-7">
+            <div className="grid grid-cols-12 gap-3 mb-2">
+              <div className="col-span-5">
                 <div className="text-gray-400 text-xs mb-1">Trigger</div>
                 <div className={`flex bg-secondary rounded-md overflow-hidden border ${isSlInvalidDueToLiquidation ? 'border-red-500' : 'border-transparent'}`}>
-                  <div className="bg-secondary px-3 py-2 text-gray-400">$</div>
+                  <div className="bg-secondary px-2 py-2 text-gray-400">$</div>
                   <input
                     type="text"
                     value={slPrice}
                     onChange={(e) => handlePriceChange(e.target.value, false)}
-                    className="bg-transparent flex-1 p-2 outline-none"
+                    className="bg-transparent flex-1 py-2 pr-2 pl-1 outline-none"
+                    placeholder="Price"
                     step={priceStep}
                   />
                 </div>
               </div>
               <div className="col-span-5">
                 <div className="text-gray-400 text-xs mb-1">
-                  {slTriggerType === "distance" ? "Entry distance (%)" : "Target P&L"}
+                  {slTriggerType === "distance" ? "Distance (%)" : "Target P&L"}
                 </div>
                 <div className="flex bg-secondary rounded-md overflow-hidden">
-                  <div className="bg-secondary px-3 py-2 text-white">
+                  <div className="bg-secondary px-2 py-2 text-white">
                     {slTriggerType === "distance" ? "-" : "$"}
                   </div>
                   <input
                     type="text"
                     value={slTriggerType === "distance" ? slDistance : slPnl}
-                    onChange={(e) => slTriggerType === "distance" 
-                      ? handleSlDistanceChange(e.target.value) 
+                    onChange={(e) => slTriggerType === "distance"
+                      ? handleSlDistanceChange(e.target.value)
                       : handleSlPnlChange(e.target.value)}
-                    className="bg-transparent flex-1 p-2 outline-none"
-                    placeholder={slTriggerType === "distance" ? "Percentage" : "Amount"}
+                    className={`bg-transparent flex-1 py-2 pl-1 ${slTriggerType === "distance" ? 'pr-1' : 'pr-2'} outline-none`}
+                    placeholder={slTriggerType === "distance" ? "%" : "USD"}
                   />
-                  <div className={`bg-secondary px-3 py-2 ${slTriggerType === "distance" ? "text-white font-medium" : "text-gray-400"}`}>
-                    {slTriggerType === "distance" ? "%" : ""}
-                  </div>
+                  {slTriggerType === "distance" && (
+                    <div className="bg-secondary pl-1 pr-2 py-2 text-gray-400">%</div>
+                  )}
+                </div>
+              </div>
+              <div className="col-span-2">
+                <div className="text-gray-400 text-xs mb-1">Close %</div>
+                <div className="flex bg-secondary rounded-md overflow-hidden">
+                  <input
+                    type="text"
+                    value={slClosePercent}
+                    onChange={(e) => setSlClosePercent(e.target.value)}
+                    className="bg-transparent flex-1 py-2 pl-3.5 pr-1 outline-none"
+                    placeholder="100"
+                  />
+                  <div className="bg-secondary pl-1 pr-2 py-2 text-gray-400">%</div>
                 </div>
               </div>
             </div>
@@ -634,12 +683,17 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
 
             <div className="flex justify-between text-xs mb-4">
               <span className="text-gray-400">
-                {slTriggerType === "distance" ? "Est. maximum loss" : "Est. percentage loss"}
+                {slTriggerType === "distance" 
+                  ? `Est. loss at ${slClosePercent}% close` 
+                  : `Est. percentage loss at ${slClosePercent}% close`}
               </span>
               <span className="text-short">
-                {slTriggerType === "distance" 
-                  ? `-${Math.abs(parseFloat(calculateEstimatedMaxLoss())).toFixed(2)} USD` 
-                  : `-${slLoss}%`}
+                {slTriggerType === "distance"
+                  ? `-${Math.abs(parseFloat(calculateEstimatedMaxLoss())).toFixed(2)} USD`
+                  : `-${(
+                      (parseFloat(slLoss || '0') * (parseFloat(slClosePercent || '100') / 100))
+                    ).toFixed(2)}%`
+                }
               </span>
             </div>
           </div>
@@ -660,7 +714,7 @@ export function PositionSLTPDialog({ position, isOpen, onClose }: PositionSLTPDi
                 isSubmitDisabled()
                   ? "bg-secondary text-gray-500 cursor-not-allowed" // Disabled state: Grey background
                   // DEBUGGING: Temporarily use green for enabled state
-                  : "bg-green-500 text-white hover:bg-green-600" 
+                  : "bg-green-500 text-white hover:bg-green-600"
               }`}
               onClick={handleSubmit}
               disabled={isSubmitDisabled()}
