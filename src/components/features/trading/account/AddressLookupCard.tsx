@@ -5,8 +5,7 @@ import { getKernelAddressFromECDSA } from "@zerodev/ecdsa-validator";
 import { getValidatorAddress } from "@zerodev/ecdsa-validator";
 import { getContract, createPublicClient, http } from 'viem';
 import { arbitrum } from 'viem/chains';
-import { ENTRYPOINT_ADDRESS_V07 } from "permissionless";
-import { KERNEL_V3_1 } from "@zerodev/sdk/constants";
+import { KERNEL_V3_1, getEntryPoint } from "@zerodev/sdk/constants";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -52,7 +51,7 @@ export function AddressLookupCard({ isExpanded, onClose }: AddressLookupCardProp
               stateMutability: "view",
             },
           ],
-          address: getValidatorAddress(ENTRYPOINT_ADDRESS_V07, KERNEL_V3_1),
+          address: getValidatorAddress(getEntryPoint("0.7"), KERNEL_V3_1),
           client: publicClient,
         });
 
@@ -64,7 +63,7 @@ export function AddressLookupCard({ isExpanded, onClose }: AddressLookupCardProp
         // Looking up smart account from wallet
         const smartAccountAddress = await getKernelAddressFromECDSA({
           eoaAddress: inputAddress as `0x${string}`,
-          entryPointAddress: ENTRYPOINT_ADDRESS_V07,
+          entryPoint: getEntryPoint("0.7"),
           kernelVersion: KERNEL_V3_1,
           index: 0n,
           publicClient

@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useWalletClient, useAccount } from 'wagmi';
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
-import { KERNEL_V3_1 } from "@zerodev/sdk/constants";
+import { KERNEL_V3_1, getEntryPoint } from "@zerodev/sdk/constants";
 import { createKernelAccount, createKernelAccountClient, createZeroDevPaymasterClient  } from "@zerodev/sdk";
-import { ENTRYPOINT_ADDRESS_V07 } from "permissionless";
-import { walletClientToSmartAccountSigner } from 'permissionless';
 import { http, createPublicClient, fallback } from 'viem';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { toECDSASigner } from "@zerodev/permissions/signers";
@@ -107,7 +105,7 @@ export function useSmartAccount() {
         console.log('Found stored session, attempting to initialize...'); // Debug log
         const kernelAccount = await deserializePermissionAccount(
           publicClient,
-          ENTRYPOINT_ADDRESS_V07,
+          getEntryPoint("0.7"),
           KERNEL_V3_1,
           storedSessionKey
         );
@@ -116,17 +114,17 @@ export function useSmartAccount() {
 
         const kernelPaymaster = createZeroDevPaymasterClient({
           chain: arbitrum,
-          entryPoint: ENTRYPOINT_ADDRESS_V07,
           transport: http(PAYMASTER_RPC),
         });
 
         const client = createKernelAccountClient({
           account: kernelAccount,
-          entryPoint: ENTRYPOINT_ADDRESS_V07,
           chain: arbitrum,
           bundlerTransport: http(bundlerRpcUrl),
-          middleware: {
-            sponsorUserOperation: kernelPaymaster.sponsorUserOperation,
+          paymaster: {
+            getPaymasterData(userOperation) {
+              return kernelPaymaster.sponsorUserOperation({ userOperation })
+            }
           }
         });
 
@@ -198,7 +196,6 @@ export function useSmartAccount() {
       setError(null);
       setIsNetworkSwitching(true);
 
-      // Ensure we're on Arbitrum network before proceeding
       const networkSwitch = await ensureArbitrumNetwork(chain?.id, walletClient);
       if (!networkSwitch.success) {
         throw new Error(networkSwitch.error || 'Failed to switch network');
@@ -206,7 +203,6 @@ export function useSmartAccount() {
 
       setIsNetworkSwitching(false);
 
-      // Rest of the existing setupSessionKey code
       const sessionPrivateKey = generatePrivateKey();
       const privKeyAccount = privateKeyToAccount(sessionPrivateKey);
 
@@ -214,11 +210,11 @@ export function useSmartAccount() {
         signer: privKeyAccount,
       });
 
-      const smartAccountSigner = walletClientToSmartAccountSigner(walletClient);
+      const smartAccountSigner = walletClient;
 
       const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
         signer: smartAccountSigner,
-        entryPoint: ENTRYPOINT_ADDRESS_V07,
+        entryPoint: getEntryPoint("0.7"),
         kernelVersion: KERNEL_V3_1
       });
 
@@ -226,13 +222,13 @@ export function useSmartAccount() {
         plugins: {
           sudo: ecdsaValidator,
           regular: await toPermissionValidator(publicClient, {
-            entryPoint: ENTRYPOINT_ADDRESS_V07,
+            entryPoint: getEntryPoint("0.7"),
             signer: sessionKeySigner,
             policies: [toSudoPolicy({})],
             kernelVersion: KERNEL_V3_1
           })
         },
-        entryPoint: ENTRYPOINT_ADDRESS_V07,
+        entryPoint: getEntryPoint("0.7"),
         kernelVersion: KERNEL_V3_1
       });
 
@@ -244,17 +240,17 @@ export function useSmartAccount() {
 
       const kernelPaymaster = createZeroDevPaymasterClient({
         chain: arbitrum,
-        entryPoint: ENTRYPOINT_ADDRESS_V07,
         transport: http(PAYMASTER_RPC),
       });
 
       const client = createKernelAccountClient({
         account: kernelAccount,
-        entryPoint: ENTRYPOINT_ADDRESS_V07,
         chain: arbitrum,
         bundlerTransport: http(bundlerRpcUrl),
-        middleware: {
-          sponsorUserOperation: kernelPaymaster.sponsorUserOperation,
+        paymaster: {
+          getPaymasterData(userOperation) {
+            return kernelPaymaster.sponsorUserOperation({ userOperation })
+          }
         }
       });
 
@@ -307,11 +303,11 @@ export function useSmartAccount() {
     const { publicClient } = getChainConfig();
 
     try {
-      const smartAccountSigner = walletClientToSmartAccountSigner(walletClient);
+      const smartAccountSigner = walletClient;
       
       const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
         signer: smartAccountSigner,
-        entryPoint: ENTRYPOINT_ADDRESS_V07,
+        entryPoint: getEntryPoint("0.7"),
         kernelVersion: KERNEL_V3_1
       });
 
@@ -319,7 +315,7 @@ export function useSmartAccount() {
         plugins: {
           sudo: ecdsaValidator
         },
-        entryPoint: ENTRYPOINT_ADDRESS_V07,
+        entryPoint: getEntryPoint("0.7"),
         kernelVersion: KERNEL_V3_1
       });
 

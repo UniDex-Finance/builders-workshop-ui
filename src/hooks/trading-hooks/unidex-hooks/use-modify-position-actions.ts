@@ -186,8 +186,8 @@ export function useModifyPositionActions() {
         });
 
         // Send batch transaction
-        await kernelClient.sendTransactions({
-          transactions: [
+        await kernelClient.sendTransaction({
+          calls: [
             {
               to: USDC_TOKEN,
               data: approveCalldata,

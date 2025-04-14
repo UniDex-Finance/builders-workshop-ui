@@ -193,8 +193,8 @@ export function useMarketOrderActions() {
           description: "Please confirm the batched deposit and order transaction",
         });
 
-        await kernelClient.sendTransactions({
-          transactions: [
+        await kernelClient.sendTransaction({
+          calls: [
             {
               to: USDC_TOKEN,
               data: approveCalldata,

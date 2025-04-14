@@ -73,8 +73,8 @@ export function useTransactionHandler({
         throw new Error(depositData.error || "Failed to process deposit operation");
       }
 
-      await kernelClient.sendTransactions({
-        transactions: [
+      await kernelClient.sendTransaction({
+        calls: [
           { to: USDC_TOKEN, data: approveCalldata },
           { to: depositData.vaultAddress, data: depositData.calldata },
         ],

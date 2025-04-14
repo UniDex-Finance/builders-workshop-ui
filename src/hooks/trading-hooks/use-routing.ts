@@ -327,8 +327,8 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
 
       console.log('Combined transactions:', allCalls);
 
-      return kernelClient.sendTransactions({
-        transactions: allCalls.map(call => ({
+      return kernelClient.sendTransaction({
+        calls: allCalls.map(call => ({
           to: call.to as `0x${string}`,
           data: call.data as `0x${string}`,
           value: call.value || 0n
@@ -421,8 +421,8 @@ export function useRouting(assetId: string, amount: string, leverage: string, is
           numTransactions: allCalls.length
         });
         
-        return kernelClient.sendTransactions({
-          transactions: allCalls.map(call => ({
+        return kernelClient.sendTransaction({
+          calls: allCalls.map(call => ({
             to: call.to as `0x${string}`,
             data: call.data as `0x${string}`,
             value: call.value || 0n

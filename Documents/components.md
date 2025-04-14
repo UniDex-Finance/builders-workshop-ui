@@ -818,8 +818,8 @@ const handleApproveAndDeposit = async (amount: string) => {
   });
 
   // 2. Execute deposit
-  await kernelClient.sendTransactions({
-    transactions: [
+  await kernelClient.sendTransaction({
+    calls: [
       { to: USDC_TOKEN, data: approveCalldata },
       { to: depositData.vaultAddress, data: depositData.calldata },
     ],
