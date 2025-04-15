@@ -120,6 +120,7 @@ export function useSmartAccount() {
         const client = createKernelAccountClient({
           account: kernelAccount,
           chain: arbitrum,
+          client: publicClient,
           bundlerTransport: http(bundlerRpcUrl),
           paymaster: {
             getPaymasterData(userOperation) {
@@ -246,6 +247,7 @@ export function useSmartAccount() {
       const client = createKernelAccountClient({
         account: kernelAccount,
         chain: arbitrum,
+        client: publicClient,
         bundlerTransport: http(bundlerRpcUrl),
         paymaster: {
           getPaymasterData(userOperation) {

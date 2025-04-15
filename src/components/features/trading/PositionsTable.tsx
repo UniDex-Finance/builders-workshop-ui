@@ -1,6 +1,7 @@
 import { Button } from "../../ui/button";
 import { Table } from "../../ui/table";
-import { usePositions, Position } from "../../../hooks/use-positions";
+import { useUnidexPositions, Position } from "../../../hooks/trading-hooks/unidex-hooks/use-unidex-positions";
+import { useGTradePositions } from "../../../hooks/trading-hooks/gtrade-hooks/use-gtrade-positions";
 import { useOrders } from "../../../hooks/use-orders";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
@@ -20,10 +21,19 @@ type ActiveTab = "positions" | "orders" | "trades";
 
 export function PositionsTable({ address }: PositionsTableProps) {
   const {
-    positions,
-    loading: positionsLoading,
-    error: positionsError,
-  } = usePositions();
+    positions: unidexPositions,
+    loading: unidexLoading,
+    error: unidexError,
+    refetch: refetchUnidex,
+  } = useUnidexPositions();
+
+  const {
+    positions: gtradePositions,
+    loading: gtradeLoading,
+    error: gtradeError,
+    refetch: refetchGTrade,
+  } = useGTradePositions();
+
   const {
     orders,
     triggerOrders,
@@ -31,7 +41,7 @@ export function PositionsTable({ address }: PositionsTableProps) {
     loading: ordersLoading,
     loadingTriggers,
     error: ordersError,
-    refetch,
+    refetch: refetchOrders,
     refetchTriggers
   } = useOrders();
   const { closePosition, closingPositions } = usePositionActions();
@@ -41,20 +51,22 @@ export function PositionsTable({ address }: PositionsTableProps) {
   const cellRefs = useRef<{ [key: string]: HTMLTableCellElement | null }>({});
   const { prices } = usePrices();
 
-  // Fetch trigger orders data when tab changes to orders
+  const combinedPositions = [...unidexPositions, ...gtradePositions];
+  const combinedLoading = unidexLoading || gtradeLoading;
+  const combinedError = unidexError || gtradeError;
+
   useEffect(() => {
     if (activeTab === "orders") {
-      refetch();
+      refetchOrders();
       refetchTriggers();
     }
-  }, [activeTab, refetch, refetchTriggers]);
+  }, [activeTab, refetchOrders, refetchTriggers]);
 
-  // Also fetch trigger orders regularly for positions tab
   useEffect(() => {
     if (activeTab === "positions") {
       const interval = setInterval(() => {
         refetchTriggers();
-      }, 5000); // refresh every 5 seconds
+      }, 5000);
       return () => clearInterval(interval);
     }
   }, [activeTab, refetchTriggers]);
@@ -84,38 +96,40 @@ export function PositionsTable({ address }: PositionsTableProps) {
   };
 
   const handleClosePosition = (position: Position) => {
-    // Safely parse the position size with a fallback to 0
-    const positionSize = parseFloat(position.size || "0");
-    if (isNaN(positionSize)) {
-      console.error("Invalid position size:", position.size);
-      return;
-    }
-    
-    const basePair = position.market.split("/")[0].toLowerCase();
-    const currentPrice = prices[basePair]?.price;
-    
-    // Add logging with better precision handling
-    console.log('Closing position with details:', {
-      pair: position.market,
-      markPrice: {
-        raw: currentPrice,
-        scientific: currentPrice ? currentPrice.toExponential(8) : '0',
-        fixed: currentPrice ? currentPrice.toFixed(10) : '0',
-        fromPosition: position.markPrice, // Log original mark price for comparison
-        priceObject: prices[basePair], // Log entire price object
-        allPrices: prices // Log all available prices
-      },
-      size: positionSize,
-      isLong: position.isLong,
-      positionId: position.positionId
-    });
+    if (position.positionId && !position.positionId.startsWith('g-')) {
+      const positionSize = parseFloat(position.size || "0");
+      if (isNaN(positionSize)) {
+        console.error("Invalid position size:", position.size);
+        return;
+      }
 
-    closePosition(
-      position.positionId,
-      position.isLong,
-      currentPrice || 0,
-      positionSize
-    );
+      const basePair = position.market.split("/")[0].toLowerCase();
+      const currentPrice = prices[basePair]?.price;
+
+      console.log('Attempting to close UniDex position with details:', {
+        pair: position.market,
+        markPrice: {
+          raw: currentPrice,
+          scientific: currentPrice ? currentPrice.toExponential(8) : '0',
+          fixed: currentPrice ? currentPrice.toFixed(10) : '0',
+          fromPosition: position.markPrice,
+          priceObject: prices[basePair],
+          allPrices: prices
+        },
+        size: positionSize,
+        isLong: position.isLong,
+        positionId: position.positionId
+      });
+
+      closePosition(
+        position.positionId,
+        position.isLong,
+        currentPrice || 0,
+        positionSize
+      );
+    } else {
+      console.log("Closing gTrade positions is not implemented via this button yet.", position.positionId);
+    }
   };
 
   return (
@@ -154,11 +168,11 @@ export function PositionsTable({ address }: PositionsTableProps) {
             <Table>
               {activeTab === "positions" && (
                 <PositionsContent
-                  positions={positions}
+                  positions={combinedPositions}
                   triggerOrders={triggerOrders}
                   detailedTriggers={detailedTriggers}
-                  loading={positionsLoading}
-                  error={positionsError}
+                  loading={combinedLoading}
+                  error={combinedError}
                   closingPositions={closingPositions}
                   handleClosePosition={handleClosePosition}
                   setRef={setRef}
@@ -191,7 +205,7 @@ export function PositionsTable({ address }: PositionsTableProps) {
               if (!cell) return null;
 
               const rect = cell.getBoundingClientRect();
-              const position = positions.find(
+              const position = combinedPositions.find(
                 (p) => p.positionId === hoveredPosition
               );
               if (!position) return null;

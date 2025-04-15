@@ -6,6 +6,7 @@ import { DepositCard } from "./account/DepositCard";
 import { WithdrawCard } from "./account/WithdrawCard";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useSmartAccount } from "../../../hooks/use-smart-account";
 
 export function WalletBox() {
   const [showDeposit, setShowDeposit] = useState(false);
@@ -13,6 +14,7 @@ export function WalletBox() {
   const { positions, loading: positionsLoading } = usePositions();
   const { balances, isLoading: balancesLoading } = useBalances("arbitrum");
   const { address: eoaAddress } = useAccount();
+  const { smartAccount, setupSessionKey, isNetworkSwitching } = useSmartAccount();
 
   // Calculate total unrealized PnL including fees
   const totalUnrealizedPnl = positions?.reduce((total, position) => {
@@ -40,6 +42,7 @@ export function WalletBox() {
   // Calculate total balance across all accounts
   const calculateTotalBalance = () => {
     if(!eoaAddress) return "0.00";
+    if (!smartAccount?.address && eoaAddress) return "Connect to Start";
     if (balancesLoading) return "Loading...";
 
     const musdBalance = parseFloat(balances?.formattedMusdBalance || "0");
@@ -52,6 +55,7 @@ export function WalletBox() {
 
   const calculateTradingAccountBalance = () => {
     if(!eoaAddress) return "0.00";
+    if (!smartAccount?.address && eoaAddress) return "Connect to Start";
     if (balancesLoading) return "Loading...";
     const musdBalance = parseFloat(balances?.formattedMusdBalance || "0");
     const usdcBalance = parseFloat(balances?.formattedUsdcBalance || "0");
@@ -113,20 +117,34 @@ export function WalletBox() {
         </div>
       </div>
 
-      {/* Action Buttons */}
+      {/* Action Buttons - Conditionally render based on smart account status */}
       <div className="space-y-2">
-        <Button
-          onClick={() => setShowDeposit(true)}
-          className="w-full h-10 text-sm bg-muted/50 hover:bg-muted/70 border border-border"
-        >
-          Deposit
-        </Button>
-        <Button
-          onClick={() => setShowWithdraw(true)}
-          className="w-full h-10 text-sm bg-muted/50 hover:bg-muted/70 border border-border"
-        >
-          Withdraw
-        </Button>
+        {!smartAccount?.address && eoaAddress ? (
+          // Show single establish connection button if connected but no smart account
+          <Button
+            onClick={setupSessionKey}
+            className="w-full h-10 text-sm bg-muted/50 hover:bg-muted/70 border border-border"
+            disabled={isNetworkSwitching}
+          >
+            {isNetworkSwitching ? "Switching to Arbitrum..." : "Establish Connection"}
+          </Button>
+        ) : (
+          // Show deposit/withdraw buttons when smart account is established
+          <>
+            <Button
+              onClick={() => setShowDeposit(true)}
+              className="w-full h-10 text-sm bg-muted/50 hover:bg-muted/70 border border-border"
+            >
+              Deposit
+            </Button>
+            <Button
+              onClick={() => setShowWithdraw(true)}
+              className="w-full h-10 text-sm bg-muted/50 hover:bg-muted/70 border border-border"
+            >
+              Withdraw
+            </Button>
+          </>
+        )}
       </div>
 
       {/* Modals */}
