@@ -23,6 +23,19 @@ import { useFundingRateArb, ProcessedFundingData } from "../../../hooks/use-fund
 import Link from 'next/link'; // Import Link from next/link
 import { TokenIcon } from "../../../hooks/use-token-icon"; // Import TokenIcon
 
+// NEW: Helper to format position size display
+const formatPositionSize = (valueStr: string): string => {
+    // Try parsing the raw string
+    const num = parseFloat(valueStr);
+    // If parsing fails or results in NaN, return the original string or a default
+    if (isNaN(num)) return valueStr || '0'; // Return '0' or original if needed
+    // Format the valid number
+    return num.toLocaleString('en-US', {
+        minimumFractionDigits: 0, // No minimum decimal places unless needed
+        maximumFractionDigits: 2  // Allow up to 2 decimal places
+    });
+};
+
 // Removed placeholder type and data
 // type FundingData = ...
 // const placeholderData = ...
@@ -49,6 +62,17 @@ const formatAdjustedRate = (rate: number | null): string => {
     return `${formattedRate}%`;
 };
 
+// NEW: Helper function to format currency
+const formatCurrency = (value: number | null, maximumFractionDigits = 2): string => {
+  if (value === null || isNaN(value)) return 'N/A';
+  return value.toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: maximumFractionDigits,
+  });
+};
+
 export function FundingArbitrageScanner() {
   const {
     data: fundingData, // Rename to avoid conflict
@@ -67,6 +91,8 @@ export function FundingArbitrageScanner() {
   const [arbThreshold, setArbThreshold] = useState<number>(0.003); // State for arb threshold
   const [sortColumn, setSortColumn] = useState<string | null>("symbol"); // Default sort by symbol
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc"); // Default ascending
+  const [showPeriodPayout, setShowPeriodPayout] = useState(false); // NEW: State for period payout toggle (Renamed from showHourlyPayments)
+  const [positionSize, setPositionSize] = useState("10000"); // NEW: State stores RAW numeric string
 
   // Define the base step and minimum value
   const baseThresholdStep = 0.0001;
@@ -208,6 +234,16 @@ export function FundingArbitrageScanner() {
     }
   };
 
+  // NEW: Helper function to get hours in selected period
+  const getHoursInPeriod = (range: TimeRange): number => {
+    switch (range) {
+        case "1H": return 1;
+        case "8H": return 8;
+        case "1D": return 24;
+        default: return 8; // Default to 8H
+    }
+  };
+
   // NEW: Memoized sorted data
   const sortedData = useMemo(() => {
     if (!filteredData) return [];
@@ -316,6 +352,8 @@ export function FundingArbitrageScanner() {
 
      // Get the conversion factor based on selectedRange (already calculated in useMemo, but needed here too for display)
      const conversionFactor = getConversionFactor(selectedRange);
+     // NEW: Parse position size, default to 0 if invalid
+     const parsedPositionSize = parseFloat(positionSize) || 0;
 
      // Render the actual data rows using the pre-sorted data
      return dataToRender.map((coin) => {
@@ -355,9 +393,12 @@ export function FundingArbitrageScanner() {
                     let displayValue: string;
                     let textColor = "text-muted-foreground";
                     let comparisonValue: number | null = null; // Value to compare against threshold
+                    let tooltipContent: string | null = null; // Tooltip for hourly payment display
+                    let isArbDisplay = false; // Flag to know if we are displaying the arb difference
 
                     // If showing Arb AND the current exchange is NOT Unidex
                     if (showUniDexArb && exchange !== 'Unidex') {
+                        isArbDisplay = true; // Set the flag
                         // Calculate difference based on ADJUSTED rates
                         if (adjustedUniRateValue !== null && adjustedRateValue !== null) {
                             const diffValue = adjustedRateValue - adjustedUniRateValue;
@@ -370,6 +411,7 @@ export function FundingArbitrageScanner() {
                     } else {
                          // Otherwise (showUniDexArb is false OR exchange is Unidex)
                          // Display ADJUSTED Rate and color based on it
+                         isArbDisplay = false; // Reset the flag
                          displayValue = formatAdjustedRate(adjustedRateValue); // Format the adjusted rate
                          comparisonValue = adjustedRateValue; // Compare the adjusted rate
                     }
@@ -383,9 +425,41 @@ export function FundingArbitrageScanner() {
                         }
                     }
 
+                    // NEW: Calculate and format payout for the selected PERIOD if toggled
+                    // MODIFICATION: Add check for Unidex column
+                    if (showPeriodPayout && exchange === 'Unidex') {
+                        // When showing payout, UniDex column should be N/A
+                        displayValue = "N/A";
+                        tooltipContent = null; // No tooltip needed
+                        // Keep existing text color based on rate for consistency, or reset:
+                        // textColor = "text-muted-foreground";
+                    } else if (showPeriodPayout && comparisonValue !== null) {
+                        // Calculate payout for NON-UNIDEX columns or when not showing Arb difference
+                        const periodRatePercent = comparisonValue;
+                        let periodPaymentAmount = parsedPositionSize * (periodRatePercent / 100);
+
+                        // Take absolute value if showing arb payout
+                        const displayPaymentAmount = isArbDisplay ? Math.abs(periodPaymentAmount) : periodPaymentAmount;
+
+                        tooltipContent = displayValue; // Store original percentage for tooltip
+                        displayValue = formatCurrency(displayPaymentAmount); // Show payout for the period
+
+                        // Adjust precision for small amounts (use absolute value for comparison)
+                        if (Math.abs(displayPaymentAmount) < 0.01 && displayPaymentAmount !== 0) {
+                           displayValue = formatCurrency(displayPaymentAmount, 4);
+                        } else if (Math.abs(displayPaymentAmount) < 1 && displayPaymentAmount !== 0) {
+                            displayValue = formatCurrency(displayPaymentAmount, 3);
+                        }
+                    }
+                    // ELSE: showPeriodPayout is false, displayValue remains the formatted rate/diff
+
                     return (
-                        <td key={`${coin.symbol}-${exchange}`} className={cn("px-3 py-2 text-right text-sm font-medium whitespace-nowrap tabular-nums", textColor)}>
-                            {displayValue}
+                        <td
+                           key={`${coin.symbol}-${exchange}`}
+                           className={cn("px-3 py-2 text-right text-sm font-medium whitespace-nowrap tabular-nums", textColor)}
+                           title={tooltipContent ?? undefined} // Add tooltip if showing payments
+                        >
+                           {displayValue}
                         </td>
                     );
                 })}
@@ -458,64 +532,143 @@ export function FundingArbitrageScanner() {
       </div>
 
       {/* Selected Range Info & Arb Threshold Input */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs border-t border-border pt-3 mt-3">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-xs border-t border-border pt-3 mt-3">
+         {/* Left Side Controls (Threshold + Legend) */}
+         <div className="flex items-center gap-x-4 gap-y-2 flex-wrap">
+            {/* Input Group */}
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-foreground whitespace-nowrap">
+                 Arb Threshold ({showUniDexArb ? "Diff" : "Rate"}):
+              </span>
+              {/* Control container */}
+              <div className="flex items-center border border-border rounded-md overflow-hidden h-6">
+                 {/* Decrease Button with updated events */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-full w-6 rounded-none border-r border-border hover:bg-muted p-1 select-none"
+                  onMouseDown={() => startHolding('decrease')}
+                  onMouseUp={stopHolding}
+                  onMouseLeave={stopHolding}
+                  onTouchStart={(e) => { e.preventDefault(); startHolding('decrease'); }}
+                  onTouchEnd={stopHolding}
+                  disabled={arbThreshold <= minThreshold}
+                >
+                  <Minus className="h-3 w-3" />
+                </Button>
+                 {/* Value Display */}
+                <span className="px-2 text-center font-medium text-primary tabular-nums w-16 select-none">
+                  {arbThreshold.toFixed(4)}
+                </span>
+                 {/* Increase Button with updated events */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-full w-6 rounded-none border-l border-border hover:bg-muted p-1 select-none"
+                  onMouseDown={() => startHolding('increase')}
+                  onMouseUp={stopHolding}
+                  onMouseLeave={stopHolding}
+                  onTouchStart={(e) => { e.preventDefault(); startHolding('increase'); }}
+                  onTouchEnd={stopHolding}
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
+              </div>
+              <span className="text-muted-foreground">%</span>
+            </div>
 
-        {/* Input Group */}
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-foreground whitespace-nowrap">
-             Arb Threshold ({showUniDexArb ? "Diff" : "Rate"}):
-          </span>
-          {/* Control container */}
-          <div className="flex items-center border border-border rounded-md overflow-hidden h-6">
-             {/* Decrease Button with updated events */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-full w-6 rounded-none border-r border-border hover:bg-muted p-1 select-none"
-              onMouseDown={() => startHolding('decrease')}
-              onMouseUp={stopHolding}
-              onMouseLeave={stopHolding}
-              onTouchStart={(e) => { e.preventDefault(); startHolding('decrease'); }}
-              onTouchEnd={stopHolding}
-              disabled={arbThreshold <= minThreshold}
-            >
-              <Minus className="h-3 w-3" />
-            </Button>
-             {/* Value Display */}
-            <span className="px-2 text-center font-medium text-primary tabular-nums w-16 select-none">
-              {arbThreshold.toFixed(4)}
-            </span>
-             {/* Increase Button with updated events */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-full w-6 rounded-none border-l border-border hover:bg-muted p-1 select-none"
-              onMouseDown={() => startHolding('increase')}
-              onMouseUp={stopHolding}
-              onMouseLeave={stopHolding}
-              onTouchStart={(e) => { e.preventDefault(); startHolding('increase'); }}
-              onTouchEnd={stopHolding}
-            >
-              <Plus className="h-3 w-3" />
-            </Button>
-          </div>
-          <span className="text-muted-foreground">%</span>
-        </div>
+            {/* Legend Group */}
+            <div className="flex items-center gap-x-4 gap-y-1 flex-wrap">
+              <span className="font-medium text-foreground whitespace-nowrap">Strategy Guide ({selectedRange}):</span>
+              {/* Use arbThreshold state directly in legend */}
+              <span className="text-green-500 font-medium whitespace-nowrap">
+                 &gt; +{arbThreshold.toFixed(4)}%: Long {showUniDexArb ? "Other" : "Asset"}, Short {showUniDexArb ? "UniDex" : "Other"}
+              </span>
+              <span className="text-muted-foreground whitespace-nowrap">
+                 ±{arbThreshold.toFixed(4)}%: Out of Range
+              </span>
+              <span className="text-red-500 font-medium whitespace-nowrap">
+                 &lt; -{arbThreshold.toFixed(4)}%: Short {showUniDexArb ? "Other" : "Asset"}, Long {showUniDexArb ? "UniDex" : "Other"}
+              </span>
+            </div>
+         </div>
 
-        {/* Legend Group */}
-        <div className="flex items-center gap-x-4 gap-y-1 flex-wrap">
-          <span className="font-medium text-foreground whitespace-nowrap">Strategy Guide ({selectedRange}):</span>
-          {/* Use arbThreshold state directly in legend */}
-          <span className="text-green-500 font-medium whitespace-nowrap">
-             &gt; +{arbThreshold.toFixed(4)}%: Long {showUniDexArb ? "Other" : "Asset"}, Short {showUniDexArb ? "UniDex" : "Other"}
-          </span>
-          <span className="text-muted-foreground whitespace-nowrap">
-             ±{arbThreshold.toFixed(4)}%: Out of Range
-          </span>
-          <span className="text-red-500 font-medium whitespace-nowrap">
-             &lt; -{arbThreshold.toFixed(4)}%: Short {showUniDexArb ? "Other" : "Asset"}, Long {showUniDexArb ? "UniDex" : "Other"}
-          </span>
-        </div>
+         {/* NEW: Right Side Controls (Period Payout) */}
+         <div className="flex items-center gap-2">
+            <Checkbox
+              id="period-payout" // Changed id
+              checked={showPeriodPayout}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setShowPeriodPayout(e.target.checked)}
+              className="h-4 w-4"
+            />
+            <Label htmlFor="period-payout" className="text-xs font-medium cursor-pointer whitespace-nowrap">
+              Show Payout/{selectedRange} {/* Dynamically update label */}
+            </Label>
+            {showPeriodPayout && ( // Conditionally render position size controls
+              <div className="flex items-center gap-1">
+                 <span className="text-muted-foreground">$</span>
+                 <span 
+                   contentEditable={true}
+                   suppressContentEditableWarning={true}
+                   onBlur={(e) => {
+                     let editedValue = e.currentTarget.textContent || '';
+                     // 1. Clean: Remove commas and anything not a digit or period
+                     const cleanedValue = editedValue.replace(/[^0-9.]/g, '');
+
+                     // 2. Validate: Basic check for valid number format
+                     // Allows empty string, single dot, numbers, numbers with one dot
+                     if (/^\d*\.?\d*$/.test(cleanedValue)) {
+                       // Avoid setting state for empty or just "."
+                       if (cleanedValue === '' || cleanedValue === '.') {
+                           // Revert display to formatted previous valid state
+                           e.currentTarget.textContent = formatPositionSize(positionSize);
+                       } else {
+                           // Parse to ensure it's a valid number, handle potential precision
+                           const numValue = parseFloat(cleanedValue);
+                           if (!isNaN(numValue)) {
+                             // Determine max 2 decimal places for the raw state value
+                             const rawValueString = numValue.toFixed(Math.min(2, (cleanedValue.split('.')[1] || '').length));
+                             // 3. Store the RAW numeric string in state
+                             setPositionSize(rawValueString);
+                             // 4. Update display with formatted value
+                             e.currentTarget.textContent = formatPositionSize(rawValueString);
+                           } else {
+                             // Revert display if final parse failed (should be rare after regex)
+                             e.currentTarget.textContent = formatPositionSize(positionSize);
+                           }
+                       }
+                     } else {
+                         // Revert display if initial format was invalid
+                         e.currentTarget.textContent = formatPositionSize(positionSize);
+                     }
+                     // Remove focus style
+                     e.currentTarget.style.borderBottom = 'none';
+                   }}
+                   onFocus={(e) => {
+                     // Show the RAW value for editing
+                     e.currentTarget.textContent = positionSize;
+                     e.currentTarget.style.borderBottom = '1px dashed currentColor';
+                     // Optional: Select text for easier editing
+                     window.getSelection()?.selectAllChildren(e.currentTarget);
+                   }}
+                   onBlurCapture={(e) => {
+                     // This might be redundant now, handled in onBlur
+                     // e.currentTarget.style.borderBottom = 'none';
+                   }}
+                   onKeyDown={(e) => {
+                     if (e.key === 'Enter') {
+                       e.preventDefault();
+                       e.currentTarget.blur();
+                     }
+                   }}
+                   className="text-xs font-medium text-foreground w-20 text-center cursor-text outline-none"
+                 >
+                   {/* Initial display is the formatted value */}
+                   {formatPositionSize(positionSize)}
+                 </span>
+              </div>
+            )}
+         </div>
       </div>
 
       {/* Table */}
