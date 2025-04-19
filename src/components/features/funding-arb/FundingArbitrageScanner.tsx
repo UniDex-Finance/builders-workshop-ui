@@ -582,13 +582,22 @@ export function FundingArbitrageScanner() {
               <span className="font-medium text-foreground whitespace-nowrap">Strategy Guide ({selectedRange}):</span>
               {/* Use arbThreshold state directly in legend */}
               <span className="text-green-500 font-medium whitespace-nowrap">
-                 &gt; +{arbThreshold.toFixed(4)}%: Long {showUniDexArb ? "Other" : "Asset"}, Short {showUniDexArb ? "UniDex" : "Other"}
+                 {showUniDexArb
+                   ? `> +${arbThreshold.toFixed(4)}%: Long CEX, Short UniDex` // Arb text
+                   : `> +${arbThreshold.toFixed(4)}%` // Non-arb text
+                 }
               </span>
               <span className="text-muted-foreground whitespace-nowrap">
-                 ±{arbThreshold.toFixed(4)}%: Out of Range
+                 {showUniDexArb
+                   ? `±${arbThreshold.toFixed(4)}%: Out of Range` // Arb text
+                   : `±${arbThreshold.toFixed(4)}%: In Range` // Non-arb text
+                 }
               </span>
               <span className="text-red-500 font-medium whitespace-nowrap">
-                 &lt; -{arbThreshold.toFixed(4)}%: Short {showUniDexArb ? "Other" : "Asset"}, Long {showUniDexArb ? "UniDex" : "Other"}
+                 {showUniDexArb
+                   ? `< -${arbThreshold.toFixed(4)}%: Short CEX, Long UniDex` // Arb text
+                   : `< -${arbThreshold.toFixed(4)}%` // Non-arb text
+                 }
               </span>
             </div>
          </div>
