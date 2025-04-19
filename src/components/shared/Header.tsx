@@ -4,7 +4,7 @@ import { useTheme } from "next-themes";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownSection, DropdownItem } from "@nextui-org/react";
-import { Menu, ChevronDown, Wallet, Coins, DollarSign, PiggyBank, Users2, MessageCircle, Send, Twitter, X, Settings, UnfoldHorizontal  } from "lucide-react";
+import { Menu, ChevronDown, Wallet, Coins, DollarSign, PiggyBank, Users2, MessageCircle, Send, Twitter, X, Settings, UnfoldHorizontal, BarChart2  } from "lucide-react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { 
@@ -125,11 +125,11 @@ export function Header() {
           <Dropdown>
             <DropdownTrigger>
               <Button variant="ghost" size="sm" className="text-sm font-normal gap-1 h-8 flex items-center justify-center">
-                Socials <ChevronDown size={14} />
+                Trade Tools <ChevronDown size={14} />
               </Button>
             </DropdownTrigger>
             <DropdownMenu
-              aria-label="Social links"
+              aria-label="Trade tools options"
               className="w-[240px]"
               itemClasses={{
                 base: "gap-4",
@@ -138,34 +138,12 @@ export function Header() {
               }}
             >
               <DropdownItem
-                key="discord"
-                description="DAO, traders, and memes"
-                startContent={<MessageCircle className="w-4 h-4" />}
-                onClick={() =>
-                  window.open("https://discord.gg/W2TByeuD7R", "_blank")
-                }
+                key="funding-arb"
+                description="Explore funding rate arbitrage opportunities"
+                startContent={<BarChart2 className="w-4 h-4" />}
+                onClick={() => (window.location.href = "/funding-arb")}
               >
-                Discord
-              </DropdownItem>
-              <DropdownItem
-                key="telegram"
-                description="Chill & good vibes only"
-                startContent={<Send className="w-4 h-4" />}
-                onClick={() =>
-                  window.open("https://t.me/unidexfinance", "_blank")
-                }
-              >
-                Telegram
-              </DropdownItem>
-              <DropdownItem
-                key="twitter"
-                description="Stay up to date on news"
-                startContent={<Twitter className="w-4 h-4" />}
-                onClick={() =>
-                  window.open("https://x.com/UniDexFinance", "_blank")
-                }
-              >
-                Twitter
+                Funding Arbitrage
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
@@ -254,6 +232,38 @@ export function Header() {
               >
                 Bridge
               </DropdownItem>
+              <DropdownSection title="Social Links" showDivider>
+                 <DropdownItem
+                   key="discord"
+                   description="DAO, traders, and memes"
+                   startContent={<MessageCircle className="w-4 h-4" />}
+                   onClick={() =>
+                     window.open("https://discord.gg/W2TByeuD7R", "_blank")
+                   }
+                 >
+                   Discord
+                 </DropdownItem>
+                 <DropdownItem
+                   key="telegram"
+                   description="Chill & good vibes only"
+                   startContent={<Send className="w-4 h-4" />}
+                   onClick={() =>
+                     window.open("https://t.me/unidexfinance", "_blank")
+                   }
+                 >
+                   Telegram
+                 </DropdownItem>
+                 <DropdownItem
+                   key="twitter"
+                   description="Stay up to date on news"
+                   startContent={<Twitter className="w-4 h-4" />}
+                   onClick={() =>
+                     window.open("https://x.com/UniDexFinance", "_blank")
+                   }
+                 >
+                   Twitter
+                 </DropdownItem>
+              </DropdownSection>
             </DropdownMenu>
           </Dropdown>
         </nav>
@@ -354,40 +364,18 @@ export function Header() {
                       </Button>
                     </div>
 
-                    {/* Social Links */}
+                    {/* Added Funding Arbitrage Section for Mobile */}
                     <div className="space-y-1">
                       <div className="px-3 py-2 text-xs font-semibold text-foreground-500">
-                        Social Links
+                        Trade Tools
                       </div>
                       <Button
                         variant="ghost"
                         className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
-                        onClick={() =>
-                          window.open("https://discord.gg/W2TByeuD7R", "_blank")
-                        }
+                        onClick={() => (window.location.href = "/funding-arb")}
                       >
-                        <MessageCircle className="w-4 h-4" />
-                        Discord
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
-                        onClick={() =>
-                          window.open("https://t.me/unidexfinance", "_blank")
-                        }
-                      >
-                        <Send className="w-4 h-4" />
-                        Telegram
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
-                        onClick={() =>
-                          window.open("https://x.com/UniDexFinance", "_blank")
-                        }
-                      >
-                        <Twitter className="w-4 h-4" />
-                        Twitter
+                        <BarChart2 className="w-4 h-4" />
+                        Funding Arbitrage
                       </Button>
                     </div>
 
@@ -445,6 +433,36 @@ export function Header() {
                       >
                         <UnfoldHorizontal className="w-4 h-4" />
                         Bridge
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
+                        onClick={() =>
+                          window.open("https://discord.gg/W2TByeuD7R", "_blank")
+                        }
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        Discord
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
+                        onClick={() =>
+                          window.open("https://t.me/unidexfinance", "_blank")
+                        }
+                      >
+                        <Send className="w-4 h-4" />
+                        Telegram
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
+                        onClick={() =>
+                          window.open("https://x.com/UniDexFinance", "_blank")
+                        }
+                      >
+                        <Twitter className="w-4 h-4" />
+                        Twitter
                       </Button>
                     </div>
                   </div>
