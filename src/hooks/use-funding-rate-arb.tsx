@@ -39,8 +39,7 @@ const ORDERED_ALLOWED_EXCHANGES = [
   'ApeX Omni',
   'WOO X (Futures)',
   'HTX Futures',
-  'MEXC (Futures)',
-  'Deribit'
+  'MEXC (Futures)'
 ];
 
 // Map full exchange names to shorter display names
@@ -60,7 +59,6 @@ const EXCHANGE_NAME_MAP: Record<string, string> = {
   'Orderly (Derivatives)': 'Orderly',
   'ApeX Pro': 'ApeX',
   'WOO X (Futures)': 'WOO X',
-  'Deribit': 'Deribit',
   'Paradex': 'Paradex',
   'Aevo': 'Aevo',
   'RabbitX': 'RabbitX',
@@ -90,8 +88,7 @@ const EXCHANGE_FUNDING_INTERVALS: Record<string, number> = {
   'ApeX Omni': 8,         // API provides 8H rate (verify need for *100)
   'WOO X (Futures)': 8,   // API provides 8H rate (verify need for *100)
   'HTX Futures': 8,       // API provides 8H rate (verify need for *100)
-  'MEXC (Futures)': 8,    // API provides 8H rate (verify need for *100)
-  'Deribit': 8,           // API provides 8H rate (verify need for *100)
+  'MEXC (Futures)': 8    // API provides 8H rate (verify need for *100)
   // Add others as needed
 };
 
