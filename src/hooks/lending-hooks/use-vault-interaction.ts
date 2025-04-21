@@ -322,7 +322,7 @@ export function useVaultInteraction({ protocol }: UseVaultInteractionProps): Vau
           value: BigInt(routeResponse.tx.value || '0'),
       };
 
-      toast({ title: "Confirm Transaction", description: "Please approve USDC spending and deposit." });
+      toast({ title: "Confirming Transaction", description: "Confirming USDC approval and deposit." });
 
       const calls: TransactionCall[] = [];
       if (withdrawalCall) {
@@ -396,7 +396,7 @@ export function useVaultInteraction({ protocol }: UseVaultInteractionProps): Vau
            value: BigInt(routeResponse.tx.value || '0'),
        };
 
-      toast({ title: "Confirm Transaction", description: `Approve ${protocol.toUpperCase()} spending & withdraw.` });
+      toast({ title: "Confirming Transaction", description: `Approving ${protocol.toUpperCase()} spending & withdrawing.` });
 
       const userOpHash = await kernelClient.sendTransaction({
           calls: [

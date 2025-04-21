@@ -181,8 +181,8 @@ export function useModifyPositionActions() {
         });
 
         toast({
-          title: "Confirm Transaction",
-          description: "Please confirm the batched deposit and position transaction",
+          title: "Confirming Transaction",
+          description: "Confirming the batched deposit and position transaction",
         });
 
         // Send batch transaction
@@ -204,8 +204,8 @@ export function useModifyPositionActions() {
         });
       } else {
         toast({
-          title: "Confirm Transaction",
-          description: "Please confirm the transaction in your wallet",
+          title: "Confirming",
+          description: "Confirming the transaction in your wallet",
         });
 
         await kernelClient.sendTransaction({

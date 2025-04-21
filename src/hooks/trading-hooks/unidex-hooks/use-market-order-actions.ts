@@ -189,8 +189,8 @@ export function useMarketOrderActions() {
 
         // Send batch transaction
         toast({
-          title: "Confirm Transaction",
-          description: "Please confirm the batched deposit and order transaction",
+          title: "Confirming Transaction",
+          description: "Confirming the batched deposit and order transaction",
         });
 
         await kernelClient.sendTransaction({
@@ -213,8 +213,8 @@ export function useMarketOrderActions() {
       } else {
         // Just place the order
         toast({
-          title: "Confirm Transaction",
-          description: "Please confirm the transaction in your wallet",
+          title: "Confirming Transaction",
+          description: "Confirming the transaction in your wallet",
         });
 
         await kernelClient.sendTransaction({
