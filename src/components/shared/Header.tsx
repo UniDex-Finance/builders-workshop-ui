@@ -65,6 +65,9 @@ export function Header() {
           <Link href="/leaderboard" className="flex items-center h-full">
             <Button variant="ghost" size="sm" className="text-sm font-normal h-8 flex items-center justify-center">Leaderboard</Button>
           </Link>
+          <Link href="/lending" className="flex items-center h-full">
+            <Button variant="ghost" size="sm" className="text-sm font-normal h-8 flex items-center justify-center">Lending</Button>
+          </Link>
           <Dropdown>
             <DropdownTrigger>
               <Button variant="ghost" size="sm" className="text-sm font-normal gap-1 h-8 flex items-center justify-center">
@@ -311,6 +314,15 @@ export function Header() {
                       onClick={() => (window.location.href = "/leaderboard")}
                     >
                       Leaderboard
+                    </Button>
+
+                    {/* Lending */}
+                    <Button
+                      variant="ghost"
+                      className="justify-start w-full text-sm h-8 bg-muted/50 hover:bg-muted/70"
+                      onClick={() => (window.location.href = "/lending")}
+                    >
+                      Lending
                     </Button>
 
                     {/* Earn Section */}

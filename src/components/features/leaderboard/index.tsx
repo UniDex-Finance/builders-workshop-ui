@@ -34,69 +34,6 @@ import {
   CardTitle,
 } from "../../ui/card"
 
-// Countdown timer component
-function CountdownTimer() {
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0
-  });
-
-  useEffect(() => {
-    // Set the competition end date: April 20, 2025 at 23:59 UTC
-    const competitionEnd = new Date(Date.UTC(2025, 3, 20, 23, 59, 59, 999)).getTime();
-
-    const calculateTimeLeft = () => {
-      const now = new Date().getTime();
-      const distance = competitionEnd - now;
-
-      if (distance <= 0) {
-        // Competition has ended
-        return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-      }
-
-      return {
-        days: Math.floor(distance / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-        minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-        seconds: Math.floor((distance % (1000 * 60)) / 1000)
-      };
-    };
-
-    // Initial calculation
-    setTimeLeft(calculateTimeLeft());
-
-    // Update every second
-    const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  return (
-    <div className="flex justify-center space-x-4 py-6">
-      <div className="flex flex-col items-center">
-        <div className="text-4xl font-bold">{timeLeft.days}</div>
-        <div className="text-sm text-muted-foreground">Days</div>
-      </div>
-      <div className="flex flex-col items-center">
-        <div className="text-4xl font-bold">{timeLeft.hours}</div>
-        <div className="text-sm text-muted-foreground">Hours</div>
-      </div>
-      <div className="flex flex-col items-center">
-        <div className="text-4xl font-bold">{timeLeft.minutes}</div>
-        <div className="text-sm text-muted-foreground">Minutes</div>
-      </div>
-      <div className="flex flex-col items-center">
-        <div className="text-4xl font-bold">{timeLeft.seconds}</div>
-        <div className="text-sm text-muted-foreground">Seconds</div>
-      </div>
-    </div>
-  );
-}
-
 // Trader Details Component
 function TraderDetails({ 
   trader, 
@@ -350,67 +287,12 @@ export function LeaderboardDashboard() {
             <h1 className="text-3xl font-semibold">Trading Competition</h1>
           </div>
 
-          {/* Countdown Timer - now counts down to the end */}
-          <div className="bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)] rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-center mb-2">Competition Ends In</h2>
-            <CountdownTimer />
-          </div>
-
-          {/* Competition Details */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* PnL Competition */}
-            <div className="bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)] rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold flex items-center gap-2">
-                  <DollarSign className="h-5 w-5 text-[var(--color-long)]" />
-                  PnL Competition
-                </h3>
-                <Badge className="bg-[var(--color-long-dark)]/30 text-[var(--color-long)] border-[var(--color-long)]/50">
-                  $5,000 Prize Pool
-                </Badge>
-              </div>
-              <div className="space-y-3 text-muted-foreground">
-                <p>
-                  Compete for the highest raw profit and loss (PnL) during the competition period.
-                </p>
-                <p>
-                  The trader with the highest raw PnL will win the largest prize, with additional prizes for runners-up.
-                </p>
-                <h4 className="font-semibold text-foreground mt-4">Prizes:</h4>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>1st Place: $3,000</li>
-                  <li>2nd Place: $1,000</li>
-                  <li>3rd Place: $500</li>
-                  <li>4th-8th Place: $100 each</li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Volume Competition */}
-            <div className="bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)] rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">                    
-                <h3 className="text-xl font-semibold flex items-center gap-2">
-                  <BarChart4 className="h-5 w-5 text-blue-500" />
-                  Volume Competition
-                </h3>
-                <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/50">
-                  $2,500 Prize Pool
-                </Badge>
-              </div>
-              <div className="space-y-3 text-muted-foreground">
-                <p>
-                  Compete for the highest trading volume during the competition period.
-                </p>
-                <p>
-                  The trader with the most trading volume will win the largest prize, with a runner-up prize as well.
-                </p>
-                <h4 className="font-semibold text-foreground mt-4">Prizes:</h4>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>1st Place: $1,500</li>
-                  <li>2nd Place: $1,000</li>
-                </ul>
-              </div>
-            </div>
+          {/* Competition Ended Message */}
+          <div className="bg-[var(--deposit-card-background)] border border-[var(--deposit-card-border)] rounded-lg p-6 text-center">
+            <h2 className="text-xl font-semibold mb-2">Competition Has Ended</h2>
+            <p className="text-muted-foreground">
+The results are being reviewed to scan for potential cheaters. Prizes will be distributed within 14 days of the competition.
+            </p>
           </div>
 
           {/* Rules Section */}
