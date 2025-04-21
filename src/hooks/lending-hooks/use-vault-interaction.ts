@@ -24,7 +24,8 @@ function debounce<F extends (...args: any[]) => any>(func: F, waitFor: number) {
 // --- Constants ---
 // TODO: Move sensitive keys/URLs to environment variables
 const ENSO_API_URL = "https://api.enso.finance/api/v1/shortcuts/route";
-const ENSO_API_KEY = "ffa0bfed-6f6e-4c9a-a53d-becf4d2d2b3e"; // Replace with secure handling
+// Ensure NEXT_PUBLIC_ENSO_API_KEY is set in your .env.local file
+const ENSO_API_KEY = process.env.NEXT_PUBLIC_ENSO_API_KEY;
 const UNIDEX_WALLET_API_URL = "https://unidexv4-api-production.up.railway.app/api/wallet";
 
 const CHAIN_ID = 42161; // Arbitrum
