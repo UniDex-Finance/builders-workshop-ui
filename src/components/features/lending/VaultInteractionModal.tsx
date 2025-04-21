@@ -21,6 +21,7 @@ import type { VaultProtocol, InteractionType } from "@/hooks/lending-hooks/use-v
 import { useInterestTokenPrice } from "@/hooks/lending-hooks/use-interest-token-price";
 import { useBalances } from "@/hooks/use-balances";
 import { formatUnits, parseUnits } from "viem";
+import { useLendingBalances } from "@/hooks/lending-hooks/use-lending-balances";
 
 // --- Debounce Utility (can also be imported) ---
 function debounce<F extends (...args: any[]) => any>(func: F, waitFor: number) {
@@ -125,15 +126,44 @@ export function VaultInteractionModal({
     return isNaN(numericValue) ? 0 : numericValue;
   };
 
+  // We need to track the raw balance value for withdrawal max
+  const [rawDepositedBalance, setRawDepositedBalance] = useState<bigint>(0n);
+  
+  // Access raw lending balances for Withdraw Max
+  const { balances: lendingBalances, isLoading: isLoadingLendingBalances } = useLendingBalances();
+
+  useEffect(() => {
+    // Update raw balance when lending balances are loaded
+    if (lendingBalances) {
+      if (variant === 'aave') {
+        setRawDepositedBalance(lendingBalances.aUsdcBalance);
+      } else if (variant === 'compound') {
+        setRawDepositedBalance(lendingBalances.cUsdcBalance);
+      } else if (variant === 'fluid') {
+        setRawDepositedBalance(lendingBalances.fluidBalance);
+      }
+    }
+  }, [lendingBalances, variant]);
+
   const handleDepositMax = () => {
     if (isLoadingBalances || !balances) return;
-    const maxAmountString = formatUnits(combinedDepositableBalanceWei, 6); // Format the 6-decimal value for input
+    // This is correct as it uses formatUnits which preserves full precision
+    const maxAmountString = formatUnits(combinedDepositableBalanceWei, 6);
     setDepositAmount(maxAmountString);
   };
 
   const handleWithdrawMax = () => {
-    const numericBalance = parseDepositedBalance(depositedBalance);
-    setWithdrawAmount(numericBalance.toString());
+    // Instead of parsing the formatted string, use the raw bigint value
+    if (rawDepositedBalance > 0n) {
+      // Get appropriate decimal based on protocol
+      const decimals = variant === 'aave' || variant === 'compound' || variant === 'fluid' ? 6 : 6;
+      const maxWithdrawAmount = formatUnits(rawDepositedBalance, decimals);
+      setWithdrawAmount(maxWithdrawAmount);
+    } else {
+      // Fallback to existing logic for backward compatibility
+      const numericBalance = parseDepositedBalance(depositedBalance);
+      setWithdrawAmount(numericBalance.toString());
+    }
   };
 
   // --- Submit Handlers ---
