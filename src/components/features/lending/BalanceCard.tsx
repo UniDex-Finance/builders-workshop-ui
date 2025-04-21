@@ -1,5 +1,4 @@
-import { Card, CardContent, CardHeader } from "../../ui/card";
-import { ArrowUpRight, Wallet, PiggyBank } from "lucide-react";
+import { Card, CardContent } from "../../ui/card";
 
 interface BalanceCardProps {
   totalBalance: string;
@@ -15,58 +14,36 @@ export function BalanceCard({
   yieldBalance = "0.00",
   walletBalance = "0.00",
   apy = "0.00%",
-  lifetimeEarned,
-  lifetimeEarnedPercentage,
 }: BalanceCardProps) {
-
   return (
     <Card
-      className="w-full h-full bg-card border border-border overflow-hidden rounded-lg shadow-sm flex flex-col"
+      className="w-full h-full bg-card border border-border overflow-hidden rounded-xl"
     >
-      <CardHeader className="p-0">
-        {/* Modified header: Text to left, new content */}
-        <div className="flex items-center justify-start bg-muted/50 p-3 border-b border-border">
-          <div className="text-sm font-medium text-foreground">Your Positions</div>
-        </div>
-      </CardHeader>
-      {/* Make content area grow */}
-      <CardContent className="p-4 md:p-6 flex flex-col flex-grow justify-between space-y-6">
-        {/* Balance Section */} 
-        <div className="space-y-4">
-          {/* Total Balance - Hero element */}
-          <div>
-            <p className="text-sm text-muted-foreground mb-1">Total Balance</p>
-            <p className="text-3xl md:text-4xl font-bold text-foreground">${totalBalance}</p>
-          </div>
+      <CardContent className="p-4 md:p-6 text-foreground">
+        <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-center">
+          Wallet Balance
+        </h2>
 
-          {/* Sub-balances */}
-          <div className="grid grid-cols-2 gap-4 pt-2">
-            <div className="flex items-start gap-2">
-              <PiggyBank className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-              <div>
-                <p className="text-xs md:text-sm text-muted-foreground mb-0.5">Earning Yield</p>
-                <p className="text-base md:text-lg font-medium text-foreground">${yieldBalance}</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-               <Wallet className="w-4 h-4 text-muted-foreground mt-1 flex-shrink-0" />
-               <div>
-                <p className="text-xs md:text-sm text-muted-foreground mb-0.5">In Wallet</p>
-                <p className="text-base md:text-lg font-medium text-foreground">${walletBalance}</p>
-              </div>
-            </div>
+        <div className="text-center mb-6 md:mb-8">
+          <p className="text-3xl md:text-4xl font-bold">${totalBalance}</p>
+        </div>
+
+        <div className="flex justify-between mb-6 md:mb-8 px-1 md:px-2">
+          <div className="text-center md:text-left">
+            <p className="text-sm md:text-base text-muted-foreground mb-0.5">Earning Yield</p>
+            <p className="text-xl md:text-2xl font-medium">${yieldBalance}</p>
+          </div>
+          <div className="text-center md:text-right">
+            <p className="text-sm md:text-base text-muted-foreground mb-0.5">In Wallet</p>
+            <p className="text-xl md:text-2xl font-medium">${walletBalance}</p>
           </div>
         </div>
 
-        {/* APY/Earnings Section - Simplified */}
-        <div className="bg-muted/50 p-3 md:p-4 rounded-md mt-auto">
-          <div className="flex justify-between items-center">
-            <p className="text-xs md:text-sm text-muted-foreground">Current Yield APY</p>
-            <div className="bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-md">
-              {apy}
-            </div>
+        <div className="bg-muted/50 rounded-lg md:rounded-xl p-3 md:p-4 flex justify-between items-center">
+          <p className="text-base md:text-lg font-medium text-muted-foreground">Your Deposit APY</p>
+          <div className="bg-primary/10 text-primary px-2 py-1 md:px-3 rounded-md">
+            <p className="text-sm md:text-base font-semibold">{apy}</p>
           </div>
-          {/* Removed Lifetime Earned Section */}
         </div>
       </CardContent>
     </Card>

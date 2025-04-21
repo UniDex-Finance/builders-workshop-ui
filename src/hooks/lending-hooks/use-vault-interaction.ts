@@ -124,6 +124,8 @@ export function useVaultInteraction({ protocol }: UseVaultInteractionProps): Vau
       slippage: SLIPPAGE.toString(),
       routingStrategy: ROUTING_STRATEGY,
       amountIn: amountInWei.toString(),
+      fee: '5',
+      feeReceiver: '0x8c128f336B479b142429a5f351Af225457a987Fa',
       tokenIn: tokenIn,
       tokenOut: tokenOut,
     });
