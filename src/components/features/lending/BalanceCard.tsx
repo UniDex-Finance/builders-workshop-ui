@@ -30,11 +30,11 @@ export function BalanceCard({
 
         <div className="flex justify-between mb-6 md:mb-8 px-1 md:px-2">
           <div className="text-center md:text-left">
-            <p className="text-sm md:text-base text-muted-foreground mb-0.5">Earning Yield</p>
+            <p className="text-sm md:text-base text-muted-foreground mb-0.5">Deposited</p>
             <p className="text-xl md:text-2xl font-medium">${yieldBalance}</p>
           </div>
           <div className="text-center md:text-right">
-            <p className="text-sm md:text-base text-muted-foreground mb-0.5">In Wallet</p>
+            <p className="text-sm md:text-base text-muted-foreground mb-0.5">Idle USDC</p>
             <p className="text-xl md:text-2xl font-medium">${walletBalance}</p>
           </div>
         </div>

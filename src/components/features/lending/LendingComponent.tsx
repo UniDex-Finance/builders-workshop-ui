@@ -95,8 +95,8 @@ export function LendingComponent() {
 
   return (
     <div className="w-full space-y-4">
-      <div className="w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-        <div className="md:col-span-1">
+      <div className="w-full max-w-7xl mx-auto flex flex-col md:flex-row md:justify-center items-start gap-4 md:gap-6">
+        <div className="w-full md:max-w-sm">
           {isLoadingBalances ? (
             <Skeleton className="w-full h-[280px]" />
           ) : isErrorBalances ? (
@@ -117,7 +117,7 @@ export function LendingComponent() {
           )}
         </div>
 
-        <div className="md:col-span-2 flex flex-col gap-4 max-w-xl">
+        <div className="w-full md:max-w-xl flex flex-col gap-4">
           {baseVaultData.map((vault) => {
             const isLoading = isLoadingBalances || isLoadingApys;
             const isError = isErrorBalances || isErrorApys;
