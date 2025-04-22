@@ -46,6 +46,79 @@
     background-size: 200% auto !important;
     animation: gradient-shift 8s ease infinite;
   }
+
+  /* Utility to hide scrollbars */
+  .scrollbar-hide {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+
+  /* Modern scrollbar styling */
+  .scrollbar-custom {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
+  }
+  
+  .scrollbar-custom::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+    display: block;
+    background: transparent;
+  }
+  
+  .scrollbar-custom::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 3px;
+  }
+  
+  .scrollbar-custom::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground) / 0.2);
+    border-radius: 9999px;
+  }
+  
+  .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground) / 0.4);
+  }
+
+  /* Hide scrollbar buttons */
+  .scrollbar-custom::-webkit-scrollbar-button {
+    display: none;
+  }
+
+  /* Hide scrollbar corner */
+  .scrollbar-custom::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Slider styling */
+  [type='range'] {
+    &::-webkit-slider-thumb {
+      background-color: hsl(var(--slider-thumb));
+    }
+    
+    &::-webkit-slider-runnable-track {
+      background: linear-gradient(
+        to right,
+        hsl(var(--slider-range)) var(--range-progress, 0%),
+        hsl(var(--slider-track)) var(--range-progress, 0%)
+      );
+    }
+    
+    &::-moz-range-thumb {
+      background-color: hsl(var(--slider-thumb));
+    }
+    
+    &::-moz-range-track {
+      background: linear-gradient(
+        to right,
+        hsl(var(--slider-range)) var(--range-progress, 0%),
+        hsl(var(--slider-track)) var(--range-progress, 0%)
+      );
+    }
+  }
 }
 
 html,
@@ -398,71 +471,5 @@ a {
   }
   body {
     @apply bg-background text-foreground;
-  }
-}
-
-@layer utilities {
-  /* Modern scrollbar styling */
-  .scrollbar-custom {
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
-  }
-  
-  .scrollbar-custom::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
-    display: block;
-    background: transparent;
-  }
-  
-  .scrollbar-custom::-webkit-scrollbar-track {
-    background: transparent;
-    margin: 3px;
-  }
-  
-  .scrollbar-custom::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--muted-foreground) / 0.2);
-    border-radius: 9999px;
-  }
-  
-  .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-    background-color: hsl(var(--muted-foreground) / 0.4);
-  }
-
-  /* Hide scrollbar buttons */
-  .scrollbar-custom::-webkit-scrollbar-button {
-    display: none;
-  }
-
-  /* Hide scrollbar corner */
-  .scrollbar-custom::-webkit-scrollbar-corner {
-    background: transparent;
-  }
-
-  /* Slider styling */
-  [type='range'] {
-    &::-webkit-slider-thumb {
-      background-color: hsl(var(--slider-thumb));
-    }
-    
-    &::-webkit-slider-runnable-track {
-      background: linear-gradient(
-        to right,
-        hsl(var(--slider-range)) var(--range-progress, 0%),
-        hsl(var(--slider-track)) var(--range-progress, 0%)
-      );
-    }
-    
-    &::-moz-range-thumb {
-      background-color: hsl(var(--slider-thumb));
-    }
-    
-    &::-moz-range-track {
-      background: linear-gradient(
-        to right,
-        hsl(var(--slider-range)) var(--range-progress, 0%),
-        hsl(var(--slider-track)) var(--range-progress, 0%)
-      );
-    }
   }
 }

@@ -80,10 +80,73 @@ export const PAIR_FULL_NAMES: { [key: string]: string } = {
   'SPY/USD': 'S&P 500 ETF to US Dollar'
 };
 
+export const PAIR_SHORT_NAMES: { [key: string]: string } = {
+  'BTC/USD': 'Bitcoin',
+  'ETH/USD': 'Ethereum',
+  'S/USD': 'Sonic',
+  'SOL/USD': 'Solana',
+  'DOGE/USD': 'Dogecoin',
+  'AVAX/USD': 'Avalanche',
+  'BNB/USD': 'Binance Coin',
+  'ADA/USD': 'Cardano',
+  'LINK/USD': 'Chainlink',
+  'ATOM/USD': 'Cosmos',
+  'NEAR/USD': 'Near Protocol',
+  'ARB/USD': 'Arbitrum',
+  'OP/USD': 'Optimism',
+  'LTC/USD': 'Litecoin',
+  'GMX/USD': 'GMX',
+  'EUR/USD': 'Euro',
+  'GBP/USD': 'British Pound',
+  'INJ/USD': 'Injective',
+  'TIA/USD': 'Celestia',
+  'AERO/USD': 'Aerodrome',
+  'MERL/USD': 'Merlin',
+  'SAFE/USD': 'Safe',
+  'OMNI/USD': 'Omni Network',
+  'REZ/USD': 'Rezoro',
+  'ETHFI/USD': 'ETHFI',
+  'BOME/USD': 'Book of Meme',
+  'ORDI/USD': 'Ordinals',
+  'DYM/USD': 'Dymension',
+  'TAO/USD': 'Bittensor',
+  'WLD/USD': 'Worldcoin',
+  'POPCAT/USD': 'Popcat',
+  'ZRO/USD': 'Zero',
+  'RUNE/USD': 'THORChain',
+  'MEW/USD': 'MEW',
+  'BEAM/USD': 'Beam',
+  'STRK/USD': 'Starknet',
+  'AAVE/USD': 'Aave',
+  'XRP/USD': 'Ripple',
+  'TON/USD': 'Toncoin',
+  'NOT/USD': 'Notation',
+  'RLB/USD': 'Rollbit',
+  'ALICE/USD': 'My Neighbor Alice',
+  'APE/USD': 'ApeCoin',
+  'APT/USD': 'Aptos',
+  'AVAIL/USD': 'Avail',
+  'DEGEN/USD': 'Degen',
+  'RDNT/USD': 'Radiant Capital',
+  'SUI/USD': 'Sui',
+  'PEPE/USD': 'Pepe',
+  'EIGEN/USD': 'Eigen Layer',
+  'XAU/USD': 'Gold',
+  'XAG/USD': 'Silver',
+  'GMCI30/USD': 'GMCI30 Index',
+  'GMCL2/USD': 'GMCL2 Index',
+  'GMMEME/USD': 'GMMEME Index',
+  'QQQ/USD': 'Nasdaq-100 ETF',
+  'SPY/USD': 'S&P 500 ETF'
+};
 // Helper function to get the full name for a pair
-export function getPairFullName(pair: string): string {
-  return PAIR_FULL_NAMES[pair] || pair;
-}
+  export function getPairFullName(pair: string): string {
+    return PAIR_FULL_NAMES[pair] || pair;
+  }
+
+  export function getPairShortName(pair: string): string {
+    return PAIR_SHORT_NAMES[pair] || pair;
+  }
 
 export interface Market {
   assetId: string;

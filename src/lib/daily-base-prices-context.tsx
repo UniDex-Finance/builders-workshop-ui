@@ -4,19 +4,29 @@ interface BasePrices {
   [key: string]: number;
 }
 
+interface HighLowData {
+  [key: string]: {
+    high: number;
+    low: number;
+  };
+}
+
 interface BasePricesContextType {
   prices: BasePrices;
+  highLowData: HighLowData | null;
   lastUpdated: number | null;
 }
 
 const BasePricesContext = createContext<BasePricesContextType>({
   prices: {},
+  highLowData: null,
   lastUpdated: null,
 });
 
 export function DailyBasePricesProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<BasePricesContextType>({
     prices: {},
+    highLowData: null,
     lastUpdated: null,
   });
 
@@ -31,6 +41,7 @@ export function DailyBasePricesProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
       setState({
         prices: data.prices,
+        highLowData: data.highLowData || null, // Assuming API now returns highLowData
         lastUpdated: Date.now(),
       });
     } catch (error) {

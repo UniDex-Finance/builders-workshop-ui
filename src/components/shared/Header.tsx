@@ -62,6 +62,9 @@ export function Header() {
           <Link href="/" className="flex items-center h-full">
             <Button variant="ghost" size="sm" className="text-sm font-normal h-8 flex items-center justify-center">Trade</Button>
           </Link>
+          <Link href="/markets" className="flex items-center h-full">
+            <Button variant="ghost" size="sm" className="text-sm font-normal h-8 flex items-center justify-center">Markets</Button>
+          </Link>
           <Link href="/leaderboard" className="flex items-center h-full">
             <Button variant="ghost" size="sm" className="text-sm font-normal h-8 flex items-center justify-center">Leaderboard</Button>
           </Link>
@@ -305,6 +308,15 @@ export function Header() {
                       onClick={() => (window.location.href = "/")}
                     >
                       Trade
+                    </Button>
+
+                    {/* Markets */}
+                    <Button
+                      variant="ghost"
+                      className="justify-start w-full text-sm h-8 bg-muted/50 hover:bg-muted/70"
+                      onClick={() => (window.location.href = "/markets")}
+                    >
+                      Markets
                     </Button>
 
                     {/* Leaderboard */}
