@@ -163,7 +163,7 @@ export function MarketsDashboard() {
                             index % 2 === 0 ? "bg-background" : "bg-muted/10"
                           )}
                         >
-                          <td className="py-3 px-2">
+                          <td className="px-2">
                             <div className="flex items-center gap-2">
                               <div className="w-4 h-4 relative">
                                 <TokenIcon 
@@ -187,10 +187,10 @@ export function MarketsDashboard() {
                               </Badge>
                             </div>
                           </td>
-                          <td className="py-3 px-2">
+                          <td className="px-2">
                             <span className="text-muted-foreground">{getPairFullName(market.pair)}</span>
                           </td>
-                          <td className="py-3 px-2">
+                          <td className="px-2">
                             <span className="text-blue-400 hover:underline cursor-pointer"
                                   onClick={() => {
                                     const categories = getMarketCategory(market.pair);
@@ -208,30 +208,30 @@ export function MarketsDashboard() {
                               })()}
                             </span>
                           </td>
-                          <td className="text-right py-3 px-2">
+                          <td className="text-right px-2">
                             <div className="flex items-center justify-end gap-1">
                               <span className="font-medium">{getFormattedPrice(market.pair)}</span>
                               <span className="text-xs text-muted-foreground">{quoteToken}</span>
                             </div>
                           </td>
-                          <td className="text-right py-3 px-2">
+                          <td className="text-right px-2">
                             <MarketHighValue pair={market.pair} quoteToken={quoteToken} />
                           </td>
-                          <td className="text-right py-3 px-2">
+                          <td className="text-right px-2">
                             <MarketLowValue pair={market.pair} quoteToken={quoteToken} />
                           </td>
-                          <td className="text-right py-3 px-2">
+                          <td className="text-right px-2">
                             <MarketPriceChange 
                               pair={market.pair} 
                               onPercentageChange={(value) => handlePercentageChange(market.pair, value)} 
                             />
                           </td>
-                          <td className="text-right py-3 px-2">
+                          <td className="text-right px-2">
                             <div className="flex justify-end">
                               <MiniPriceChart pair={market.pair} />
                             </div>
                           </td>
-                          <td className="text-right py-3 px-2">
+                          <td className="text-right px-2">
                             <span
                               className={cn(
                                 "font-mono", // Added font-mono for consistency if desired
@@ -245,7 +245,7 @@ export function MarketsDashboard() {
                               {formatFundingRate(market.fundingRate)}
                             </span>
                           </td>
-                          <td className="text-center py-3 px-2">
+                          <td className="text-center px-2">
                             <button 
                               onClick={() => toggleFavorite(market.pair)} 
                               className="focus:outline-none"
