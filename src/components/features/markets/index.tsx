@@ -13,6 +13,15 @@ import { MarketCategory, AVAILABLE_CATEGORIES, getPairsInCategory, getMarketCate
 import { Badge } from "../../ui/badge"
 import { use24hStats } from "../../../hooks/use-24h-stats"
 import { MarketPriceChange, MarketHighValue, MarketLowValue } from "./market-stats"
+import { MiniPriceChart } from "./mini-price-chart"
+
+// Helper function to format funding rate (similar to PairSelector)
+const formatFundingRate = (rate: number) => {
+  // Assuming rate is already a percentage, e.g., 0.01 for 1%
+  // If rate is decimal (e.g., 0.0001), multiply by 100 first: (rate * 100).toFixed(4)
+  // Based on PairSelector, it seems rate is already a percentage value like 0.01
+  return `${rate.toFixed(4)}%`; 
+};
 
 export function MarketsDashboard() {
   const [favorites, setFavorites] = useState<string[]>(() => {
@@ -125,7 +134,7 @@ export function MarketsDashboard() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[800px] border-collapse">
+                <table className="w-full min-w-[1050px] border-collapse">
                   <thead>
                     <tr className="text-xs uppercase text-muted-foreground">
                       <th className="text-left py-2 px-2 font-medium">Market</th>
@@ -135,6 +144,8 @@ export function MarketsDashboard() {
                       <th className="text-right py-2 px-2 font-medium">24h High</th>
                       <th className="text-right py-2 px-2 font-medium">24h Low</th>
                       <th className="text-right py-2 px-2 font-medium">24h Chg.</th>
+                      <th className="text-right py-2 px-2 font-medium min-w-[100px]">24h Trend</th>
+                      <th className="text-right py-2 px-2 font-medium">Funding Rate</th>
                       <th className="text-center py-2 px-2 w-8"></th>
                     </tr>
                   </thead>
@@ -214,6 +225,25 @@ export function MarketsDashboard() {
                               pair={market.pair} 
                               onPercentageChange={(value) => handlePercentageChange(market.pair, value)} 
                             />
+                          </td>
+                          <td className="text-right py-3 px-2">
+                            <div className="flex justify-end">
+                              <MiniPriceChart pair={market.pair} />
+                            </div>
+                          </td>
+                          <td className="text-right py-3 px-2">
+                            <span
+                              className={cn(
+                                "font-mono", // Added font-mono for consistency if desired
+                                market.fundingRate > 0
+                                  ? "text-[#22c55e]" // Green for positive
+                                  : market.fundingRate < 0
+                                  ? "text-[#ef4444]" // Red for negative
+                                  : "text-foreground" // Default for zero
+                              )}
+                            >
+                              {formatFundingRate(market.fundingRate)}
+                            </span>
                           </td>
                           <td className="text-center py-3 px-2">
                             <button 
