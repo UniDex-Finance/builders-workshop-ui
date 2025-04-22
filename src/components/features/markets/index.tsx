@@ -402,7 +402,10 @@ export function MarketsDashboard() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--main-accent)]"></div>
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div
+                className="overflow-x-hidden scrollbar-hide" // Temporarily use hidden
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} /* Directly apply hiding styles */
+              >
                 <table className="w-full min-w-[1050px] border-collapse">
                   {/* Table Head */}
                   <thead>
