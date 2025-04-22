@@ -457,7 +457,7 @@ export function MarketsDashboard() {
                                 variant="outline" 
                                 className="bg-muted/40 text-xs font-normal border-muted/30"
                               >
-                                10x {/* Placeholder leverage */}
+                                100x {/* Placeholder leverage */}
                               </Badge>
                             </div>
                           </td>
