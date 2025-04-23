@@ -96,40 +96,41 @@ export function PositionsTable({ address }: PositionsTableProps) {
   };
 
   const handleClosePosition = (position: Position) => {
-    if (position.positionId && !position.positionId.startsWith('g-')) {
-      const positionSize = parseFloat(position.size || "0");
-      if (isNaN(positionSize)) {
-        console.error("Invalid position size:", position.size);
-        return;
-      }
-
-      const basePair = position.market.split("/")[0].toLowerCase();
-      const currentPrice = prices[basePair]?.price;
-
-      console.log('Attempting to close UniDex position with details:', {
-        pair: position.market,
-        markPrice: {
-          raw: currentPrice,
-          scientific: currentPrice ? currentPrice.toExponential(8) : '0',
-          fixed: currentPrice ? currentPrice.toFixed(10) : '0',
-          fromPosition: position.markPrice,
-          priceObject: prices[basePair],
-          allPrices: prices
-        },
-        size: positionSize,
-        isLong: position.isLong,
-        positionId: position.positionId
-      });
-
-      closePosition(
-        position.positionId,
-        position.isLong,
-        currentPrice || 0,
-        positionSize
-      );
-    } else {
-      console.log("Closing gTrade positions is not implemented via this button yet.", position.positionId);
+    if (!position.positionId) {
+      console.error("Position ID is missing:", position);
+      return;
     }
+
+    const positionSize = parseFloat(position.size || "0");
+    if (isNaN(positionSize)) {
+      console.error("Invalid position size:", position.size);
+      return;
+    }
+
+    const basePair = position.market.split("/")[0].toLowerCase();
+    const currentPrice = prices[basePair]?.price;
+
+    console.log('Attempting to close position (UniDex or gTrade) with details:', {
+      pair: position.market,
+      markPrice: {
+        raw: currentPrice,
+        scientific: currentPrice ? currentPrice.toExponential(8) : '0',
+        fixed: currentPrice ? currentPrice.toFixed(10) : '0',
+        fromPosition: position.markPrice,
+        priceObject: prices[basePair],
+        allPrices: prices
+      },
+      size: positionSize,
+      isLong: position.isLong,
+      positionId: position.positionId
+    });
+
+    closePosition(
+      position.positionId,
+      position.isLong,
+      currentPrice || 0,
+      positionSize
+    );
   };
 
   return (

@@ -139,7 +139,6 @@ export function useUnidexPositions() {
     },
     chainId: arbitrum.id
   });
-  console.log('unidexResult', unidexResult);
 
   // Track if a successful fetch has happened or if the address was removed
   useEffect(() => {
