@@ -16,7 +16,7 @@ type OrderbookProps = {
 }
 
 export function Orderbook({ pair, height }: OrderbookProps) {
-  const { orderbook } = useTradeStream();
+  const { orderbook, updateHyperliquidSubscription } = useTradeStream();
   const { getAssetMetadata, loading: metadataLoading } = useAssetMetadata();
   const [selectedDepth, setSelectedDepth] = useState("10");
   const [denomination, setDenomination] = useState<"currency" | "usd">("currency");
@@ -57,6 +57,7 @@ export function Orderbook({ pair, height }: OrderbookProps) {
 
     // Get the mid price to help determine appropriate grouping scale
     const midPrice = midPriceRef.current[pair] || 0;
+    console.log(`[Orderbook ${pair}] Calculating groupingOptions. MidPrice: ${midPrice}, AssetMetadata:`, assetMetadata);
     
     // Default options if metadata or price is not available
     if (!assetMetadata || !midPrice) {
@@ -185,25 +186,18 @@ export function Orderbook({ pair, height }: OrderbookProps) {
         }
     }
     
-    // Now validate that all options meet the szDecimals requirements
-    const { szDecimals } = assetMetadata;
-    const MAX_DECIMALS = 6; // For perpetuals
-    const maxPriceDecimals = Math.max(0, MAX_DECIMALS - szDecimals);
-    const smallestAllowedIncrement = Math.pow(10, -maxPriceDecimals);
-    
-    // Filter out options that are too small for this asset's tick size
-    const filteredOptions = options.filter(option => {
-      const optionValue = parseFloat(option.value);
-      return optionValue >= smallestAllowedIncrement;
-    });
-    
+    console.log(`[Orderbook ${pair}] Generated options (unfiltered):`, options.map(o => o.value));
+
+    // Use the unfiltered options
+    const finalOptions = options; 
+
     // Store these options as initialized for this pair
-    initialGroupingOptionsRef.current[pair] = filteredOptions;
+    initialGroupingOptionsRef.current[pair] = finalOptions;
     
-    console.log(`Grouping options for ${baseCurrency}:`, filteredOptions);
+    console.log(`[Orderbook ${pair}] Final grouping options for ${baseCurrency}:`, finalOptions);
     
-    return filteredOptions;
-  }, [pair, assetMetadata, baseCurrency]); // REMOVED orderbook dependency!
+    return finalOptions; // Return the unfiltered options
+  }, [pair, assetMetadata, baseCurrency]);
 
   // Once we have a valid orderbook and haven't initialized yet, mark as initialized
   useEffect(() => {
@@ -217,17 +211,16 @@ export function Orderbook({ pair, height }: OrderbookProps) {
   // Set default grouping only when pair changes
   const [grouping, setGrouping] = useState("1.0"); // Keep a safe initial default
 
-  // Update initial grouping value based on the asset, selecting the smallest valid option
+  // Update initial grouping value AND notify context when pair or options change
   useEffect(() => {
-    // Ensure we have calculated and filtered options and they are available
     if (groupingOptions.length > 0) {
-      // Select the smallest available grouping option as the default for the new pair
-      setGrouping(groupingOptions[0].value); 
+      const smallestGrouping = groupingOptions[0].value;
+      console.log(`[Orderbook ${pair}] Setting initial grouping: ${smallestGrouping}`);
+      setGrouping(smallestGrouping); 
+      console.log(`[Orderbook ${pair}] Calling updateHyperliquidSubscription with initial grouping: ${smallestGrouping} and currency: ${baseCurrency}`);
+      updateHyperliquidSubscription(smallestGrouping, baseCurrency); 
     }
-    // If groupingOptions is empty initially (e.g., metadata loading), 
-    // the state remains the initial default ("1.0") until groupingOptions 
-    // is populated and this effect runs again.
-  }, [pair, groupingOptions]); // Dependencies: trigger on pair change or when options update
+  }, [pair, groupingOptions, updateHyperliquidSubscription, baseCurrency]); // Add baseCurrency dependency
 
   // Group orders by price level with special handling for 0.01
   const groupOrders = useCallback((orders: OrderbookLevel[], groupSize: number) => {
@@ -555,7 +548,7 @@ export function Orderbook({ pair, height }: OrderbookProps) {
     >
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between border-b border-border px-2 py-1.5 h-8">
-        {/* Grouping Dropdown - Moved Here */}
+        {/* Grouping Dropdown */}
         <div className="relative">
           <button
             className="flex items-center space-x-1 px-2 py-0.5 text-xs bg-accent/30 hover:bg-accent/50 rounded"
@@ -578,7 +571,11 @@ export function Orderbook({ pair, height }: OrderbookProps) {
                     grouping === option.value ? "bg-accent" : "hover:bg-accent/50"
                   }`}
                   onClick={(e) => {
-                    setGrouping(option.value);
+                    const newGrouping = option.value;
+                    console.log(`[Orderbook ${pair}] User selected new grouping: ${newGrouping}`);
+                    setGrouping(newGrouping);
+                    console.log(`[Orderbook ${pair}] Calling updateHyperliquidSubscription with new grouping: ${newGrouping} and currency: ${baseCurrency}`);
+                    updateHyperliquidSubscription(newGrouping, baseCurrency); 
                     e.currentTarget.closest('div.absolute')?.classList.add('hidden');
                   }}
                 >
@@ -589,7 +586,7 @@ export function Orderbook({ pair, height }: OrderbookProps) {
           </div>
         </div>
 
-        {/* Denomination Toggle - Moved to the right */}
+        {/* Denomination Toggle */}
         <div className="flex items-center space-x-2">
           <button
             className={`text-xs px-2 py-0.5 rounded ${
@@ -624,7 +621,13 @@ export function Orderbook({ pair, height }: OrderbookProps) {
       >
         {/* Asks (Sells) */}
         <div className="overflow-hidden border-b border-border/5">
-          {renderOrders(asks, "asks")}
+          {orderbook === null ? (
+             <div className="text-center text-xs text-muted-foreground py-4">Loading orderbook...</div>
+           ) : asks.length > 0 ? (
+            renderOrders(asks, "asks")
+           ) : (
+             <div className="text-center text-xs text-muted-foreground py-4">No ask data available.</div>
+           )}
         </div>
 
         {/* Spread - Grouping Removed */}
@@ -636,7 +639,13 @@ export function Orderbook({ pair, height }: OrderbookProps) {
 
         {/* Bids (Buys) */}
         <div className="overflow-hidden border-t border-border/5 mb-2">
-          {renderOrders(bids, "bids")}
+          {orderbook === null ? (
+             <div className="text-center text-xs text-muted-foreground py-4"></div> // No text needed here maybe
+           ) : bids.length > 0 ? (
+             renderOrders(bids, "bids")
+           ) : (
+             <div className="text-center text-xs text-muted-foreground py-4">No bid data available.</div>
+           )}
         </div>
       </div>
     </div>
