@@ -42,7 +42,12 @@ export function BalanceCard({
         <div className="bg-muted/50 rounded-lg md:rounded-xl p-3 md:p-4 flex justify-between items-center">
           <p className="text-base md:text-lg font-medium text-muted-foreground">Your Deposit APY</p>
           <div className="bg-primary/10 text-primary px-2 py-1 md:px-3 rounded-md">
-            <p className="text-sm md:text-base font-semibold">{apy}</p>
+            <p className="text-sm md:text-base font-semibold">
+              {(() => {
+                const apyValue = parseFloat(apy.replace('%', ''));
+                return !isNaN(apyValue) ? `${apyValue.toFixed(2)}%` : apy;
+              })()}
+            </p>
           </div>
         </div>
       </CardContent>

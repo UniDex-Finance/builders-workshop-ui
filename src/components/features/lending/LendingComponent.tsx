@@ -8,18 +8,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "../../ui/card";
 import { VaultInteractionModal } from "./VaultInteractionModal";
 import { useState } from "react";
+import { useInterestTokenPrice } from "@/hooks/lending-hooks/use-interest-token-price";
 
 // Helper function to format APY
 const formatApy = (apy: number | undefined | null): string => {
   if (apy === undefined || apy === null || isNaN(apy)) {
     return "N/A";
   }
-  return `${apy.toFixed(2)}%`;
+  return `${apy}%`;
 };
 
 export function LendingComponent() {
   const { balances, isLoading: isLoadingBalances, isError: isErrorBalances } = useLendingBalances();
   const { apys, isLoading: isLoadingApys, isError: isErrorApys } = useVaultApys();
+  const { prices, isLoading: isLoadingPrices, error: errorPrices } = useInterestTokenPrice();
 
   // --- State for Modal ---
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -119,27 +121,44 @@ export function LendingComponent() {
 
         <div className="w-full md:max-w-xl flex flex-col gap-4">
           {baseVaultData.map((vault) => {
-            const isLoading = isLoadingBalances || isLoadingApys;
-            const isError = isErrorBalances || isErrorApys;
+            // Combine loading and error states from balances, APYs, and prices
+            const isLoading = isLoadingBalances || isLoadingApys || isLoadingPrices;
+            const isError = isErrorBalances || isErrorApys || !!errorPrices;
 
-            // Determine the correct deposited balance
-            let depositedBalance = "$0.00";
-            let numericDepositedBalance = 0;
-            if (!isLoadingBalances && balances) {
+            // Determine the correct deposited balance (now in USD)
+            let depositedUsdValue = "$0.00";
+            let numericDepositedBalance = 0; // Raw token balance
+            let tokenPrice: number | null = null;
+
+            if (!isLoadingBalances && !isLoadingPrices && balances && prices) {
               switch (vault.variant) {
                 case "aave":
                   numericDepositedBalance = parseFloat(balances.formattedAUsdcBalance || '0');
-                  depositedBalance = `$${numericDepositedBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                  tokenPrice = prices.aave;
                   break;
                 case "compound":
                   numericDepositedBalance = parseFloat(balances.formattedCUsdcBalance || '0');
-                  depositedBalance = `$${numericDepositedBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                  tokenPrice = prices.compound;
                   break;
                 case "fluid":
                   numericDepositedBalance = parseFloat(balances.formattedFluidBalance || '0');
-                  depositedBalance = `$${numericDepositedBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                  tokenPrice = prices.fluid;
                   break;
               }
+
+              // Calculate USD value if price is available
+              if (tokenPrice !== null && numericDepositedBalance > 0) {
+                const calculatedUsdValue = numericDepositedBalance * tokenPrice;
+                depositedUsdValue = `$${calculatedUsdValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+              } else if (numericDepositedBalance === 0) {
+                depositedUsdValue = "$0.00"; // Explicitly set to $0.00 if balance is zero
+              } else {
+                // Handle case where price is null but balance > 0 (e.g., price fetch failed)
+                depositedUsdValue = "Error fetching price"; // Or some other indicator
+                console.warn(`Price for ${vault.protocol} is null, cannot calculate USD value.`);
+              }
+            } else if (isErrorBalances || errorPrices) {
+                depositedUsdValue = "Error"; // General error state
             }
 
             // Determine the correct APY
@@ -157,10 +176,10 @@ export function LendingComponent() {
                 key={vault.protocol}
                 protocol={vault.protocol}
                 apy={displayVaultApy}
-                depositedBalance={depositedBalance}
+                depositedBalance={depositedUsdValue}
                 variant={vault.variant}
                 isLoading={isLoading}
-                onClick={() => handleVaultClick(vault, depositedBalance)}
+                onClick={() => handleVaultClick(vault, depositedUsdValue)}
               />
             );
           })}

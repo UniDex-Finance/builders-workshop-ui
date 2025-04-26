@@ -92,7 +92,7 @@ export function VaultCard({
             </div>
           </div>
           <div className="flex flex-col items-center text-center">
-            <div className="text-xs text-muted-foreground uppercase tracking-wider">Currently Earning</div>
+            <div className="text-xs text-muted-foreground uppercase tracking-wider">Currently Deposited</div>
             <div className="font-semibold text-foreground text-base md:text-lg">
               {isLoading ? (
                  <Skeleton className="h-5 w-20 mt-1" />

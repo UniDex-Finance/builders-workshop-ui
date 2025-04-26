@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { useTradeStream, OrderbookLevel } from "../../../../lib/trade-stream-context";
+import { useAssetMetadata } from "../../../../lib/hooks/useAssetMetadata";
 import * as HoverCard from '@radix-ui/react-hover-card';
 
 type Order = {
@@ -16,29 +17,224 @@ type OrderbookProps = {
 
 export function Orderbook({ pair, height }: OrderbookProps) {
   const { orderbook } = useTradeStream();
+  const { getAssetMetadata, loading: metadataLoading } = useAssetMetadata();
   const [selectedDepth, setSelectedDepth] = useState("10");
-  const [grouping, setGrouping] = useState("0.01");
   const [denomination, setDenomination] = useState<"currency" | "usd">("currency");
   const orderbookContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Add ref to track initial setup
+  const initializedRef = useRef<Record<string, boolean>>({});
+  
+  // Store current midPrice for initialization
+  const midPriceRef = useRef<Record<string, number>>({});
+  
+  // Store initialized grouping options
+  const initialGroupingOptionsRef = useRef<Record<string, any[]>>({});
+  
+  // Extract the base currency from the pair (e.g., "BTC" from "BTC/USD")
+  const baseCurrency = useMemo(() => pair.split('/')[0], [pair]);
+  
+  // Get asset metadata for the current pair
+  const assetMetadata = useMemo(() => getAssetMetadata(baseCurrency), [baseCurrency, getAssetMetadata]);
+
+  // Calculate and store midPrice when orderbook updates, but don't use it for rendering
+  useEffect(() => {
+    if (orderbook && orderbook.asks.length > 0 && orderbook.bids.length > 0) {
+      // Calculate midPrice
+      const midPrice = (orderbook.asks[0]?.price + orderbook.bids[0]?.price) / 2;
+      if (midPrice > 0) {
+        midPriceRef.current[pair] = midPrice;
+      }
+    }
+  }, [orderbook, pair]);
+
+  // Get initial grouping options for the pair - WITHOUT depending on orderbook updates
+  const groupingOptions = useMemo(() => {
+    // If we've already initialized options for this pair, don't recalculate
+    if (initializedRef.current[pair] && initialGroupingOptionsRef.current[pair]) {
+      return initialGroupingOptionsRef.current[pair];
+    }
+
+    // Get the mid price to help determine appropriate grouping scale
+    const midPrice = midPriceRef.current[pair] || 0;
+    
+    // Default options if metadata or price is not available
+    if (!assetMetadata || !midPrice) {
+      const defaultOptions = [
+        { value: "0.01", label: "0.01" },
+        { value: "0.1", label: "0.1" },
+        { value: "1", label: "1.0" },
+        { value: "10", label: "10.0" }
+      ];
+      return defaultOptions;
+    }
+    
+    // Special case handling for specific assets by name
+    let options = [];
+    
+    switch(baseCurrency) {
+      case 'BTC':
+        options = [
+          { value: "1", label: "1" },
+          { value: "5", label: "5" },
+          { value: "10", label: "10" },
+          { value: "50", label: "50" },
+          { value: "100", label: "100" }
+        ];
+        break;
+        
+      case 'ETH':
+        options = [
+          { value: "0.1", label: "0.1" },
+          { value: "1", label: "1" },
+          { value: "5", label: "5" },
+          { value: "10", label: "10" },
+          { value: "50", label: "50" }
+        ];
+        break;
+        
+      case 'DOGE':
+      case 'SHIB':
+      case 'XRP':
+        // Very fine-grained options for low-value coins
+        options = [
+          { value: "0.00001", label: "0.00001" },
+          { value: "0.0001", label: "0.0001" },
+          { value: "0.001", label: "0.001" },
+          { value: "0.01", label: "0.01" },
+          { value: "0.1", label: "0.1" }
+        ];
+        break;
+        
+      default:
+        // For all other assets, use price-based approach
+        if (midPrice >= 10000) {
+          // Super high value assets
+          options = [
+            { value: "10", label: "10" },
+            { value: "25", label: "25" },
+            { value: "50", label: "50" },
+            { value: "100", label: "100" },
+            { value: "500", label: "500" }
+          ];
+        } else if (midPrice >= 1000) {
+          // Very high value assets
+          options = [
+            { value: "1", label: "1" },
+            { value: "5", label: "5" },
+            { value: "10", label: "10" },
+            { value: "50", label: "50" },
+            { value: "100", label: "100" }
+          ];
+        } else if (midPrice >= 100) {
+          // High value assets
+          options = [
+            { value: "0.1", label: "0.1" },
+            { value: "0.5", label: "0.5" },
+            { value: "1", label: "1" },
+            { value: "5", label: "5" },
+            { value: "10", label: "10" }
+          ];
+        } else if (midPrice >= 10) {
+          // Medium value assets
+          options = [
+            { value: "0.01", label: "0.01" },
+            { value: "0.05", label: "0.05" },
+            { value: "0.1", label: "0.1" },
+            { value: "0.5", label: "0.5" },
+            { value: "1", label: "1" }
+          ];
+        } else if (midPrice >= 1) {
+          // Lower medium value assets
+          options = [
+            { value: "0.001", label: "0.001" },
+            { value: "0.01", label: "0.01" },
+            { value: "0.05", label: "0.05" },
+            { value: "0.1", label: "0.1" },
+            { value: "0.5", label: "0.5" }
+          ];
+        } else if (midPrice >= 0.1) {
+          // Low value assets
+          options = [
+            { value: "0.0001", label: "0.0001" },
+            { value: "0.001", label: "0.001" },
+            { value: "0.01", label: "0.01" },
+            { value: "0.05", label: "0.05" },
+            { value: "0.1", label: "0.1" }
+          ];
+        } else if (midPrice >= 0.01) {
+          // Very low value assets
+          options = [
+            { value: "0.00001", label: "0.00001" },
+            { value: "0.0001", label: "0.0001" },
+            { value: "0.001", label: "0.001" },
+            { value: "0.01", label: "0.01" },
+            { value: "0.05", label: "0.05" }
+          ];
+        } else {
+          // Extremely low value assets
+          options = [
+            { value: "0.000001", label: "0.000001" },
+            { value: "0.00001", label: "0.00001" },
+            { value: "0.0001", label: "0.0001" },
+            { value: "0.001", label: "0.001" },
+            { value: "0.01", label: "0.01" }
+          ];
+        }
+    }
+    
+    // Now validate that all options meet the szDecimals requirements
+    const { szDecimals } = assetMetadata;
+    const MAX_DECIMALS = 6; // For perpetuals
+    const maxPriceDecimals = Math.max(0, MAX_DECIMALS - szDecimals);
+    const smallestAllowedIncrement = Math.pow(10, -maxPriceDecimals);
+    
+    // Filter out options that are too small for this asset's tick size
+    const filteredOptions = options.filter(option => {
+      const optionValue = parseFloat(option.value);
+      return optionValue >= smallestAllowedIncrement;
+    });
+    
+    // Store these options as initialized for this pair
+    initialGroupingOptionsRef.current[pair] = filteredOptions;
+    
+    console.log(`Grouping options for ${baseCurrency}:`, filteredOptions);
+    
+    return filteredOptions;
+  }, [pair, assetMetadata, baseCurrency]); // REMOVED orderbook dependency!
+
+  // Once we have a valid orderbook and haven't initialized yet, mark as initialized
+  useEffect(() => {
+    // Only run when we have an orderbook with data
+    if (orderbook && orderbook.asks.length > 0 && orderbook.bids.length > 0 && !initializedRef.current[pair]) {
+      // Mark this pair as initialized, which will prevent recalculations
+      initializedRef.current[pair] = true;
+    }
+  }, [orderbook, pair]);
+  
+  // Set default grouping only when pair changes
+  const [grouping, setGrouping] = useState("1.0"); // Keep a safe initial default
+
+  // Update initial grouping value based on the asset, selecting the smallest valid option
+  useEffect(() => {
+    // Ensure we have calculated and filtered options and they are available
+    if (groupingOptions.length > 0) {
+      // Select the smallest available grouping option as the default for the new pair
+      setGrouping(groupingOptions[0].value); 
+    }
+    // If groupingOptions is empty initially (e.g., metadata loading), 
+    // the state remains the initial default ("1.0") until groupingOptions 
+    // is populated and this effect runs again.
+  }, [pair, groupingOptions]); // Dependencies: trigger on pair change or when options update
 
   // Group orders by price level with special handling for 0.01
-  const groupOrders = (orders: OrderbookLevel[], groupSize: number) => {
+  const groupOrders = useCallback((orders: OrderbookLevel[], groupSize: number) => {
     const grouped = new Map<string, OrderbookLevel>();
     
     orders.forEach(order => {
-      let groupedPrice: number;
-      
-      // Special handling for 0.01 grouping
-      if (groupSize === 0.01) {
-        // Convert to fixed 2 decimals and back to number - removes floating point errors
-        const fixed = parseFloat(order.price.toFixed(2));
-        // Now round down to nearest 0.01
-        groupedPrice = Math.floor(fixed * 100) / 100;
-      } else {
-        // Use the original algorithm for other grouping sizes
-        const roundFactor = 1 / groupSize;
-        groupedPrice = Math.floor(order.price * roundFactor) / roundFactor;
-      }
+      // Use a consistent approach for all grouping sizes
+      const roundFactor = 1 / groupSize;
+      const groupedPrice = Math.floor(order.price * roundFactor) / roundFactor;
       
       // Use string key to avoid floating point key issues
       const priceKey = groupedPrice.toString();
@@ -58,7 +254,7 @@ export function Orderbook({ pair, height }: OrderbookProps) {
     });
     
     return Array.from(grouped.values());
-  };
+  }, []);
 
   // Memoize grouped orders
   const { groupedAsks, groupedBids } = useMemo(() => {
@@ -104,14 +300,14 @@ export function Orderbook({ pair, height }: OrderbookProps) {
 
   // Map grouping values to decimal places
   const getDecimalPlaces = () => {
-    switch (grouping) {
-      case "0.001": return 3;
-      case "0.01": return 2;
-      case "0.1": return 1;
-      case "1": return 0;
-      case "10": return 0;
-      default: return 1;
+    if (!grouping) return 1;
+    
+    // Count decimal places in the grouping value
+    const match = grouping.match(/\.(\d+)/);
+    if (match && match[1]) {
+      return match[1].length;
     }
+    return 0;
   };
 
   // Format number based on denomination and grouping
@@ -133,21 +329,25 @@ export function Orderbook({ pair, height }: OrderbookProps) {
     });
   };
 
-  // Update formatSize and formatTotal to use formatNumber
+  // Update formatSize and formatTotal to use formatNumber and szDecimals
   const formatSize = (size: number, price: number) => {
     if (denomination === "usd") {
       const value = size * price;
-      return formatNumber(value, value < 1 ? 2 : 0);
+      // Keep USD formatting: 2 decimals for < 1, 0 for >= 1
+      return formatNumber(value, value < 1 ? 2 : 0); 
     }
-    return formatNumber(size, 3);
+    // Use szDecimals for currency formatting, fallback to 3 if metadata not loaded
+    return formatNumber(size, assetMetadata?.szDecimals ?? 3);
   };
 
   const formatTotal = (total: number, price: number) => {
     if (denomination === "usd") {
       const value = total * price;
+      // Keep USD formatting: 2 decimals for < 1, 0 for >= 1
       return formatNumber(value, value < 1 ? 2 : 0);
     }
-    return formatNumber(total, 3);
+    // Use szDecimals for currency formatting, fallback to 3 if metadata not loaded
+    return formatNumber(total, assetMetadata?.szDecimals ?? 3);
   };
 
   // Add function to calculate price impact
@@ -266,7 +466,7 @@ export function Orderbook({ pair, height }: OrderbookProps) {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Cumulative Size</span>
-                      <span>{formatNumber(order.total, denomination === "usd" ? 2 : 3)}</span>
+                      <span>{formatTotal(order.total, order.price)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Price Impact</span>
@@ -283,7 +483,7 @@ export function Orderbook({ pair, height }: OrderbookProps) {
         </div>
       );
     });
-  }, [asks, bids, denomination, maxTotal, formatSize, formatTotal]);
+  }, [asks, bids, denomination, maxTotal, formatSize, formatTotal, assetMetadata, grouping, getDecimalPlaces]);
 
   // Update spread display
   const spread = formatNumber(Math.abs((asks[asks.length - 1]?.price || 0) - (bids[0]?.price || 0)));
@@ -325,6 +525,23 @@ export function Orderbook({ pair, height }: OrderbookProps) {
     prevMidPriceRef.current = midPrice;
   }, [asks, bids, grouping]);
 
+  // Add useEffect to handle click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      const dropdowns = document.querySelectorAll('.orderbook-dropdown');
+      dropdowns.forEach(dropdown => {
+        if (dropdown instanceof HTMLElement && !dropdown.contains(event.target as Node)) {
+          dropdown.classList.add('hidden');
+        }
+      });
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <div 
       ref={orderbookContainerRef}
@@ -335,50 +552,9 @@ export function Orderbook({ pair, height }: OrderbookProps) {
       }}
     >
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 flex items-center justify-between border-b border-border px-2 py-1.5 h-8">
-        <div className="flex items-center space-x-1">
-          <button
-            className={`text-xs px-2 py-0.5 rounded ${
-              grouping === "0.001" ? "bg-accent" : "hover:bg-accent/50"
-            }`}
-            onClick={() => setGrouping("0.001")}
-          >
-            0.001
-          </button>
-          <button
-            className={`text-xs px-2 py-0.5 rounded ${
-              grouping === "0.01" ? "bg-accent" : "hover:bg-accent/50"
-            }`}
-            onClick={() => setGrouping("0.01")}
-          >
-            0.01
-          </button>
-          <button
-            className={`text-xs px-2 py-0.5 rounded ${
-              grouping === "0.1" ? "bg-accent" : "hover:bg-accent/50"
-            }`}
-            onClick={() => setGrouping("0.1")}
-          >
-            0.1
-          </button>
-          <button
-            className={`text-xs px-2 py-0.5 rounded ${
-              grouping === "1" ? "bg-accent" : "hover:bg-accent/50"
-            }`}
-            onClick={() => setGrouping("1")}
-          >
-            1.0
-          </button>
-          <button
-            className={`text-xs px-2 py-0.5 rounded ${
-              grouping === "10" ? "bg-accent" : "hover:bg-accent/50"
-            }`}
-            onClick={() => setGrouping("10")}
-          >
-            10.0
-          </button>
-        </div>
+      <div className="absolute top-0 left-0 right-0 flex items-center border-b border-border px-2 py-1.5 h-8">
         <div className="flex items-center space-x-2">
+          <span className="text-xs text-muted-foreground">Denomination:</span>
           <button
             className={`text-xs px-2 py-0.5 rounded ${
               denomination === "currency" ? "bg-accent" : "hover:bg-accent/50"
@@ -396,6 +572,8 @@ export function Orderbook({ pair, height }: OrderbookProps) {
             USD
           </button>
         </div>
+        <div className="flex-grow"></div>
+        {/* If you want to add anything on the right side later */}
       </div>
 
       {/* Column Headers - positioned below header */}
@@ -416,10 +594,42 @@ export function Orderbook({ pair, height }: OrderbookProps) {
         </div>
 
         {/* Spread */}
-        <div className="text-center py-1.5 text-xs text-muted-foreground bg-accent/5">
+        <div className="text-center py-1.5 text-xs text-muted-foreground bg-accent/5 flex items-center justify-center gap-3">
           <span className="font-mono text-xs">
             Spread: {spread} ({spreadPercentage}%)
           </span>
+          <div className="relative">
+            <button
+              className="flex items-center space-x-1 px-2 py-0.5 bg-accent/30 hover:bg-accent/50 rounded"
+              onClick={(e) => {
+                const dropdown = e.currentTarget.nextElementSibling;
+                if (dropdown) {
+                  dropdown.classList.toggle('hidden');
+                }
+              }}
+            >
+              <span>Grouping: {grouping}</span>
+              <ChevronDown size={12} />
+            </button>
+            <div className="absolute top-full left-0 mt-1 bg-card shadow-lg border border-border rounded hidden z-10 orderbook-dropdown">
+              <div className="flex flex-col p-1">
+                {groupingOptions.map(option => (
+                  <button
+                    key={option.value}
+                    className={`text-xs px-3 py-1 text-left rounded ${
+                      grouping === option.value ? "bg-accent" : "hover:bg-accent/50"
+                    }`}
+                    onClick={(e) => {
+                      setGrouping(option.value);
+                      e.currentTarget.closest('div.absolute')?.classList.add('hidden');
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Bids (Buys) */}
