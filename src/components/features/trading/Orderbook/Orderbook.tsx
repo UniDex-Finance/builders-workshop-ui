@@ -3,6 +3,7 @@ import { ChevronDown } from "lucide-react";
 import { useTradeStream, OrderbookLevel } from "../../../../lib/trade-stream-context";
 import { useAssetMetadata } from "../../../../lib/hooks/useAssetMetadata";
 import * as HoverCard from '@radix-ui/react-hover-card';
+import { orderbookConfig } from "../../../../config/orderbookConfig";
 
 type Order = {
   price: number;
@@ -48,156 +49,24 @@ export function Orderbook({ pair, height }: OrderbookProps) {
     }
   }, [orderbook, pair]);
 
-  // Get initial grouping options for the pair - WITHOUT depending on orderbook updates
+  // Get initial grouping options FOR THE PAIR from the config
   const groupingOptions = useMemo(() => {
-    // If we've already initialized options for this pair, don't recalculate
-    if (initializedRef.current[pair] && initialGroupingOptionsRef.current[pair]) {
-      return initialGroupingOptionsRef.current[pair];
-    }
+    console.log(`[Orderbook ${pair}] Determining grouping options from config for ${baseCurrency}`);
 
-    // Get the mid price to help determine appropriate grouping scale
-    const midPrice = midPriceRef.current[pair] || 0;
-    console.log(`[Orderbook ${pair}] Calculating groupingOptions. MidPrice: ${midPrice}, AssetMetadata:`, assetMetadata);
+    // Find the config for the current currency, or use default
+    const config = orderbookConfig[baseCurrency] ?? orderbookConfig.default;
     
-    // Default options if metadata or price is not available
-    if (!assetMetadata || !midPrice) {
-      const defaultOptions = [
-        { value: "0.01", label: "0.01" },
-        { value: "0.1", label: "0.1" },
-        { value: "1", label: "1.0" },
-        { value: "10", label: "10.0" }
-      ];
-      return defaultOptions;
-    }
-    
-    // Special case handling for specific assets by name
-    let options = [];
-    
-    switch(baseCurrency) {
-      case 'BTC':
-        options = [
-          { value: "1", label: "1" },
-          { value: "5", label: "5" },
-          { value: "10", label: "10" },
-          { value: "50", label: "50" },
-          { value: "100", label: "100" }
-        ];
-        break;
-        
-      case 'ETH':
-        options = [
-          { value: "0.1", label: "0.1" },
-          { value: "1", label: "1" },
-          { value: "5", label: "5" },
-          { value: "10", label: "10" },
-          { value: "50", label: "50" }
-        ];
-        break;
-        
-      case 'DOGE':
-      case 'SHIB':
-      case 'XRP':
-        // Very fine-grained options for low-value coins
-        options = [
-          { value: "0.00001", label: "0.00001" },
-          { value: "0.0001", label: "0.0001" },
-          { value: "0.001", label: "0.001" },
-          { value: "0.01", label: "0.01" },
-          { value: "0.1", label: "0.1" }
-        ];
-        break;
-        
-      default:
-        // For all other assets, use price-based approach
-        if (midPrice >= 10000) {
-          // Super high value assets
-          options = [
-            { value: "10", label: "10" },
-            { value: "25", label: "25" },
-            { value: "50", label: "50" },
-            { value: "100", label: "100" },
-            { value: "500", label: "500" }
-          ];
-        } else if (midPrice >= 1000) {
-          // Very high value assets
-          options = [
-            { value: "1", label: "1" },
-            { value: "5", label: "5" },
-            { value: "10", label: "10" },
-            { value: "50", label: "50" },
-            { value: "100", label: "100" }
-          ];
-        } else if (midPrice >= 100) {
-          // High value assets
-          options = [
-            { value: "0.1", label: "0.1" },
-            { value: "0.5", label: "0.5" },
-            { value: "1", label: "1" },
-            { value: "5", label: "5" },
-            { value: "10", label: "10" }
-          ];
-        } else if (midPrice >= 10) {
-          // Medium value assets
-          options = [
-            { value: "0.001", label: "0.001" },
-            { value: "0.005", label: "0.005" },
-            { value: "0.01", label: "0.01" },
-            { value: "0.05", label: "0.05" },
-            { value: "0.1", label: "0.1" },
-            { value: "0.5", label: "0.5" },
-            { value: "1", label: "1" }
-          ];
-        } else if (midPrice >= 1) {
-          // Lower medium value assets
-          options = [
-            { value: "0.001", label: "0.001" },
-            { value: "0.01", label: "0.01" },
-            { value: "0.05", label: "0.05" },
-            { value: "0.1", label: "0.1" },
-            { value: "0.5", label: "0.5" }
-          ];
-        } else if (midPrice >= 0.1) {
-          // Low value assets
-          options = [
-            { value: "0.0001", label: "0.0001" },
-            { value: "0.001", label: "0.001" },
-            { value: "0.01", label: "0.01" },
-            { value: "0.05", label: "0.05" },
-            { value: "0.1", label: "0.1" }
-          ];
-        } else if (midPrice >= 0.01) {
-          // Very low value assets
-          options = [
-            { value: "0.00001", label: "0.00001" },
-            { value: "0.0001", label: "0.0001" },
-            { value: "0.001", label: "0.001" },
-            { value: "0.01", label: "0.01" },
-            { value: "0.05", label: "0.05" }
-          ];
-        } else {
-          // Extremely low value assets
-          options = [
-            { value: "0.000001", label: "0.000001" },
-            { value: "0.00001", label: "0.00001" },
-            { value: "0.0001", label: "0.0001" },
-            { value: "0.001", label: "0.001" },
-            { value: "0.01", label: "0.01" }
-          ];
-        }
-    }
-    
-    console.log(`[Orderbook ${pair}] Generated options (unfiltered):`, options.map(o => o.value));
+    // Use the options defined in the config
+    const finalOptions = config.groupingOptions;
 
-    // Use the unfiltered options
-    const finalOptions = options; 
-
-    // Store these options as initialized for this pair
-    initialGroupingOptionsRef.current[pair] = finalOptions;
+    // Still useful to store the determined options for potential future checks
+    initialGroupingOptionsRef.current[pair] = finalOptions; 
     
-    console.log(`[Orderbook ${pair}] Final grouping options for ${baseCurrency}:`, finalOptions);
+    console.log(`[Orderbook ${pair}] Using grouping options from config:`, finalOptions);
     
-    return finalOptions; // Return the unfiltered options
-  }, [pair, assetMetadata, baseCurrency]);
+    return finalOptions;
+    // Dependency is just baseCurrency now, as config is static
+  }, [baseCurrency, pair]); 
 
   // Once we have a valid orderbook and haven't initialized yet, mark as initialized
   useEffect(() => {
@@ -213,14 +82,23 @@ export function Orderbook({ pair, height }: OrderbookProps) {
 
   // Update initial grouping value AND notify context when pair or options change
   useEffect(() => {
-    if (groupingOptions.length > 0) {
-      const smallestGrouping = groupingOptions[0].value;
-      console.log(`[Orderbook ${pair}] Setting initial grouping: ${smallestGrouping}`);
+    // Ensure groupingOptions are derived from the config before proceeding
+    if (groupingOptions && groupingOptions.length > 0) {
+      // Default to the first option in the config for this pair
+      const smallestGrouping = groupingOptions[0].value; 
+      console.log(`[Orderbook ${pair}] Setting initial grouping from config's first option: ${smallestGrouping}`);
       setGrouping(smallestGrouping); 
       console.log(`[Orderbook ${pair}] Calling updateHyperliquidSubscription with initial grouping: ${smallestGrouping} and currency: ${baseCurrency}`);
       updateHyperliquidSubscription(smallestGrouping, baseCurrency); 
+    } else {
+      console.warn(`[Orderbook ${pair}] No grouping options found in config for ${baseCurrency}.`);
+      // Handle cases where config might be missing options? Maybe set a fallback grouping.
+      const fallbackGrouping = "1.0"; // Or read from default config
+      setGrouping(fallbackGrouping);
+      updateHyperliquidSubscription(fallbackGrouping, baseCurrency);
     }
-  }, [pair, groupingOptions, updateHyperliquidSubscription, baseCurrency]); // Add baseCurrency dependency
+  // Dependencies: update when pair/baseCurrency changes, or the derived groupingOptions change
+  }, [pair, baseCurrency, groupingOptions, updateHyperliquidSubscription]); 
 
   // Group orders by price level with special handling for 0.01
   const groupOrders = useCallback((orders: OrderbookLevel[], groupSize: number) => {

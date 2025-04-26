@@ -1,4 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useMemo, useRef, useCallback } from 'react';
+// Import the new config
+import { orderbookConfig } from '../config/orderbookConfig'; 
 
 export interface Trade {
   id: string;
@@ -104,40 +106,24 @@ function shortenAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
-// Helper function to map grouping to nSigFigs based on asset and grouping
+// Helper function to get nSigFigs from the config
 const getNSigFigsForGrouping = (groupingStr: string, baseCurrency: string): number | null => {
-  const grouping = parseFloat(groupingStr);
-  if (isNaN(grouping)) return null;
-
-  // --- Asset-Specific Logic ---
-  // Use the mapping provided by the user for AVAX
-  if (baseCurrency === 'AVAX') {
-    if (grouping === 0.001) return 5;
-    if (grouping === 0.01) return 4;
-    if (grouping === 0.1) return 3;
-    if (grouping === 1) return 2;
-    // Add fallbacks for other potential AVAX groupings if needed
-    console.warn(`Unhandled grouping ${grouping} for AVAX. Defaulting to null.`);
-    return null; // Default to full precision for unhandled AVAX cases
+  console.log(`[Context] Getting nSigFigs for ${baseCurrency} with grouping ${groupingStr}`);
+  
+  // Find the config for the current currency, or use default
+  const pairConfig = orderbookConfig[baseCurrency] ?? orderbookConfig.default;
+  
+  // Check if the specific grouping value exists in the mapping for this config
+  if (pairConfig.sigFigMapping.hasOwnProperty(groupingStr)) {
+    const nSigFigs = pairConfig.sigFigMapping[groupingStr];
+    console.log(`[Context] Found mapping in config: ${groupingStr} -> ${nSigFigs}`);
+    return nSigFigs;
+  } else {
+    // If the exact grouping isn't mapped (e.g., an intermediate value not in config options)
+    // Default to null (full precision) as a safe fallback
+    console.warn(`[Context] Grouping value "${groupingStr}" not found in sigFigMapping for ${baseCurrency} or default config. Defaulting to null.`);
+    return null; 
   }
-
-  // Add logic for other assets based on price scale if needed
-  // Example: Low price coin (like SHIB, DOGE - check actual price)
-  // A placeholder - actual logic depends on typical price ranges
-  // if (['SHIB', 'DOGE', 'SUI'].includes(baseCurrency)) { 
-  //    if (grouping === 0.00001) return 5;
-  //    if (grouping === 0.0001) return 4;
-  //    // ... etc ...
-  // }
-
-  // --- Generic Fallback Logic (Less Accurate) ---
-  // This is less ideal than asset-specific logic but provides a fallback
-  console.warn(`No specific nSigFigs rule for ${baseCurrency}. Using generic fallback.`);
-  if (grouping <= 0.001) return 5;
-  if (grouping <= 0.1) return 4;
-  if (grouping <= 1) return 3; 
-  if (grouping <= 10) return 2;
-  return 1; 
 };
 
 export function TradeStreamProvider({ children, pair }: { children: ReactNode, pair: string }) {
