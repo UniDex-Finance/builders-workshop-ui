@@ -138,6 +138,8 @@ export function Orderbook({ pair, height }: OrderbookProps) {
         } else if (midPrice >= 10) {
           // Medium value assets
           options = [
+            { value: "0.001", label: "0.001" },
+            { value: "0.005", label: "0.005" },
             { value: "0.01", label: "0.01" },
             { value: "0.05", label: "0.05" },
             { value: "0.1", label: "0.1" },
@@ -543,18 +545,52 @@ export function Orderbook({ pair, height }: OrderbookProps) {
   }, []);
 
   return (
-    <div 
+    <div
       ref={orderbookContainerRef}
       className="relative bg-card text-foreground w-[300px] border-t border-b border-r border-l border-border"
-      style={{ 
+      style={{
         height: `${height}px`,
         overflow: 'hidden'
       }}
     >
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 flex items-center border-b border-border px-2 py-1.5 h-8">
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between border-b border-border px-2 py-1.5 h-8">
+        {/* Grouping Dropdown - Moved Here */}
+        <div className="relative">
+          <button
+            className="flex items-center space-x-1 px-2 py-0.5 text-xs bg-accent/30 hover:bg-accent/50 rounded"
+            onClick={(e) => {
+              const dropdown = e.currentTarget.nextElementSibling;
+              if (dropdown) {
+                dropdown.classList.toggle('hidden');
+              }
+            }}
+          >
+            <span>Grouping: {grouping}</span>
+            <ChevronDown size={12} />
+          </button>
+          <div className="absolute top-full left-0 mt-1 bg-card shadow-lg border border-border rounded hidden z-10 orderbook-dropdown">
+            <div className="flex flex-col p-1">
+              {groupingOptions.map(option => (
+                <button
+                  key={option.value}
+                  className={`text-xs px-3 py-1 text-left rounded ${
+                    grouping === option.value ? "bg-accent" : "hover:bg-accent/50"
+                  }`}
+                  onClick={(e) => {
+                    setGrouping(option.value);
+                    e.currentTarget.closest('div.absolute')?.classList.add('hidden');
+                  }}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Denomination Toggle - Moved to the right */}
         <div className="flex items-center space-x-2">
-          <span className="text-xs text-muted-foreground">Denomination:</span>
           <button
             className={`text-xs px-2 py-0.5 rounded ${
               denomination === "currency" ? "bg-accent" : "hover:bg-accent/50"
@@ -572,8 +608,6 @@ export function Orderbook({ pair, height }: OrderbookProps) {
             USD
           </button>
         </div>
-        <div className="flex-grow"></div>
-        {/* If you want to add anything on the right side later */}
       </div>
 
       {/* Column Headers - positioned below header */}
@@ -593,43 +627,11 @@ export function Orderbook({ pair, height }: OrderbookProps) {
           {renderOrders(asks, "asks")}
         </div>
 
-        {/* Spread */}
-        <div className="text-center py-1.5 text-xs text-muted-foreground bg-accent/5 flex items-center justify-center gap-3">
+        {/* Spread - Grouping Removed */}
+        <div className="text-center py-1.5 text-xs text-muted-foreground bg-accent/5 flex items-center justify-center gap-3 h-8">
           <span className="font-mono text-xs">
             Spread: {spread} ({spreadPercentage}%)
           </span>
-          <div className="relative">
-            <button
-              className="flex items-center space-x-1 px-2 py-0.5 bg-accent/30 hover:bg-accent/50 rounded"
-              onClick={(e) => {
-                const dropdown = e.currentTarget.nextElementSibling;
-                if (dropdown) {
-                  dropdown.classList.toggle('hidden');
-                }
-              }}
-            >
-              <span>Grouping: {grouping}</span>
-              <ChevronDown size={12} />
-            </button>
-            <div className="absolute top-full left-0 mt-1 bg-card shadow-lg border border-border rounded hidden z-10 orderbook-dropdown">
-              <div className="flex flex-col p-1">
-                {groupingOptions.map(option => (
-                  <button
-                    key={option.value}
-                    className={`text-xs px-3 py-1 text-left rounded ${
-                      grouping === option.value ? "bg-accent" : "hover:bg-accent/50"
-                    }`}
-                    onClick={(e) => {
-                      setGrouping(option.value);
-                      e.currentTarget.closest('div.absolute')?.classList.add('hidden');
-                    }}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Bids (Buys) */}
