@@ -28,6 +28,7 @@ interface MarketRowProps {
       short: number;
     };
     fundingRate: number;
+    maxLeverage: number;
   };
   isFavorite: boolean;
   onToggleFavorite: (pair: string) => void;
@@ -89,7 +90,7 @@ const MarketRow: React.FC<MarketRowProps> = ({ market, isFavorite, onToggleFavor
             <TokenIcon pair={market.pair} size={16} square={true} className="mr-0.5" />
             <span>{market.pair}</span>
             <span className="px-1 py-1 text-[11px] leading-none font-medium rounded bg-[var(--foreground-accent)] text-[var(--text-accent)]">
-              100x
+              {market.maxLeverage}x
             </span>
           </div>
         </div>
@@ -148,7 +149,7 @@ const MarketRow: React.FC<MarketRowProps> = ({ market, isFavorite, onToggleFavor
             <TokenIcon pair={market.pair} size={16} square={true} className="mr-0.5" />
             <span>{market.pair}</span>
             <span className="px-1.5 py-0.5 text-[11px] leading-none font-medium rounded bg-[var(--foreground-accent)] text-[var(--text-accent)]">
-              100x
+              {market.maxLeverage}x
             </span>
           </div>
         </div>

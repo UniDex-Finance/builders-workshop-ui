@@ -436,6 +436,63 @@ export function OrderCard({
     setTempLeverageValue(leverage);
   }, [leverage]);
 
+  // Find the current market and its max leverage
+  const currentMarket = allMarkets.find(m => m.assetId === assetId);
+  const maxLeverageForPair = currentMarket?.maxLeverage || 100; // Default to 100 if not found
+
+  // Revise the effect to properly handle pair changes
+  useEffect(() => {
+    // Skip if no markets data yet
+    if (!allMarkets || allMarkets.length === 0) return;
+    
+    const currentMarket = allMarkets.find(m => m.assetId === assetId);
+    if (!currentMarket) return;
+    
+    const maxLeverageForPair = currentMarket.maxLeverage || 100;
+    
+    // Always check the localStorage for this specific pair
+    const cachedLeverage = localStorage.getItem(`unidex-leverage-${assetId}`);
+    
+    // Only change the leverage if the current value is outside the valid range
+    // or if we have a cached value for this specific pair
+    const currentLeverageValue = parseInt(leverage, 10);
+    const isCurrentLeverageValid = !isNaN(currentLeverageValue) && 
+                                   currentLeverageValue >= 1 && 
+                                   currentLeverageValue <= maxLeverageForPair;
+    
+    if (cachedLeverage) {
+      // Use the cached leverage value, ensuring it doesn't exceed the max
+      const parsedLeverage = Math.min(parseInt(cachedLeverage, 10), maxLeverageForPair);
+      
+      // Only update if different from current value
+      if (parsedLeverage !== currentLeverageValue) {
+        console.log(`Setting cached leverage for ${assetId} to ${parsedLeverage}x`);
+        onLeverageChange(parsedLeverage.toString());
+        setTempLeverageValue(parsedLeverage.toString());
+      }
+    } else if (!isCurrentLeverageValid) {
+      // No cached value and current leverage is invalid for this pair
+      // Default to half of the max leverage
+      const defaultLeverage = Math.ceil(maxLeverageForPair / 2);
+      
+      console.log(`Setting default leverage for ${assetId} to ${defaultLeverage}x`);
+      onLeverageChange(defaultLeverage.toString());
+      setTempLeverageValue(defaultLeverage.toString());
+    } else {
+      // Current leverage is valid for this pair, but ensure the temp value is updated
+      setTempLeverageValue(currentLeverageValue.toString());
+    }
+    
+  }, [assetId, allMarkets, onLeverageChange, leverage]);
+  
+  // Keep the same saveLeverageAndClose function
+  const saveLeverageAndClose = () => {
+    onLeverageChange(tempLeverageValue);
+    // Cache the selected leverage for this pair
+    localStorage.setItem(`unidex-leverage-${assetId}`, tempLeverageValue.toString());
+    setLeverageDialogOpen(false);
+  };
+
   return (
     <Card className="w-full md:h-full md:rounded-none md:border-0 md:shadow-none">
       <SliderWithGlowStyles />
@@ -479,7 +536,7 @@ export function OrderCard({
                     <div style={{ touchAction: "none", WebkitTapHighlightColor: "transparent" }}>
                       <CustomLeverageSlider
                         min={1}
-                        max={100}
+                        max={maxLeverageForPair}
                         step={1}
                         value={Number(tempLeverageValue)}
                         onChange={(value) => setTempLeverageValue(value.toString())}
@@ -501,11 +558,11 @@ export function OrderCard({
                             type="number"
                             value={tempLeverageValue}
                             onChange={(e) => {
-                              const value = Math.min(Math.max(1, parseInt(e.target.value) || 1), 100);
+                              const value = Math.min(Math.max(1, parseInt(e.target.value) || 1), maxLeverageForPair);
                               setTempLeverageValue(value.toString());
                             }}
                             min={1}
-                            max={100}
+                            max={maxLeverageForPair}
                             inputMode="numeric"
                             autoFocus
                             onBlur={() => setIsLeverageInputEditing(false)}
@@ -522,10 +579,7 @@ export function OrderCard({
                   <div className="mt-3">
                     <Button 
                       className="w-full"
-                      onClick={() => {
-                        onLeverageChange(tempLeverageValue);
-                        setLeverageDialogOpen(false);
-                      }}
+                      onClick={saveLeverageAndClose}
                     >
                       Confirm Change
                     </Button>

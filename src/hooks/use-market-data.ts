@@ -162,6 +162,7 @@ export interface Market {
   longTradingFee: number;
   shortTradingFee: number;
   utilization: number;
+  maxLeverage: number;
   longShortRatio: {
     longPercentage: number;
     shortPercentage: number;
@@ -188,6 +189,17 @@ interface UseMarketDataResult {
 }
 
 const LENS_CONTRACT_ADDRESS = '0xeae57c7bce5caf160343a83440e98bc976ab7274' as `0x${string}`;
+const PRICE_MANAGER_ADDRESS = '0x4436ab565b426facbbb2e77ca0c514d14c242804' as `0x${string}`;
+
+const priceManagerAbi = [
+  {
+    inputs: [{ internalType: 'uint256', name: 'assetId', type: 'uint256' }],
+    name: 'maxLeverage',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+] as const;
 
 export function useMarketData({
   pollInterval = 10000,
@@ -199,14 +211,26 @@ export function useMarketData({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Create contract configs for each asset
-  const contracts = Object.keys(TRADING_PAIRS).map(assetId => ({
-    address: LENS_CONTRACT_ADDRESS,
-    abi: lensAbi,
-    functionName: 'getGlobalInfo' as const,
-    args: [address, BigInt(assetId)] as const,
-    chainId: arbitrum.id // Explicitly set chainId to Arbitrum
-  }));
+  // Create contract configs for each asset, including both lens and price manager calls
+  const contracts = Object.keys(TRADING_PAIRS).flatMap(assetIdBigIntStr => {
+    const assetId = BigInt(assetIdBigIntStr);
+    return [
+      {
+        address: LENS_CONTRACT_ADDRESS,
+        abi: lensAbi,
+        functionName: 'getGlobalInfo' as const,
+        args: [address, assetId] as const,
+        chainId: arbitrum.id
+      },
+      {
+        address: PRICE_MANAGER_ADDRESS,
+        abi: priceManagerAbi,
+        functionName: 'maxLeverage' as const,
+        args: [assetId] as const,
+        chainId: arbitrum.id
+      }
+    ];
+  });
 
   // Use wagmi's useReadContracts for multicall
   const { data: contractData, refetch } = useReadContracts({
@@ -223,27 +247,22 @@ export function useMarketData({
     if (!contractData) return;
 
     try {
-      const markets: Market[] = contractData.map((result, index) => {
-        if (!result.result) return null;
+      const markets: Market[] = Object.keys(TRADING_PAIRS).map((assetId, index) => {
+        const globalInfoResult = contractData[index * 2]; // Result for getGlobalInfo
+        const maxLeverageResult = contractData[index * 2 + 1]; // Result for maxLeverage
 
-        const assetId = Object.keys(TRADING_PAIRS)[index];
-        const data = result.result as readonly [
-          bigint,  // fundingRate
-          bigint,  // borrowRateForLong
-          bigint,  // borrowRateForShort
-          bigint,  // longOpenInterest
-          bigint,  // shortOpenInterest
-          bigint,  // maxLongOpenInterest
-          bigint,  // maxShortOpenInterest
-          bigint,  // longTradingFee
-          bigint   // shortTradingFee
+        if (!globalInfoResult?.result || !maxLeverageResult?.result) return null;
+
+        const globalInfoData = globalInfoResult.result as readonly [
+          bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint
         ];
+        const maxLeverageData = maxLeverageResult.result as bigint;
 
         // Calculate values using the same scaling as before
-        const longOI = Number(formatUnits(data[3], 30));
-        const shortOI = Number(formatUnits(data[4], 30));
-        const maxLongOI = Number(formatUnits(data[5], 30));
-        const maxShortOI = Number(formatUnits(data[6], 30));
+        const longOI = Number(formatUnits(globalInfoData[3], 30));
+        const shortOI = Number(formatUnits(globalInfoData[4], 30));
+        const maxLongOI = Number(formatUnits(globalInfoData[5], 30));
+        const maxShortOI = Number(formatUnits(globalInfoData[6], 30));
 
         // Calculate utilization
         const utilization = Math.max(
@@ -257,21 +276,24 @@ export function useMarketData({
         const shortPercentage = totalOI > 0 ? (shortOI / totalOI) * 100 : 50;
 
         const pair = TRADING_PAIRS[assetId];
+        // Format maxLeverage (assuming 2000000 -> 200 means dividing by 10000)
+        const maxLeverage = Number(formatUnits(maxLeverageData, 4));
 
         return {
           assetId: assetId,
           pair: pair,
           pairFullName: getPairFullName(pair),
-          fundingRate: Number(formatUnits(data[0], 13)),
-          borrowRateForLong: Number(formatUnits(data[1], 4)),
-          borrowRateForShort: Number(formatUnits(data[2], 4)),
+          fundingRate: Number(formatUnits(globalInfoData[0], 13)),
+          borrowRateForLong: Number(formatUnits(globalInfoData[1], 4)),
+          borrowRateForShort: Number(formatUnits(globalInfoData[2], 4)),
           longOpenInterest: longOI,
           shortOpenInterest: shortOI,
           maxLongOpenInterest: maxLongOI,
           maxShortOpenInterest: maxShortOI,
-          longTradingFee: Number(formatUnits(data[7], 28)),
-          shortTradingFee: Number(formatUnits(data[8], 28)),
+          longTradingFee: Number(formatUnits(globalInfoData[7], 28)),
+          shortTradingFee: Number(formatUnits(globalInfoData[8], 28)),
           utilization: Number(utilization.toFixed(2)),
+          maxLeverage: maxLeverage,
           longShortRatio: {
             longPercentage: Number(longPercentage.toFixed(2)),
             shortPercentage: Number(shortPercentage.toFixed(2))
@@ -316,4 +338,5 @@ export function useMarketData({
     },
     getPairFullName
   };
+  
 }
