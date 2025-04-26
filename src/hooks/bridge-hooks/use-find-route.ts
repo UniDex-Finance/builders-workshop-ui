@@ -72,12 +72,16 @@ export const useFindRoute = ({ fromChainId, toChainId, amount, userAddress }: Us
         if (fromChainId) {
             switch (fromChainId) {
                 case 42161: // Arbitrum
+                value = parseUnits("0.00022", 18);
+                break;
                 case 10:    // Optimism
+                value = parseUnits("0.00022", 18);
+                break;
                 case 8453:  // Base
-                    value = parseUnits("0.00012", 18);
+                    value = parseUnits("0.00022", 18);
                     break;
                 case 146:   // Sonic
-                    value = parseUnits("0.5", 18);
+                    value = parseUnits("1.2", 18);
                     break;
                 case 1:     // Mainnet
                     value = parseUnits("0.0018", 18);

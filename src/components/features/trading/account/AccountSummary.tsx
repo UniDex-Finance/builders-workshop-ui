@@ -375,18 +375,16 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
 
   const modal = (
     <>
-      {isMobile && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsOpen(false);
-          }}
-        />
-      )}
+      <div
+        className="fixed inset-0 z-[9998] bg-black/50 backdrop-blur-sm"
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(false);
+        }}
+      />
       <Card 
         className={`
-          z-50 
+          z-[9999] 
           p-4 
           space-y-4 
           bg-[var(--deposit-card-background)]
@@ -402,14 +400,14 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
           animate-slide-up-mobile
           
           /* Desktop styles */
-          md:absolute
+          md:fixed
           md:animate-none
           md:bottom-auto
-          md:right-0
+          md:top-[60px]
+          md:right-6
           md:left-auto
           md:w-[400px]
           md:rounded-lg
-          md:mt-2
         `}
         onClick={(e) => {
           e.preventDefault();
@@ -619,49 +617,29 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
         {buttonText}
       </Button>
 
-      {isOpen && (isMobile ? createPortal(modal, document.body) : modal)}
+      {isOpen && createPortal(modal, document.body)}
 
       {/* Render modals outside the account popup */}
-      {showDeposit && (
-        isMobile ? 
-          createPortal(
-            <DepositCard 
-              onClose={() => setShowDeposit(false)} 
-              balances={balances} 
-              onSuccess={() => {
-                setShowDeposit(false);
-              }}
-            />,
-            document.body
-          ) : 
-          <DepositCard 
-            onClose={() => setShowDeposit(false)} 
-            balances={balances} 
-            onSuccess={() => {
-              setShowDeposit(false);
-            }}
-          />
+      {showDeposit && createPortal(
+        <DepositCard 
+          onClose={() => setShowDeposit(false)} 
+          balances={balances} 
+          onSuccess={() => {
+            setShowDeposit(false);
+          }}
+        />,
+        document.body
       )}
       
-      {showWithdraw && (
-        isMobile ? 
-          createPortal(
-            <WithdrawCard 
-              onClose={() => setShowWithdraw(false)} 
-              balances={balances} 
-              onSuccess={() => {
-                setShowWithdraw(false);
-              }}
-            />,
-            document.body
-          ) : 
-          <WithdrawCard 
-            onClose={() => setShowWithdraw(false)} 
-            balances={balances} 
-            onSuccess={() => {
-              setShowWithdraw(false);
-            }}
-          />
+      {showWithdraw && createPortal(
+        <WithdrawCard 
+          onClose={() => setShowWithdraw(false)} 
+          balances={balances} 
+          onSuccess={() => {
+            setShowWithdraw(false);
+          }}
+        />,
+        document.body
       )}
     </div>
   );
