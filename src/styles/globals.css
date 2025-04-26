@@ -27,9 +27,72 @@
   }
 }
 
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-100% - 16px));
+  }
+}
+
+@keyframes marquee2 {
+  0% {
+    transform: translateX(calc(100% + 16px));
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes ticker-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
 @layer utilities {
   .animate-twinkle {
     animation: twinkle 2s ease-in-out infinite;
+  }
+
+  .animate-marquee {
+    animation: marquee 25s linear infinite;
+  }
+
+  .animate-marquee2 {
+    animation: marquee2 25s linear infinite;
+  }
+
+  .animate-marquee-slow {
+    animation: marquee 40s linear infinite;
+  }
+
+  .animate-marquee2-slow {
+    animation: marquee2 40s linear infinite;
+  }
+
+  .animate-marquee-fast {
+    animation: marquee 15s linear infinite;
+  }
+
+  .animate-marquee2-fast {
+    animation: marquee2 15s linear infinite;
+  }
+
+  .animate-ticker-slow {
+    animation: ticker-scroll 40s linear infinite;
+  }
+
+  .animate-ticker-normal {
+    animation: ticker-scroll 25s linear infinite;
+  }
+
+  .animate-ticker-fast {
+    animation: ticker-scroll 15s linear infinite;
   }
 
   .rehypothecation-bar {

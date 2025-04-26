@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { XIcon, SunIcon, MoonIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [selected, setSelected] = useState(0);
+  const isMobile = useIsMobile();
 
   // Handle initial theme setup after mount
   useEffect(() => {
@@ -59,7 +61,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         <motion.div
           animate={{
             height: 240,
-            width: 380,
+            width: isMobile ? '90vw' : 380,
             opacity: 1,
           }}
           initial={{
@@ -73,7 +75,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             opacity: 0,
           }}
           className={cn(
-            "fixed top-16 right-4 z-[100] overflow-hidden rounded-2xl bg-card border border-border shadow-lg",
+            "fixed z-[100] overflow-hidden rounded-2xl bg-card border border-border shadow-lg",
+            isMobile ? "top-4 left-1/2 -translate-x-1/2" : "top-16 right-4"
           )}
           transition={{
             type: "spring",

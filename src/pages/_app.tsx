@@ -110,9 +110,7 @@ function MyApp({ Component, pageProps }: AppProps) {
                     <div className="flex-grow pb-8">
                       <Component {...pageProps} />
                     </div>
-                    <div className="fixed bottom-0 left-0 right-0 bg-background">
-                      <Footer />
-                    </div>
+                    <Footer />
                     <div className="relative z-50">
                       <Toaster />
                       <NewVersionNotification />
