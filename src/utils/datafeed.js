@@ -33,6 +33,7 @@ class RateLimiter {
 const rateLimiter = new RateLimiter(90, 10000);
 
 import { subscribeOnStream, unsubscribeFromStream } from './streaming.js'
+import { PRECISION_OVERRIDES, DEFAULT_PRECISION } from '../hooks/use-pair-precision'
 
 const API_ENDPOINT = 'https://benchmarks.pyth.network/v1/shims/tradingview'
 
@@ -57,6 +58,12 @@ async function makeRequest(url) {
 
 
 const supportedResolutions = ["1", "5", "15", "30", "1h", "4h", "1D", "1W"];
+
+// Helper function to get base pair from prefixed symbol
+function getBasePair(symbolName) {
+  const parts = symbolName.split('.');
+  return parts.length > 1 ? parts[1] : symbolName;
+}
 
 const datafeed = {
   onReady: async (callback) => {
@@ -99,12 +106,23 @@ const datafeed = {
       const response = await makeRequest(`${API_ENDPOINT}/symbols?symbol=${symbolName}`);
       const symbolInfo = await response.json();
       console.log('[resolveSymbol]: Symbol resolved', symbolInfo)
+
+      // --- Determine decimal places dynamically ---
+      const basePair = getBasePair(symbolName); // Extract base pair like "ETH/USD"
+      const precisionConfig = PRECISION_OVERRIDES[basePair] || DEFAULT_PRECISION;
+      const decimalPlaces = precisionConfig.minDecimals; // Use minDecimals for pricescale
+      const priceScale = Math.pow(10, decimalPlaces);
+      // --- End determine decimal places ---
+
       onSymbolResolvedCallback({
         ...symbolInfo,
         supported_resolutions: supportedResolutions,
         has_intraday: true,
         has_daily: true,
         has_weekly_and_monthly: true,
+        pricescale: priceScale,
+        minmov: 1,          // Minimum price movement (tick size) is 1 unit of the smallest decimal
+        minmove2: 0,        // Use 0 for standard decimal price formatting
       });
     } catch (error) {
       console.log('[resolveSymbol]: Cannot resolve symbol', symbolName)

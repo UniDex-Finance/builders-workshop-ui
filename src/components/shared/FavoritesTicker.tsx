@@ -1,32 +1,92 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { usePrices } from "../../lib/websocket-price-context";
 import { use24hChange } from "../../hooks/use-24h-change";
+import { useMarketData } from "../../hooks/use-market-data";
 import { cn } from "../../lib/utils";
 
 interface FavoritesTickerProps {
   isPaused: boolean;
   showPrice: boolean;
+  displayMode: 'all' | 'favorites';
 }
 
-export function FavoritesTicker({ isPaused, showPrice }: FavoritesTickerProps) {
-  const [favorites, setFavorites] = useState<string[]>([]);
+export function FavoritesTicker({ isPaused, showPrice, displayMode }: FavoritesTickerProps) {
+  const [favoritePairs, setFavoritePairs] = useState<string[]>([]);
   const { prices } = usePrices();
+  const { allMarkets } = useMarketData({});
   const containerRef = useRef<HTMLDivElement>(null);
+  const tickerRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState(0);
+  const [contentWidth, setContentWidth] = useState(0);
   
   // Load favorites from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("favoriteMarkets");
-    setFavorites(saved ? JSON.parse(saved) : []);
+    setFavoritePairs(saved ? JSON.parse(saved) : []);
   }, []);
 
-  // Determine animation speed based on number of favorites
-  const animationSpeed = useMemo(() => {
-    if (favorites.length <= 3) return "fast";
-    if (favorites.length >= 8) return "slow";
-    return "normal";
-  }, [favorites.length]);
+  // Determine which pairs to display based on the displayMode prop
+  const displayedPairs = useMemo(() => {
+    const allPairNames = allMarkets.map(market => market.pair);
+    // Check if displayMode is 'favorites'
+    if (displayMode === 'favorites') { 
+      // Filter favoritePairs to ensure they still exist in allMarkets (optional, good practice)
+      return favoritePairs.filter(favPair => allPairNames.includes(favPair));
+    }
+    // Otherwise (displayMode is 'all'), return all pairs
+    return allPairNames; 
+  }, [displayMode, favoritePairs, allMarkets]); // Depend on displayMode
 
-  if (favorites.length === 0) {
+  // Measure content width after render
+  useEffect(() => {
+    if (tickerRef.current) {
+      setContentWidth(tickerRef.current.scrollWidth / 2); // Divide by 2 as we have duplicated content
+    }
+  }, [displayedPairs]);
+
+  // Animation with fixed pixel rate
+  useEffect(() => {
+    if (isPaused || !tickerRef.current || contentWidth === 0) return;
+    
+    let animationFrameId: number;
+    let lastTimestamp: number;
+    
+    // Fixed speed: 5 pixels per second (super slow)
+    const pixelsPerSecond = 20;
+    
+    const animate = (timestamp: number) => {
+      if (!lastTimestamp) {
+        lastTimestamp = timestamp;
+      }
+      
+      const elapsed = timestamp - lastTimestamp;
+      const pixelsToMove = (elapsed / 1000) * pixelsPerSecond;
+      
+      // Update position
+      setPosition(prev => {
+        const newPosition = prev - pixelsToMove;
+        
+        // Reset only after we've scrolled through all content (first set)
+        if (Math.abs(newPosition) >= contentWidth) {
+          return 0;
+        }
+        
+        return newPosition;
+      });
+      
+      lastTimestamp = timestamp;
+      animationFrameId = requestAnimationFrame(animate);
+    };
+    
+    animationFrameId = requestAnimationFrame(animate);
+    
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [isPaused, contentWidth]);
+
+  // Don't render if no pairs are available to display
+  if (displayedPairs.length === 0) {
     return null;
   }
 
@@ -57,31 +117,32 @@ export function FavoritesTicker({ isPaused, showPrice }: FavoritesTickerProps) {
   return (
     <div className="relative overflow-hidden w-full h-full flex items-center" ref={containerRef}>
       {isPaused ? (
+        // Display static list when paused
         <div className="flex items-center">
-          {favorites.map((pair, index) => renderTickerItem(pair, index, favorites.length))}
+          {displayedPairs.map((pair, index) => renderTickerItem(pair, index, displayedPairs.length))}
         </div>
       ) : (
-        <div 
-          className="w-full whitespace-nowrap group"
-          style={{ animationPlayState: "running" }}
-        >
-          <div className={cn(
-            "inline-flex items-center group-hover:[animation-play-state:paused]",
-            animationSpeed === "slow" 
-              ? "animate-ticker-slow" 
-              : animationSpeed === "fast" 
-                ? "animate-ticker-fast" 
-                : "animate-ticker-normal"
-          )}>
+        // Display scrolling list with constant pixel speed
+        <div className="w-full overflow-hidden whitespace-nowrap">
+          <div 
+            ref={tickerRef}
+            className="inline-flex items-center"
+            style={{ 
+              transform: `translateX(${position}px)`,
+              transition: 'transform 0.1s linear'
+            }}
+          >
             {/* First set of items */}
-            {favorites.map((pair, index) => renderTickerItem(pair, index, favorites.length))}
+            {displayedPairs.map((pair, index) => 
+              renderTickerItem(pair, index, displayedPairs.length)
+            )}
             
-            {/* Duplicate items to create continuous effect - with a small divider at the end */}
-            <div className="mx-6 h-3 w-px bg-border/80" />
+            {/* Spacer */}
+            <div className="mx-16 h-3 w-px bg-border/80" />
             
-            {/* Second set for continuous scrolling */}
-            {favorites.map((pair, index) => 
-              renderTickerItem(pair, index, favorites.length, true)
+            {/* Duplicate set for continuous scrolling */}
+            {displayedPairs.map((pair, index) =>
+              renderTickerItem(pair, index, displayedPairs.length, true)
             )}
           </div>
         </div>
@@ -106,4 +167,4 @@ function PercentageChange({ pair }: { pair: string }) {
       {percentageChange.toFixed(2)}%
     </span>
   );
-} 
+}

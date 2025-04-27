@@ -18,6 +18,7 @@ export function Footer() {
   const isMainPage = router.pathname === "/" || router.pathname === "/index";
   const [isPaused, setIsPaused] = useState(false);
   const [showPrice, setShowPrice] = useState(true);
+  const [tickerDisplayMode, setTickerDisplayMode] = useState<'none' | 'all' | 'favorites'>('all');
 
   useEffect(() => {
     const metaBuildId = (document.querySelector('meta[name="build-id"]') as HTMLMetaElement)?.content;
@@ -29,13 +30,19 @@ export function Footer() {
       const settings = JSON.parse(tickerSettings);
       setIsPaused(settings.isPaused || false);
       setShowPrice(settings.showPrice !== undefined ? settings.showPrice : true);
+      const savedMode = settings.tickerDisplayMode;
+      if (savedMode === 'none' || savedMode === 'all' || savedMode === 'favorites') {
+        setTickerDisplayMode(savedMode);
+      } else {
+        setTickerDisplayMode('all'); 
+      }
     }
   }, []);
 
   // Save settings to localStorage
   useEffect(() => {
-    localStorage.setItem("tickerSettings", JSON.stringify({ isPaused, showPrice }));
-  }, [isPaused, showPrice]);
+    localStorage.setItem("tickerSettings", JSON.stringify({ isPaused, showPrice, tickerDisplayMode }));
+  }, [isPaused, showPrice, tickerDisplayMode]);
 
   const chainName = {
     42161: 'Arbitrum',
@@ -75,15 +82,18 @@ export function Footer() {
               setIsPaused={setIsPaused}
               showPrice={showPrice}
               setShowPrice={setShowPrice}
+              tickerDisplayMode={tickerDisplayMode}
+              setTickerDisplayMode={setTickerDisplayMode}
             />
           </PopoverContent>
         </Popover>
         
-        {isMainPage && (
+        {isMainPage && (tickerDisplayMode === 'all' || tickerDisplayMode === 'favorites') && (
           <div className="hidden sm:block w-[650px] md:w-[800px] lg:w-[1000px] max-w-[calc(100vw-400px)] overflow-hidden mx-1">
             <FavoritesTicker 
               isPaused={isPaused}
               showPrice={showPrice}
+              displayMode={tickerDisplayMode}
             />
           </div>
         )}

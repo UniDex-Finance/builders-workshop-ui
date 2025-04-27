@@ -7,13 +7,13 @@ interface PrecisionConfig {
 }
 
 // Default precision configuration
-const DEFAULT_PRECISION: PrecisionConfig = {
+export const DEFAULT_PRECISION: PrecisionConfig = {
   minDecimals: 5,
   maxDecimals: 5
 };
 
 // Special cases for specific pairs
-const PRECISION_OVERRIDES: Record<string, PrecisionConfig> = {
+export const PRECISION_OVERRIDES: Record<string, PrecisionConfig> = {
   'BTC/USD': { minDecimals: 2, maxDecimals: 2 },
   'ETH/USD': { minDecimals: 2, maxDecimals: 2 },
   'S/USD': { minDecimals: 4, maxDecimals: 4 },
