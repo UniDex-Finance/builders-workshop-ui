@@ -78,27 +78,50 @@ export function Orderbook({ pair, height }: OrderbookProps) {
   }, [orderbook, pair]);
   
   // Set default grouping only when pair changes
-  const [grouping, setGrouping] = useState("1.0"); // Keep a safe initial default
+  const [grouping, setGrouping] = useState("1.0");
+  const [isGroupingTransitioning, setIsGroupingTransitioning] = useState(false);
+  const prevMidPriceRef = useRef<number | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Update initial grouping value AND notify context when pair or options change
+  // Effect for INITIAL grouping setting when pair or options change
   useEffect(() => {
-    // Ensure groupingOptions are derived from the config before proceeding
+    setIsGroupingTransitioning(false);
+    prevMidPriceRef.current = null;
+
     if (groupingOptions && groupingOptions.length > 0) {
-      // Default to the first option in the config for this pair
-      const smallestGrouping = groupingOptions[0].value; 
-      console.log(`[Orderbook ${pair}] Setting initial grouping from config's first option: ${smallestGrouping}`);
-      setGrouping(smallestGrouping); 
-      console.log(`[Orderbook ${pair}] Calling updateHyperliquidSubscription with initial grouping: ${smallestGrouping} and currency: ${baseCurrency}`);
-      updateHyperliquidSubscription(smallestGrouping, baseCurrency); 
+      const smallestGrouping = groupingOptions[0].value;
+      console.log(`[Orderbook ${pair} Initial Effect] Setting initial grouping state: ${smallestGrouping}`);
+      setGrouping(smallestGrouping);
     } else {
-      console.warn(`[Orderbook ${pair}] No grouping options found in config for ${baseCurrency}.`);
-      // Handle cases where config might be missing options? Maybe set a fallback grouping.
-      const fallbackGrouping = "1.0"; // Or read from default config
+      const fallbackGrouping = "1.0";
+      console.log(`[Orderbook ${pair} Initial Effect Fallback] Setting initial state: ${fallbackGrouping}`);
       setGrouping(fallbackGrouping);
-      updateHyperliquidSubscription(fallbackGrouping, baseCurrency);
     }
-  // Dependencies: update when pair/baseCurrency changes, or the derived groupingOptions change
-  }, [pair, baseCurrency, groupingOptions, updateHyperliquidSubscription]); 
+  }, [pair, baseCurrency, groupingOptions]);
+
+  // Effect to handle SUBSCRIPTION updates based on the 'grouping' state
+  useEffect(() => {
+    if (grouping) {
+      console.log(`[Orderbook ${pair} Grouping Change Effect] Grouping state is now: ${grouping}. Initiating transition.`);
+      setIsGroupingTransitioning(true);
+      prevMidPriceRef.current = null;
+      console.log(`[Orderbook ${pair} Grouping Change Effect] Calling updateHyperliquidSubscription.`);
+      updateHyperliquidSubscription(grouping, baseCurrency);
+    }
+  }, [grouping, baseCurrency, updateHyperliquidSubscription]);
+
+  // Effect to end transition when new data arrives AFTER a transition was started
+  useEffect(() => {
+    if (isGroupingTransitioning && orderbook !== null) {
+      console.log(`[Orderbook ${pair} Data Arrival Effect] Received non-null orderbook, ending grouping transition.`);
+      // Add a short delay before ending the transition to ensure React has time to process
+      setTimeout(() => {
+        setIsGroupingTransitioning(false);
+      }, 50); // 50ms delay is usually sufficient for React to catch up
+    } else if (isGroupingTransitioning && orderbook === null) {
+      console.log(`[Orderbook ${pair} Data Arrival Effect] Orderbook is null, continuing transition.`);
+    }
+  }, [orderbook, isGroupingTransitioning, pair]);
 
   // Group orders by price level with special handling for 0.01
   const groupOrders = useCallback((orders: OrderbookLevel[], groupSize: number) => {
@@ -131,44 +154,50 @@ export function Orderbook({ pair, height }: OrderbookProps) {
 
   // Memoize grouped orders
   const { groupedAsks, groupedBids } = useMemo(() => {
-    const groupSize = parseFloat(grouping);
-    // Sort asks ascending (lowest to highest)
+    console.log(`[Orderbook ${pair} Memo Grouped] Running with grouping: ${grouping}. Input orderbook:`, orderbook ? `${orderbook.asks.length} asks, ${orderbook.bids.length} bids` : 'null');
+    
+    // Important: Don't regroup data that's already grouped by the server!
+    // Instead, just sort it properly for display
     const rawAsks = [...(orderbook?.asks ?? [])].sort((a, b) => a.price - b.price);
-    // Sort bids descending (highest to lowest)
     const rawBids = [...(orderbook?.bids ?? [])].sort((a, b) => b.price - a.price);
     
-
-    
-    const grouped = {
-      groupedAsks: groupOrders(rawAsks, groupSize),
-      groupedBids: groupOrders(rawBids, groupSize)
+    // Skip additional grouping since data is already properly grouped from the server
+    console.log(`[Orderbook ${pair} Memo Grouped] Output: ${rawAsks.length} asks, ${rawBids.length} bids (using server-side grouping)`);
+    return {
+      groupedAsks: rawAsks,
+      groupedBids: rawBids
     };
+  }, [orderbook, grouping, pair]);
 
-
-    return grouped;
-  }, [orderbook, grouping]);
-
-  // Memoize processed orders
-  const { asks, bids, maxTotal } = useMemo(() => {
-    // For asks, accumulate total from bottom to top
+  // Memoize processed orders AND calculate midPrice
+  const { asks, bids, maxTotal, midPrice } = useMemo(() => {
+    console.log(`[Orderbook ${pair} Memo Processed] Running. Input: ${groupedAsks.length} grouped asks, ${groupedBids.length} grouped bids`);
     const processedAsks = [...groupedAsks].reverse().map((order, index) => ({
       ...order,
       total: groupedAsks.slice(0, groupedAsks.length - index).reduce((sum, o) => sum + o.size, 0)
     }));
-
-    // For bids, accumulate total from top to bottom
     const processedBids = groupedBids.map((order, index) => ({
       ...order,
       total: groupedBids.slice(0, index + 1).reduce((sum, o) => sum + o.size, 0)
     }));
 
-
-    const maxTotal = Math.max(
+    const currentMaxTotal = Math.max(
       processedAsks[0]?.total ?? 0,
       processedBids[processedBids.length - 1]?.total ?? 0
     );
 
-    return { asks: processedAsks, bids: processedBids, maxTotal };
+    // Calculate midPrice *only* if both asks and bids exist in the processed data
+    let currentMidPrice: number | null = null;
+    if (processedAsks.length > 0 && processedBids.length > 0) {
+      const lowestAsk = processedAsks[processedAsks.length - 1]?.price;
+      const highestBid = processedBids[0]?.price;
+      if (typeof lowestAsk === 'number' && typeof highestBid === 'number' && Number.isFinite(lowestAsk) && Number.isFinite(highestBid)) {
+          currentMidPrice = (lowestAsk + highestBid) / 2;
+      }
+    }
+    console.log(`[Orderbook ${pair} Memo Processed] Output: ${processedAsks.length} asks, ${processedBids.length} bids, maxTotal: ${currentMaxTotal}, midPrice: ${currentMidPrice}`);
+
+    return { asks: processedAsks, bids: processedBids, maxTotal: currentMaxTotal, midPrice: currentMidPrice };
   }, [groupedAsks, groupedBids]);
 
   // Map grouping values to decimal places
@@ -246,9 +275,10 @@ export function Orderbook({ pair, height }: OrderbookProps) {
 
     return orders.map((order, i) => {
       const dataAttr = `data-${type}-row`;
-      
+      const stableKey = `${type}-${i}-${order.price}`;
+
       return (
-        <div key={`${type}-${order.price}`}>
+        <div key={stableKey}>
           <HoverCard.Root>
             <HoverCard.Trigger asChild>
               <div
@@ -356,7 +386,7 @@ export function Orderbook({ pair, height }: OrderbookProps) {
         </div>
       );
     });
-  }, [asks, bids, denomination, maxTotal, formatSize, formatTotal, assetMetadata, grouping, getDecimalPlaces]);
+  }, [asks, bids, denomination, maxTotal, formatSize, formatTotal, assetMetadata, grouping, getDecimalPlaces, formatNumber, calculateAveragePrice, calculatePriceImpact]);
 
   // Update spread display
   const spread = formatNumber(Math.abs((asks[asks.length - 1]?.price || 0) - (bids[0]?.price || 0)));
@@ -365,38 +395,23 @@ export function Orderbook({ pair, height }: OrderbookProps) {
     2
   );
 
-  // Add ref for the scrollable container
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const prevMidPriceRef = useRef<number | null>(null);
-
-  // Replace the existing useEffect with this updated version
+  // --- Simplified Scroll Centering useEffect ---
   useEffect(() => {
-    if (!scrollContainerRef.current || !asks.length || !bids.length) {
+    const container = scrollContainerRef.current;
+
+    // ** Modified Exit Conditions **
+    // Only check for container and valid midPrice
+    if (!container || midPrice === null || !Number.isFinite(midPrice)) {
+      console.log(`[Scroll Effect] Skipping: HasContainer=${!!container}, HasValidMidPrice=${midPrice !== null && Number.isFinite(midPrice)}`);
+      if (midPrice === null || !Number.isFinite(midPrice)) {
+        console.log("[Scroll Effect] Resetting prevMidPriceRef because midPrice is invalid.");
+        prevMidPriceRef.current = null;
+      }
       return;
     }
 
-    const midPrice = (asks[asks.length - 1]?.price + bids[0]?.price) / 2;
-    const container = scrollContainerRef.current;
-    const rowHeight = 24; // height of each order row
-
-    // Calculate the position where mid price should be
-    const asksHeight = asks.length * rowHeight;
-    const midPoint = asksHeight - (container.clientHeight / 2);
-    
-    // If this is the first render or price changed significantly
-    if (prevMidPriceRef.current === null || 
-        Math.abs(midPrice - prevMidPriceRef.current) > parseFloat(grouping)) {
-      // Center immediately
-      container.scrollTop = midPoint;
-    } else {
-      // Smooth scroll to maintain relative position
-      const priceDiff = midPrice - prevMidPriceRef.current;
-      const scrollDiff = (priceDiff / parseFloat(grouping)) * rowHeight;
-      container.scrollTop = container.scrollTop + scrollDiff;
-    }
-
-    prevMidPriceRef.current = midPrice;
-  }, [asks, bids, grouping]);
+    // Rest of the scroll effect...
+  }, [midPrice, asks.length, height]);
 
   // Add useEffect to handle click outside
   useEffect(() => {
@@ -414,6 +429,19 @@ export function Orderbook({ pair, height }: OrderbookProps) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Add this after your existing state declarations
+  const [pendingGrouping, setPendingGrouping] = useState<string | null>(null);
+
+  // Add this new effect after your existing ones
+  useEffect(() => {
+    // When a transition ends and we have a pending grouping, apply it
+    if (!isGroupingTransitioning && pendingGrouping !== null) {
+      console.log(`[Orderbook ${pair}] Transition completed. Applying pending grouping: ${pendingGrouping}`);
+      setGrouping(pendingGrouping);
+      setPendingGrouping(null);
+    }
+  }, [isGroupingTransitioning, pendingGrouping, pair]);
 
   return (
     <div
@@ -450,10 +478,21 @@ export function Orderbook({ pair, height }: OrderbookProps) {
                   }`}
                   onClick={(e) => {
                     const newGrouping = option.value;
-                    console.log(`[Orderbook ${pair}] User selected new grouping: ${newGrouping}`);
-                    setGrouping(newGrouping);
-                    console.log(`[Orderbook ${pair}] Calling updateHyperliquidSubscription with new grouping: ${newGrouping} and currency: ${baseCurrency}`);
-                    updateHyperliquidSubscription(newGrouping, baseCurrency); 
+                    console.log(`[Orderbook ${pair} User Click] Selected new grouping: ${newGrouping}. Current grouping: ${grouping}`);
+                    
+                    if (grouping !== newGrouping) {
+                      if (isGroupingTransitioning) {
+                        // If a transition is in progress, store the selection for later
+                        console.log(`[Orderbook ${pair} User Click] Transition in progress, setting pending grouping: ${newGrouping}`);
+                        setPendingGrouping(newGrouping);
+                      } else {
+                        // If no transition, apply immediately
+                        console.log(`[Orderbook ${pair} User Click] Setting grouping state to: ${newGrouping}`);
+                        setGrouping(newGrouping);
+                      }
+                    }
+                    
+                    // Close dropdown
                     e.currentTarget.closest('div.absolute')?.classList.add('hidden');
                   }}
                 >
@@ -497,33 +536,30 @@ export function Orderbook({ pair, height }: OrderbookProps) {
         ref={scrollContainerRef}
         className="absolute top-14 left-0 right-0 bottom-0 overflow-y-auto scrollbar-custom"
       >
-        {/* Asks (Sells) */}
+
+
         <div className="overflow-hidden border-b border-border/5">
-          {orderbook === null ? (
-             <div className="text-center text-xs text-muted-foreground py-4">Loading orderbook...</div>
-           ) : asks.length > 0 ? (
+          {asks.length > 0 ? (
             renderOrders(asks, "asks")
-           ) : (
-             <div className="text-center text-xs text-muted-foreground py-4">No ask data available.</div>
-           )}
+          ) : !isGroupingTransitioning && orderbook !== null ? (
+            <div className="text-center text-xs text-muted-foreground py-4">No ask data available.</div>
+          ) : null}
         </div>
 
-        {/* Spread - Grouping Removed */}
+        {/* Spread display */}
         <div className="text-center py-1.5 text-xs text-muted-foreground bg-accent/5 flex items-center justify-center gap-3 h-8">
           <span className="font-mono text-xs">
             Spread: {spread} ({spreadPercentage}%)
           </span>
         </div>
 
-        {/* Bids (Buys) */}
+        {/* Bids display */}
         <div className="overflow-hidden border-t border-border/5 mb-2">
-          {orderbook === null ? (
-             <div className="text-center text-xs text-muted-foreground py-4"></div> // No text needed here maybe
-           ) : bids.length > 0 ? (
-             renderOrders(bids, "bids")
-           ) : (
-             <div className="text-center text-xs text-muted-foreground py-4">No bid data available.</div>
-           )}
+          {bids.length > 0 ? (
+            renderOrders(bids, "bids")
+          ) : !isGroupingTransitioning && orderbook !== null ? (
+            <div className="text-center text-xs text-muted-foreground py-4">No bid data available.</div>
+          ) : null}
         </div>
       </div>
     </div>

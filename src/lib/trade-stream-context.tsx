@@ -82,6 +82,7 @@ interface OrderbookData {
   asks: OrderbookLevel[];
   bids: OrderbookLevel[];
   lastUpdateTime: number;
+  grouping: string;
 }
 
 // Update the context type
@@ -158,6 +159,7 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
   const hyperliquidWsRef = useRef<WebSocket | null>(null);
   const currentCoinRef = useRef<string | null>(null);
   const currentNSigFigsRef = useRef<number | null>(null); // Initially null for full precision
+  const currentGroupingRef = useRef<string | null>(null);
 
   // Add function to flush batched trades
   const flushBatchedTrades = useCallback(() => {
@@ -181,7 +183,7 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
 
   // Function to update Hyperliquid subscription
   const updateHyperliquidSubscription = useCallback((grouping: string, baseCurrency: string) => {
-    console.log(`[Context] updateHyperliquidSubscription called with grouping: ${grouping}, currency: ${baseCurrency}`);
+    console.log(`[Context] CRITICAL: updateHyperliquidSubscription called with grouping: ${grouping}, currency: ${baseCurrency}`);
 
     if (!hyperliquidWsRef.current || hyperliquidWsRef.current.readyState !== WebSocket.OPEN) {
       console.warn("[Context] Hyperliquid WS not open, cannot update subscription.");
@@ -189,23 +191,27 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
     }
 
     const coin = baseCurrency;
-
     const newNSigFigs = getNSigFigsForGrouping(grouping, coin);
     const oldNSigFigs = currentNSigFigsRef.current;
+
+    // CRITICAL: Update the current grouping reference
+    currentGroupingRef.current = grouping;
+    console.log(`[Context] CRITICAL: Updated currentGroupingRef to: ${grouping}`);
 
     console.log(`[Context] Comparing nSigFigs for ${coin}: Old=${oldNSigFigs}, New=${newNSigFigs}`);
 
     if (newNSigFigs !== oldNSigFigs) {
       console.log(`[Context] Updating HL subscription for ${coin}: nSigFigs ${oldNSigFigs} -> ${newNSigFigs}`);
 
+      // Clear orderbook with null value
+      setOrderbook(null);
+
       if (oldNSigFigs !== null) {
-         console.log(`[Context] Sending unsubscribe for nSigFigs: ${oldNSigFigs}`);
+        console.log(`[Context] Sending unsubscribe for nSigFigs: ${oldNSigFigs}`);
         hyperliquidWsRef.current.send(JSON.stringify({
           method: "unsubscribe",
           subscription: { type: "l2Book", coin, nSigFigs: oldNSigFigs }
         }));
-      } else {
-         console.log("[Context] Skipping unsubscribe for initial null nSigFigs.");
       }
 
       console.log(`[Context] Sending subscribe for nSigFigs: ${newNSigFigs}`);
@@ -215,12 +221,19 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
       }));
 
       currentNSigFigsRef.current = newNSigFigs;
-      console.log("[Context] Clearing orderbook state during subscription change.");
-      setOrderbook(null); 
     } else {
-       console.log("[Context] nSigFigs unchanged, skipping subscription update.");
+      console.log("[Context] nSigFigs unchanged, but updating orderbook grouping property");
+      
+      // Even if nSigFigs didn't change, update the orderbook's grouping property
+      if (orderbook) {
+        console.log(`[Context] Updating existing orderbook with new grouping: ${grouping}`);
+        setOrderbook(prev => prev ? {
+          ...prev,
+          grouping
+        } : null);
+      }
     }
-  }, []);
+  }, [orderbook]);
 
   useEffect(() => {
     // Clear existing trades and orderbook when pair changes
@@ -241,6 +254,7 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
     // Reset current subscription refs
     currentCoinRef.current = newCoin;
     currentNSigFigsRef.current = null; // Start with null, Orderbook will call update soon
+    currentGroupingRef.current = null;
 
     const connections = {
       hyperliquid: new WebSocket('wss://api.hyperliquid.xyz/ws'),
@@ -363,8 +377,34 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
       if (message.channel === 'l2Book' && message.data) {
         const bookData = message.data as WsBook;
         
-        // Log raw counts (keep this for debugging)
-        console.log(`Received l2Book for ${bookData.coin} (nSigFigs: ${currentNSigFigsRef.current}): ${bookData.levels[1]?.length ?? 0} asks, ${bookData.levels[0]?.length ?? 0} bids`);
+        // Log raw counts and subscription info for debugging
+        console.log(`Received l2Book for ${bookData.coin}: asks=${bookData.levels[1]?.length ?? 0}, bids=${bookData.levels[0]?.length ?? 0}, currentNSigFigs=${currentNSigFigsRef.current}`);
+        
+        // Extract subscription info if it exists
+        const msgSubscription = message.subscription || {};
+        
+        // Check if this message has subscription details at all
+        // Hyperliquid sometimes doesn't include the subscription details in every message
+        const hasSubscriptionDetails = 'nSigFigs' in msgSubscription;
+        const updateNSigFigs = hasSubscriptionDetails ? msgSubscription.nSigFigs : undefined;
+        
+        // Fix the condition to properly handle messages without subscription details
+        const shouldIgnore = 
+          // Only ignore if the message has subscription details AND those details don't match
+          hasSubscriptionDetails && 
+          (
+            // If updateNSigFigs is null and currentNSigFigsRef is not null, we're receiving legacy data
+            (updateNSigFigs === null && currentNSigFigsRef.current !== null) || 
+            // If updateNSigFigs is not null and doesn't match currentNSigFigsRef, we're receiving outdated data
+            (updateNSigFigs !== null && updateNSigFigs !== currentNSigFigsRef.current)
+          );
+        
+        if (shouldIgnore) {
+          console.log(`Ignoring l2Book update: message nSigFigs=${updateNSigFigs}, current=${currentNSigFigsRef.current}`);
+          return;
+        }
+        
+        console.log(`Processing l2Book update with${hasSubscriptionDetails ? ` nSigFigs=${updateNSigFigs}` : ' no subscription details'}`);
         
         const processLevels = (levels: WsLevel[]): OrderbookLevel[] => {
            // Ensure levels is an array before mapping
@@ -384,22 +424,15 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
 
         const [rawBids, rawAsks] = bookData.levels;
         
+        // Create processed orderbook with grouping information
         const processedOrderbook = {
           asks: processLevels(rawAsks?.sort((a, b) => parseFloat(a.px) - parseFloat(b.px)) || []),
           bids: processLevels(rawBids?.sort((a, b) => parseFloat(b.px) - parseFloat(a.px)) || []),
-          lastUpdateTime: bookData.time
+          lastUpdateTime: bookData.time,
+          grouping: currentGroupingRef.current || "1.0" // Default to "1.0" if not set
         };
         
-        setOrderbook(prev => {
-          // Use >= to handle potential race conditions if updates are very fast
-          if (!prev || processedOrderbook.lastUpdateTime >= prev.lastUpdateTime) {
-             // Basic check to prevent setting empty data if bookData was malformed
-             if (processedOrderbook.asks.length > 0 || processedOrderbook.bids.length > 0) {
-                 return processedOrderbook;
-             }
-          }
-          return prev;
-        });
+        setOrderbook(processedOrderbook);
       }
     };
 
