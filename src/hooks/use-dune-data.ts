@@ -37,14 +37,12 @@ export function useDuneData(tvl: string | number) {
     }
 
     let isSubscribed = true
-    console.log(`[${new Date().toISOString()}] Dune API hook triggered with TVL:`, parsedTvl)
 
     const fetchDuneData = async () => {
       const now = Date.now()
 
       // If there's an ongoing request with the same TVL, wait for it
       if (cache?.promise && cache.tvl === parsedTvl) {
-        console.log(`[${new Date().toISOString()}] Waiting for ongoing request...`)
         try {
           const result = await cache.promise
           if (isSubscribed) setData(result)
@@ -56,18 +54,15 @@ export function useDuneData(tvl: string | number) {
 
       // Check if we have fresh cached data for this TVL
       if (cache && cache.tvl === parsedTvl && now - cache.timestamp < CACHE_DURATION) {
-        console.log(`[${new Date().toISOString()}] Using cached data, ${((now - cache.timestamp) / 1000).toFixed(1)}s old`)
         setData(cache.data)
         return
       }
 
-      console.log(`[${new Date().toISOString()}] Cache expired or not found, starting new Dune API request...`)
 
       // Create promise for this request
       const fetchPromise = (async () => {
         try {
           const apiUrl = `https://dune-api-production-b08f.up.railway.app/api/dune-data?tvl=${parsedTvl}`
-          console.log(`[${new Date().toISOString()}] Fetching data from:`, apiUrl)
 
           const response = await fetch(apiUrl)
 
@@ -77,7 +72,6 @@ export function useDuneData(tvl: string | number) {
           }
 
           const duneData = await response.json()
-          console.log(`[${new Date().toISOString()}] Received Dune API response:`, duneData)
 
           const newData: DuneData = {
             cumulativeReturn: duneData.cumulativeReturn || 0,
@@ -112,7 +106,6 @@ export function useDuneData(tvl: string | number) {
       try {
         const result = await fetchPromise
         if (!isSubscribed) {
-          console.log(`[${new Date().toISOString()}] Component unmounted, skipping state update`)
           return
         }
 
@@ -137,7 +130,6 @@ export function useDuneData(tvl: string | number) {
 
     return () => {
       isSubscribed = false
-      console.log(`[${new Date().toISOString()}] Cleaning up Dune API hook`)
     }
   }, [parsedTvl]) // Changed dependency to parsedTvl
 

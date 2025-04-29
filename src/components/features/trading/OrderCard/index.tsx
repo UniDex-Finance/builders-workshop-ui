@@ -466,7 +466,6 @@ export function OrderCard({
       
       // Only update if different from current value
       if (parsedLeverage !== currentLeverageValue) {
-        console.log(`Setting cached leverage for ${assetId} to ${parsedLeverage}x`);
         onLeverageChange(parsedLeverage.toString());
         setTempLeverageValue(parsedLeverage.toString());
       }
@@ -475,7 +474,6 @@ export function OrderCard({
       // Default to half of the max leverage
       const defaultLeverage = Math.ceil(maxLeverageForPair / 2);
       
-      console.log(`Setting default leverage for ${assetId} to ${defaultLeverage}x`);
       onLeverageChange(defaultLeverage.toString());
       setTempLeverageValue(defaultLeverage.toString());
     } else {

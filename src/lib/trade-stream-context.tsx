@@ -109,7 +109,6 @@ function shortenAddress(address: string): string {
 
 // Helper function to get nSigFigs from the config
 const getNSigFigsForGrouping = (groupingStr: string, baseCurrency: string): number | null => {
-  console.log(`[Context] Getting nSigFigs for ${baseCurrency} with grouping ${groupingStr}`);
   
   // Find the config for the current currency, or use default
   const pairConfig = orderbookConfig[baseCurrency] ?? orderbookConfig.default;
@@ -117,7 +116,6 @@ const getNSigFigsForGrouping = (groupingStr: string, baseCurrency: string): numb
   // Check if the specific grouping value exists in the mapping for this config
   if (pairConfig.sigFigMapping.hasOwnProperty(groupingStr)) {
     const nSigFigs = pairConfig.sigFigMapping[groupingStr];
-    console.log(`[Context] Found mapping in config: ${groupingStr} -> ${nSigFigs}`);
     return nSigFigs;
   } else {
     // If the exact grouping isn't mapped (e.g., an intermediate value not in config options)
@@ -183,7 +181,6 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
 
   // Function to update Hyperliquid subscription
   const updateHyperliquidSubscription = useCallback((grouping: string, baseCurrency: string) => {
-    console.log(`[Context] CRITICAL: updateHyperliquidSubscription called with grouping: ${grouping}, currency: ${baseCurrency}`);
 
     if (!hyperliquidWsRef.current || hyperliquidWsRef.current.readyState !== WebSocket.OPEN) {
       console.warn("[Context] Hyperliquid WS not open, cannot update subscription.");
@@ -196,25 +193,20 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
 
     // CRITICAL: Update the current grouping reference
     currentGroupingRef.current = grouping;
-    console.log(`[Context] CRITICAL: Updated currentGroupingRef to: ${grouping}`);
 
-    console.log(`[Context] Comparing nSigFigs for ${coin}: Old=${oldNSigFigs}, New=${newNSigFigs}`);
 
     if (newNSigFigs !== oldNSigFigs) {
-      console.log(`[Context] Updating HL subscription for ${coin}: nSigFigs ${oldNSigFigs} -> ${newNSigFigs}`);
 
       // Clear orderbook with null value
       setOrderbook(null);
 
       if (oldNSigFigs !== null) {
-        console.log(`[Context] Sending unsubscribe for nSigFigs: ${oldNSigFigs}`);
         hyperliquidWsRef.current.send(JSON.stringify({
           method: "unsubscribe",
           subscription: { type: "l2Book", coin, nSigFigs: oldNSigFigs }
         }));
       }
 
-      console.log(`[Context] Sending subscribe for nSigFigs: ${newNSigFigs}`);
       hyperliquidWsRef.current.send(JSON.stringify({
         method: "subscribe",
         subscription: { type: "l2Book", coin, nSigFigs: newNSigFigs }
@@ -222,11 +214,9 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
 
       currentNSigFigsRef.current = newNSigFigs;
     } else {
-      console.log("[Context] nSigFigs unchanged, but updating orderbook grouping property");
       
       // Even if nSigFigs didn't change, update the orderbook's grouping property
       if (orderbook) {
-        console.log(`[Context] Updating existing orderbook with new grouping: ${grouping}`);
         setOrderbook(prev => prev ? {
           ...prev,
           grouping
@@ -298,7 +288,6 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
               nSigFigs: null // Start with null
             }
           }));
-           console.log(`Initial HL subscription for ${coin}: nSigFigs null (will be updated by Orderbook component)`);
         }
       }
 
@@ -324,18 +313,15 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
 
     // Set up connection handlers
     connections.hyperliquid.onopen = () => {
-      console.log('Connected to Hyperliquid WebSocket');
       subscribeToStreams();
     };
 
     connections.dydx.onopen = () => {
-      console.log('Connected to dYdX WebSocket');
       subscribeToStreams();
     };
 
     // Add Orderly connection handler
     connections.orderly.onopen = () => {
-      console.log('Connected to Orderly WebSocket');
       subscribeToStreams();
     };
 
@@ -344,7 +330,6 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
     };
 
     connections.orderly.onclose = () => {
-      console.log('Orderly WebSocket closed');
     };
 
     // Handle messages from both sources
@@ -378,7 +363,6 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
         const bookData = message.data as WsBook;
         
         // Log raw counts and subscription info for debugging
-        console.log(`Received l2Book for ${bookData.coin}: asks=${bookData.levels[1]?.length ?? 0}, bids=${bookData.levels[0]?.length ?? 0}, currentNSigFigs=${currentNSigFigsRef.current}`);
         
         // Extract subscription info if it exists
         const msgSubscription = message.subscription || {};
@@ -400,11 +384,9 @@ export function TradeStreamProvider({ children, pair }: { children: ReactNode, p
           );
         
         if (shouldIgnore) {
-          console.log(`Ignoring l2Book update: message nSigFigs=${updateNSigFigs}, current=${currentNSigFigsRef.current}`);
           return;
         }
         
-        console.log(`Processing l2Book update with${hasSubscriptionDetails ? ` nSigFigs=${updateNSigFigs}` : ' no subscription details'}`);
         
         const processLevels = (levels: WsLevel[]): OrderbookLevel[] => {
            // Ensure levels is an array before mapping

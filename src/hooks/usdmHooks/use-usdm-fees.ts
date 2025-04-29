@@ -33,19 +33,15 @@ export function useUsdmFees() {
   const [isLoading, setIsLoading] = useState(false)
 
   const fetchFees = async () => {
-    console.log('Fetching fees...')
-    console.log('Public client:', !!publicClient)
+
     
     if (!publicClient) {
-      console.log('No public client available')
       return
     }
 
     setIsLoading(true)
     try {
-      console.log('Making multicall to fetch fees...')
-      console.log('USDM_VAULT:', USDM_VAULT)
-      console.log('USDC_TOKEN:', USDC_TOKEN)
+
 
       const [stakingFee, unstakingFee] = await publicClient.multicall({
         contracts: [
@@ -64,31 +60,26 @@ export function useUsdmFees() {
         ],
       })
 
-      console.log('Raw staking fee result:', stakingFee.result)
-      console.log('Raw unstaking fee result:', unstakingFee.result)
+
 
       const calculatedFees = {
         stakingFee: Number(stakingFee.result || BigInt(0)) / 1000,
         unstakingFee: Number(unstakingFee.result || BigInt(0)) / 1000,
       }
 
-      console.log('Calculated fees:', calculatedFees)
       setFees(calculatedFees)
     } catch (error) {
-      console.error('Error fetching USDM fees:', error)
     } finally {
       setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    console.log('useEffect triggered in useUsdmFees')
     fetchFees()
     const interval = setInterval(fetchFees, 1 * 60 * 1000)
     return () => clearInterval(interval)
   }, [publicClient])
 
-  console.log('Current fees state:', fees)
   return {
     fees,
     isLoading,

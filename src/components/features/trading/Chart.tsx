@@ -169,7 +169,6 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
   const loadTradingView = async () => {
     try {
       if (typeof window === "undefined" || !window.TradingView) {
-        console.log("TradingView not loaded yet");
         return;
       }
 
@@ -182,11 +181,9 @@ export function Chart({ selectedPair = "ETH/USD", height, onHeightChange, positi
 
       const container = document.getElementById('tv_chart_container');
       if (!container) {
-        console.log("TradingView container not found");
         return;
       }
 
-      console.log("Creating TradingView widget");
       const widget = new window.TradingView.widget({
         container: "tv_chart_container",
         locale: "en",

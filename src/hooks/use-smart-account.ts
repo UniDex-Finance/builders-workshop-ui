@@ -102,7 +102,6 @@ export function useSmartAccount() {
 
     if (storedSessionKey) {
       try {
-        console.log('Found stored session, attempting to initialize...'); // Debug log
         const kernelAccount = await deserializePermissionAccount(
           publicClient,
           getEntryPoint("0.7"),
@@ -110,7 +109,6 @@ export function useSmartAccount() {
           storedSessionKey
         );
 
-        console.log('Kernel account deserialized:', kernelAccount.address); // Debug log
 
         const kernelPaymaster = createZeroDevPaymasterClient({
           chain: arbitrum,
@@ -155,7 +153,6 @@ export function useSmartAccount() {
           }));
         }
 
-        console.log('Session initialization complete'); // Debug log
         return true;
       } catch (err) {
         console.error('Failed to initialize from stored session:', err);

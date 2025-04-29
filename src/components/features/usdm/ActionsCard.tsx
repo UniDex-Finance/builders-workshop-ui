@@ -109,8 +109,6 @@ export function ActionsCard({
   const { checkApproval, getCrossChainMintTransaction } = useSquidCrossChainMint()
   const { fees, isLoading: feesLoading } = useUsdmFees()
 
-  console.log('ActionsCard fees:', fees)
-  console.log('ActionsCard feesLoading:', feesLoading)
 
   // Add effect to check approval state for cross-chain minting
   React.useEffect(() => {
@@ -465,15 +463,11 @@ export function ActionsCard({
 
   // Update the fee calculation to show 2 decimal places
   const calculateFees = (inputAmount: string) => {
-    console.log('calculateFees input:', inputAmount)
-    console.log('calculateFees current fees state:', fees)
     if (!inputAmount || !fees) return '0.00'
     try {
       const input = Number(inputAmount)
       const feeRate = action === 'mint' ? fees.stakingFee : fees.unstakingFee
-      console.log('Selected fee rate:', feeRate)
       const fee = input * (feeRate / 100)
-      console.log('Calculated fee amount:', fee)
       return fee.toFixed(2)
     } catch (error) {
       console.error('Error calculating fees:', error)

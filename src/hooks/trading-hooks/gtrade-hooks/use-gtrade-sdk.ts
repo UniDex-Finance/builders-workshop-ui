@@ -19,7 +19,6 @@ export function useGTradeSdk() {
       // Use the defined Nodies RPC URL directly
       const rpcUrl = nodiesRpcUrl;
 
-      console.log('Gtrade: Using RPC URL:', rpcUrl); // Log the RPC being used
 
       const tradingSdk = new TradingSDK({ 
         chainId: SupportedChainId.Arbitrum,

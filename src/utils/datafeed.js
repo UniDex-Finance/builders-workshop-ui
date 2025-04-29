@@ -67,7 +67,6 @@ function getBasePair(symbolName) {
 
 const datafeed = {
   onReady: async (callback) => {
-    console.log('[onReady]: Method call')
     try {
       const response = await makeRequest(`${API_ENDPOINT}/config`);
       const configurationData = await response.json();
@@ -85,7 +84,6 @@ const datafeed = {
   },
   
   searchSymbols: async (userInput, exchange, symbolType, onResultReadyCallback) => {
-    console.log('[searchSymbols]: Method call')
     try {
       const response = await makeRequest(`${API_ENDPOINT}/search?query=${userInput}`);
       const data = await response.json();
@@ -101,11 +99,9 @@ const datafeed = {
     onSymbolResolvedCallback,
     onResolveErrorCallback
   ) => {
-    console.log('[resolveSymbol]: Method call', symbolName)
     try {
       const response = await makeRequest(`${API_ENDPOINT}/symbols?symbol=${symbolName}`);
       const symbolInfo = await response.json();
-      console.log('[resolveSymbol]: Symbol resolved', symbolInfo)
 
       // --- Determine decimal places dynamically ---
       const basePair = getBasePair(symbolName); // Extract base pair like "ETH/USD"
@@ -125,7 +121,6 @@ const datafeed = {
         minmove2: 0,        // Use 0 for standard decimal price formatting
       });
     } catch (error) {
-      console.log('[resolveSymbol]: Cannot resolve symbol', symbolName)
       onResolveErrorCallback('Cannot resolve symbol')
     }
   },
@@ -138,7 +133,6 @@ const datafeed = {
     onErrorCallback
   ) => {
     const { from, to, firstDataRequest } = periodParams
-    console.log('[getBars] Raw resolution received:', resolution);
 
     try {
       // Ensure we don't request data before our minimum time
@@ -151,7 +145,6 @@ const datafeed = {
       }
 
       const url = `${API_ENDPOINT}/history?symbol=${symbolInfo.ticker}&from=${adjustedFrom}&to=${adjustedTo}&resolution=${resolution}`;
-      console.log('[getBars]: Requesting URL:', url);
       
       const response = await makeRequest(url);
       const data = await response.json();
@@ -180,7 +173,6 @@ const datafeed = {
 
       onHistoryCallback(bars, { noData: bars.length === 0 })
     } catch (error) {
-      console.log('[getBars]: Get error', error)
       onErrorCallback(error)
     }
   },
@@ -192,10 +184,6 @@ const datafeed = {
     subscriberUID,
     onResetCacheNeededCallback
   ) => {
-    console.log(
-      '[subscribeBars]: Method call with subscriberUID:',
-      subscriberUID
-    )
     subscribeOnStream(
       symbolInfo,
       resolution,

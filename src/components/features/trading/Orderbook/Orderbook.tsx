@@ -51,7 +51,6 @@ export function Orderbook({ pair, height }: OrderbookProps) {
 
   // Get initial grouping options FOR THE PAIR from the config
   const groupingOptions = useMemo(() => {
-    console.log(`[Orderbook ${pair}] Determining grouping options from config for ${baseCurrency}`);
 
     // Find the config for the current currency, or use default
     const config = orderbookConfig[baseCurrency] ?? orderbookConfig.default;
@@ -62,7 +61,6 @@ export function Orderbook({ pair, height }: OrderbookProps) {
     // Still useful to store the determined options for potential future checks
     initialGroupingOptionsRef.current[pair] = finalOptions; 
     
-    console.log(`[Orderbook ${pair}] Using grouping options from config:`, finalOptions);
     
     return finalOptions;
     // Dependency is just baseCurrency now, as config is static
@@ -90,11 +88,9 @@ export function Orderbook({ pair, height }: OrderbookProps) {
 
     if (groupingOptions && groupingOptions.length > 0) {
       const smallestGrouping = groupingOptions[0].value;
-      console.log(`[Orderbook ${pair} Initial Effect] Setting initial grouping state: ${smallestGrouping}`);
       setGrouping(smallestGrouping);
     } else {
       const fallbackGrouping = "1.0";
-      console.log(`[Orderbook ${pair} Initial Effect Fallback] Setting initial state: ${fallbackGrouping}`);
       setGrouping(fallbackGrouping);
     }
   }, [pair, baseCurrency, groupingOptions]);
@@ -102,10 +98,8 @@ export function Orderbook({ pair, height }: OrderbookProps) {
   // Effect to handle SUBSCRIPTION updates based on the 'grouping' state
   useEffect(() => {
     if (grouping) {
-      console.log(`[Orderbook ${pair} Grouping Change Effect] Grouping state is now: ${grouping}. Initiating transition.`);
       setIsGroupingTransitioning(true);
       prevMidPriceRef.current = null;
-      console.log(`[Orderbook ${pair} Grouping Change Effect] Calling updateHyperliquidSubscription.`);
       updateHyperliquidSubscription(grouping, baseCurrency);
     }
   }, [grouping, baseCurrency, updateHyperliquidSubscription]);
@@ -113,13 +107,11 @@ export function Orderbook({ pair, height }: OrderbookProps) {
   // Effect to end transition when new data arrives AFTER a transition was started
   useEffect(() => {
     if (isGroupingTransitioning && orderbook !== null) {
-      console.log(`[Orderbook ${pair} Data Arrival Effect] Received non-null orderbook, ending grouping transition.`);
       // Add a short delay before ending the transition to ensure React has time to process
       setTimeout(() => {
         setIsGroupingTransitioning(false);
       }, 50); // 50ms delay is usually sufficient for React to catch up
     } else if (isGroupingTransitioning && orderbook === null) {
-      console.log(`[Orderbook ${pair} Data Arrival Effect] Orderbook is null, continuing transition.`);
     }
   }, [orderbook, isGroupingTransitioning, pair]);
 
@@ -154,7 +146,6 @@ export function Orderbook({ pair, height }: OrderbookProps) {
 
   // Memoize grouped orders
   const { groupedAsks, groupedBids } = useMemo(() => {
-    console.log(`[Orderbook ${pair} Memo Grouped] Running with grouping: ${grouping}. Input orderbook:`, orderbook ? `${orderbook.asks.length} asks, ${orderbook.bids.length} bids` : 'null');
     
     // Important: Don't regroup data that's already grouped by the server!
     // Instead, just sort it properly for display
@@ -162,7 +153,6 @@ export function Orderbook({ pair, height }: OrderbookProps) {
     const rawBids = [...(orderbook?.bids ?? [])].sort((a, b) => b.price - a.price);
     
     // Skip additional grouping since data is already properly grouped from the server
-    console.log(`[Orderbook ${pair} Memo Grouped] Output: ${rawAsks.length} asks, ${rawBids.length} bids (using server-side grouping)`);
     return {
       groupedAsks: rawAsks,
       groupedBids: rawBids
@@ -171,7 +161,6 @@ export function Orderbook({ pair, height }: OrderbookProps) {
 
   // Memoize processed orders AND calculate midPrice
   const { asks, bids, maxTotal, midPrice } = useMemo(() => {
-    console.log(`[Orderbook ${pair} Memo Processed] Running. Input: ${groupedAsks.length} grouped asks, ${groupedBids.length} grouped bids`);
     const processedAsks = [...groupedAsks].reverse().map((order, index) => ({
       ...order,
       total: groupedAsks.slice(0, groupedAsks.length - index).reduce((sum, o) => sum + o.size, 0)
@@ -195,7 +184,6 @@ export function Orderbook({ pair, height }: OrderbookProps) {
           currentMidPrice = (lowestAsk + highestBid) / 2;
       }
     }
-    console.log(`[Orderbook ${pair} Memo Processed] Output: ${processedAsks.length} asks, ${processedBids.length} bids, maxTotal: ${currentMaxTotal}, midPrice: ${currentMidPrice}`);
 
     return { asks: processedAsks, bids: processedBids, maxTotal: currentMaxTotal, midPrice: currentMidPrice };
   }, [groupedAsks, groupedBids]);
@@ -402,9 +390,7 @@ export function Orderbook({ pair, height }: OrderbookProps) {
     // ** Modified Exit Conditions **
     // Only check for container and valid midPrice
     if (!container || midPrice === null || !Number.isFinite(midPrice)) {
-      console.log(`[Scroll Effect] Skipping: HasContainer=${!!container}, HasValidMidPrice=${midPrice !== null && Number.isFinite(midPrice)}`);
       if (midPrice === null || !Number.isFinite(midPrice)) {
-        console.log("[Scroll Effect] Resetting prevMidPriceRef because midPrice is invalid.");
         prevMidPriceRef.current = null;
       }
       return;
@@ -437,7 +423,6 @@ export function Orderbook({ pair, height }: OrderbookProps) {
   useEffect(() => {
     // When a transition ends and we have a pending grouping, apply it
     if (!isGroupingTransitioning && pendingGrouping !== null) {
-      console.log(`[Orderbook ${pair}] Transition completed. Applying pending grouping: ${pendingGrouping}`);
       setGrouping(pendingGrouping);
       setPendingGrouping(null);
     }
@@ -478,16 +463,13 @@ export function Orderbook({ pair, height }: OrderbookProps) {
                   }`}
                   onClick={(e) => {
                     const newGrouping = option.value;
-                    console.log(`[Orderbook ${pair} User Click] Selected new grouping: ${newGrouping}. Current grouping: ${grouping}`);
                     
                     if (grouping !== newGrouping) {
                       if (isGroupingTransitioning) {
                         // If a transition is in progress, store the selection for later
-                        console.log(`[Orderbook ${pair} User Click] Transition in progress, setting pending grouping: ${newGrouping}`);
                         setPendingGrouping(newGrouping);
                       } else {
                         // If no transition, apply immediately
-                        console.log(`[Orderbook ${pair} User Click] Setting grouping state to: ${newGrouping}`);
                         setGrouping(newGrouping);
                       }
                     }

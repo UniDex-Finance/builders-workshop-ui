@@ -103,7 +103,6 @@ query GetLeaderboardData($after: String) {
             };
             errors?: Array<{ message: string }>;
           } = await response.json();
-          console.log("Subgraph Response:", result);
 
           if (result.errors) {
             console.error("Subgraph Errors:", result.errors);

@@ -118,7 +118,6 @@ export function BridgeDashboard() {
       await walletClient.writeContract(request);
 
     } catch (error) {
-      console.log("Bridge Error", error)
     }
   }
 
@@ -226,7 +225,6 @@ export function BridgeDashboard() {
                   <Select
                     value={fromNetwork}
                     onValueChange={(value) => {
-                      console.log("Setting fromNetwork to:", value);
                       setFromNetwork(value);
                     }}
                   >
