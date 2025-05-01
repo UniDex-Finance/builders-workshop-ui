@@ -227,7 +227,7 @@ interface AccountSummaryProps {
   className?: string;
 }
 
-export function AccountSummary({ buttonText = "Wallet", className = "" }: AccountSummaryProps) {
+export function AccountSummary({ buttonText = "Deposit / Withdraw", className = "" }: AccountSummaryProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showDeposit, setShowDeposit] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
@@ -607,6 +607,10 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
     </>
   );
 
+  // Determine the button text based on connection and smart account status
+  const needsSetup = isConnected && !smartAccount?.address;
+  const displayButtonText = needsSetup ? "Log In / Sign Up" : buttonText;
+
   return (
     <div className="relative" ref={summaryRef}>
       <Button
@@ -614,7 +618,7 @@ export function AccountSummary({ buttonText = "Wallet", className = "" }: Accoun
         onClick={() => setIsOpen(!isOpen)}
         className={`bg-[var(--header-button-background)] hover:bg-[var(--header-button-hover)] ${className}`}
       >
-        {buttonText}
+        {displayButtonText}
       </Button>
 
       {isOpen && createPortal(modal, document.body)}
