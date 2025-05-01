@@ -352,7 +352,7 @@ export function OrderCard({
 
   const getButtonText = () => {
     if (isNetworkSwitching) return "Switching to Arbitrum...";
-    if (!smartAccount?.address) return "Establish Connection";
+    if (!smartAccount?.address) return "Sign in with Connected Wallet";
     if (activeTab === "market" && !tradeDetails.entryPrice)
       return "Waiting for price...";
     if (activeTab === "limit" && !formState.limitPrice)

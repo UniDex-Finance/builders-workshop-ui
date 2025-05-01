@@ -42,7 +42,7 @@ export function WalletBox() {
   // Calculate total balance across all accounts
   const calculateTotalBalance = () => {
     if(!eoaAddress) return "0.00";
-    if (!smartAccount?.address && eoaAddress) return "Connect to Start";
+    if (!smartAccount?.address && eoaAddress) return "Sign in to Start";
     if (balancesLoading) return "Loading...";
 
     const musdBalance = parseFloat(balances?.formattedMusdBalance || "0");
@@ -55,7 +55,7 @@ export function WalletBox() {
 
   const calculateTradingAccountBalance = () => {
     if(!eoaAddress) return "0.00";
-    if (!smartAccount?.address && eoaAddress) return "Connect to Start";
+    if (!smartAccount?.address && eoaAddress) return "Sign in to Start";
     if (balancesLoading) return "Loading...";
     const musdBalance = parseFloat(balances?.formattedMusdBalance || "0");
     const usdcBalance = parseFloat(balances?.formattedUsdcBalance || "0");
@@ -126,7 +126,7 @@ export function WalletBox() {
             className="w-full h-10 text-sm bg-muted/50 hover:bg-muted/70 border border-border"
             disabled={isNetworkSwitching}
           >
-            {isNetworkSwitching ? "Switching to Arbitrum..." : "Establish Connection"}
+            {isNetworkSwitching ? "Switching to Arbitrum..." : "Log in to Deposit / Withdraw"}
           </Button>
         ) : (
           // Show deposit/withdraw buttons when smart account is established

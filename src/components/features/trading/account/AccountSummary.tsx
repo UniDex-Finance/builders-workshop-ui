@@ -502,7 +502,7 @@ export function AccountSummary({ buttonText = "Deposit / Withdraw", className = 
                       Setting up...
                     </div>
                   ) : (
-                    "Establish Connection"
+                    "Sign in with Wallet"
                   )}
                 </Button>
               </div>
