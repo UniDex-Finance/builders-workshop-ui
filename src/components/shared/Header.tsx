@@ -32,7 +32,10 @@ export function Header() {
   return (
     <header className="flex items-center justify-between px-4 mb-1 md:px-6 h-[50px]">
       <div className="flex items-center space-x-3 h-full translate-y-[2px]">
-        <Link href="/" className="hover:opacity-80 flex items-center h-full">
+        <div
+          onClick={() => (window.location.href = "/")}
+          className="hover:opacity-80 flex items-center h-full cursor-pointer"
+        >
           {/* Desktop Logo */}
           <div className="hidden md:flex items-center">
             <Image
@@ -55,22 +58,50 @@ export function Header() {
               className="object-contain"
             />
           </div>
-        </Link>
+        </div>
 
         {/* Desktop Navigation */}
         <nav className="h-full hidden space-x-3 md:flex items-center">
-          <Link href="/" className="flex items-center h-full">
-            <Button variant="ghost" size="sm" className="text-sm font-normal h-8 flex items-center justify-center">Trade</Button>
-          </Link>
-          <Link href="/markets" className="flex items-center h-full">
-            <Button variant="ghost" size="sm" className="text-sm font-normal h-8 flex items-center justify-center">Markets</Button>
-          </Link>
-          <Link href="/leaderboard" className="flex items-center h-full">
-            <Button variant="ghost" size="sm" className="text-sm font-normal h-8 flex items-center justify-center">Leaderboard</Button>
-          </Link>
-          <Link href="/lending" className="flex items-center h-full">
-            <Button variant="ghost" size="sm" className="text-sm font-normal h-8 flex items-center justify-center">Lending</Button>
-          </Link>
+          <div className="flex items-center h-full">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-sm font-normal h-8 flex items-center justify-center"
+              onClick={() => (window.location.href = "/")}
+            >
+              Trade
+            </Button>
+          </div>
+          <div className="flex items-center h-full">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-sm font-normal h-8 flex items-center justify-center"
+              onClick={() => (window.location.href = "/markets")}
+            >
+              Markets
+            </Button>
+          </div>
+          <div className="flex items-center h-full">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-sm font-normal h-8 flex items-center justify-center"
+              onClick={() => (window.location.href = "/leaderboard")}
+            >
+              Leaderboard
+            </Button>
+          </div>
+          <div className="flex items-center h-full">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-sm font-normal h-8 flex items-center justify-center"
+              onClick={() => (window.location.href = "/lending")}
+            >
+              Lending
+            </Button>
+          </div>
           <Dropdown>
             <DropdownTrigger>
               <Button variant="ghost" size="sm" className="text-sm font-normal gap-1 h-8 flex items-center justify-center">
@@ -286,7 +317,10 @@ export function Header() {
               <div className="flex flex-col h-full overflow-y-auto">
                 {/* Logo Section */}
                 <SheetHeader className="p-4 border-b border-divider">
-                  <Link href="/">
+                  <div
+                    onClick={() => (window.location.href = "/")}
+                    className="hover:opacity-80 flex items-center h-full cursor-pointer w-fit"
+                  >
                     <Image
                       src="/static/images/logo-large.png"
                       alt="UniDex Logo"
@@ -295,7 +329,7 @@ export function Header() {
                       priority
                       className="object-contain"
                     />
-                  </Link>
+                  </div>
                 </SheetHeader>
 
                 {/* Navigation Items */}

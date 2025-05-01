@@ -20,10 +20,15 @@ const now = Math.floor(Date.now() / 1000);
 const SPECIAL_PAIRS: Record<string, string> = {
   "EUR/USD": "FX",
   "GBP/USD": "FX",
+  "USD/JPY": "FX",
+  "AUD/USD": "FX",
+  "NZD/USD": "FX",
+  "USD/CAD": "FX",
   "XAU/USD": "Metal",
   "XAG/USD": "Metal",
   "QQQ/USD": "Equity.US",
   "SPY/USD": "Equity.US",
+  "WTI/USD": "Commodities",
   "GMCI30/USD": "Crypto.Index",
   "GML2/USD": "Crypto.Index",
   "GMMEME/USD": "Crypto.Index",
@@ -31,6 +36,10 @@ const SPECIAL_PAIRS: Record<string, string> = {
 
 // Add this function back before the Chart component
 const getFormattedSymbol = (pair: string) => {
+  // Handle the special case for WTI/USD
+  if (pair === "WTI/USD") {
+    return "Commodities.USOILSPOT";
+  }
   const prefix = SPECIAL_PAIRS[pair] || "Crypto";
   return `${prefix}.${pair}`;
 };

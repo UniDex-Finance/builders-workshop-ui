@@ -173,7 +173,7 @@ export const orderbookConfig: { [currency: string]: PairOrderbookConfig; default
   XAU: pattern5Decimal,
   XAG: pattern5Decimal,
   GMCI30: pattern5Decimal,
-  GMCL2: pattern5Decimal,
+  GML2: pattern5Decimal,
   GMMEME: pattern5Decimal,
   QQQ: pattern5Decimal,
   SPY: pattern5Decimal,

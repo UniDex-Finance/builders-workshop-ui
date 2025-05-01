@@ -3,7 +3,6 @@ import { Search, Star, ArrowUpDown } from "lucide-react";
 import { cn } from "../../../lib/utils";
 import { TokenIcon } from "../../../hooks/use-token-icon";
 import { useMarketData, getPairFullName } from "../../../hooks/use-market-data";
-import { usePrices } from "../../../lib/websocket-price-context";
 import { usePairPrecision } from "../../../hooks/use-pair-precision";
 import { use24hChange } from "../../../hooks/use-24h-change";
 import { MarketCategory, AVAILABLE_CATEGORIES, getPairsInCategory } from "../../../lib/market-categories";
@@ -14,6 +13,7 @@ import {
 } from "../../ui/popover";
 import { Button } from "../../ui/button";
 import { ChevronDown } from "lucide-react";
+import { useCurrentPairPrice } from "../../../hooks/use-current-pair-price";
 
 interface PairSelectorProps {
   selectedPair: string;
@@ -37,8 +37,8 @@ interface MarketRowProps {
 
 const MarketRow: React.FC<MarketRowProps> = ({ market, isFavorite, onToggleFavorite, onPercentageChange }) => {
   const { formatPairPrice } = usePairPrecision();
-  const { prices } = usePrices();
   const { percentageChange, error } = use24hChange(market.pair);
+  const marketPrice = useCurrentPairPrice(market.pair);
 
   React.useEffect(() => {
     if (onPercentageChange && !error) {
@@ -56,12 +56,6 @@ const MarketRow: React.FC<MarketRowProps> = ({ market, isFavorite, onToggleFavor
       maximumFractionDigits: 2,
       minimumFractionDigits: 2,
     }).format(num);
-  };
-
-  const formatPrice = (pair: string) => {
-    const basePair = pair.split("/")[0].toLowerCase();
-    const price = prices[basePair]?.price;
-    return formatPairPrice(pair, price);
   };
 
   const formatFundingRate = (rate: number) => {
@@ -95,7 +89,7 @@ const MarketRow: React.FC<MarketRowProps> = ({ market, isFavorite, onToggleFavor
           </div>
         </div>
         <div className="w-[100px] text-right font-mono">
-          {formatPrice(market.pair)}
+          {formatPairPrice(market.pair, marketPrice)}
         </div>
         <div className="w-[100px] text-right">
           {!error ? (
@@ -155,7 +149,7 @@ const MarketRow: React.FC<MarketRowProps> = ({ market, isFavorite, onToggleFavor
         </div>
         <div className="flex flex-col items-end">
           <div className="font-mono">
-            {formatPrice(market.pair)}
+            {formatPairPrice(market.pair, marketPrice)}
           </div>
           <div>
             {!error ? (
@@ -219,10 +213,6 @@ export const PairSelector: React.FC<PairSelectorProps> = ({
   const { marketData: unidexMarketData, allMarkets } = useMarketData({
     selectedPair,
   });
-  const { prices } = usePrices();
-
-  const basePair = selectedPair.split("/")[0].toLowerCase();
-  const currentPrice = prices[basePair]?.price;
 
   useEffect(() => {
     localStorage.setItem("favoriteMarkets", JSON.stringify(favorites));

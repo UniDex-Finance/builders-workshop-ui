@@ -78,10 +78,16 @@ export const SUPPORTED_PAIRS = {
   'QQQ/USD': 'QQQ-USD.png',
   'SPY/USD': 'SPY-USD.png',
   'GMCI30/USD': 'GMCI30-USD.svg',
-  'GMCL20/USD': 'GMCL20-USD.svg',
+  'GML2/USD': 'GMCI30-USD.svg',
   'GMMEME/USD': 'GMMEME-USD.svg',
   'EUR/USD': 'EUR-USD.svg',
   'GBP/USD': 'GBP-USD.svg',
+  'NZD/USD': 'NZD-USD.png',
+  'CHF/USD': 'CHF-USD.svg',
+  'AUD/USD': 'AUD-USD.svg',
+  'USD/JPY': 'USD-JPY.svg',
+  'USD/CAD': 'USD-CAD.svg',
+  'WTI/USD': 'WTI-USD.png'
 } as const;
 
 // Type for supported trading pairs

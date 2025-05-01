@@ -29,7 +29,7 @@ export const PRECISION_OVERRIDES: Record<string, PrecisionConfig> = {
   'QQQ/USD': { minDecimals: 2, maxDecimals: 2 },
   'SPY/USD': { minDecimals: 2, maxDecimals: 2 },
   'GMCI30/USD': { minDecimals: 2, maxDecimals: 2 },
-  'GMCL2/USD': { minDecimals: 2, maxDecimals: 2 },
+  'GML2/USD': { minDecimals: 2, maxDecimals: 2 },
   'GMMEME/USD': { minDecimals: 2, maxDecimals: 2 },
   // New additions for pairs with prices < 1
   'ADA/USD': { minDecimals: 5, maxDecimals: 5 },

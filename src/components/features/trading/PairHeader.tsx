@@ -12,6 +12,7 @@ import { usePairPrecision } from "../../../hooks/use-pair-precision";
 import { use24hChange } from "../../../hooks/use-24h-change";
 import { useGTradeMarketData } from "../../../hooks/trading-hooks/gtrade-hooks/use-gtrade-market-data";
 import { PairSelector } from "./PairSelector";
+import { useCurrentPairPrice } from "../../../hooks/use-current-pair-price";
 
 interface PairHeaderProps {
   selectedPair: string;
@@ -72,8 +73,9 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
   const { markets: gtradeMarkets, loading: gtradeLoading, error: gtradeError } = useGTradeMarketData();
 
   const gtradeMarket = gtradeMarkets.find(m => m.name === selectedPair);
-  const basePair = selectedPair.split("/")[0].toLowerCase();
-  const currentPrice = prices[basePair]?.price;
+  
+  // Use the new hook to get the current price
+  const currentPrice = useCurrentPairPrice(selectedPair);
 
   const combinedData = useMemo(() => {
     // Default values when no data is available

@@ -15,8 +15,9 @@ export const TRADING_PAIRS: { [key: string]: string } = {
   '36': 'STRK/USD', '37': 'AAVE/USD', '38': 'XRP/USD', '39': 'TON/USD', '40': 'NOT/USD',
   '41': 'RLB/USD', '42': 'ALICE/USD', '43': 'APE/USD', '44': 'APT/USD', '45': 'AVAIL/USD',
   '46': 'DEGEN/USD', '47': 'RDNT/USD', '48': 'SUI/USD', '49': 'PEPE/USD', '50': 'EIGEN/USD',
-  '51': 'XAU/USD', '52': 'XAG/USD', '53': 'GMCI30/USD', '54': 'GMCL2/USD', '55': 'GMMEME/USD',
-  '56': 'QQQ/USD', '57': 'SPY/USD'
+  '51': 'XAU/USD', '52': 'XAG/USD', '53': 'GMCI30/USD', '54': 'GML2/USD', '55': 'GMMEME/USD',
+  '56': 'QQQ/USD', '57': 'SPY/USD', '64': 'NZD/USD', '65': 'CHF/USD', '66': 'AUD/USD',
+  '67': 'USD/JPY', '68': 'USD/CAD', '69': 'WTI/USD'
 };
 
 // Map of trading pairs to their full names
@@ -74,10 +75,16 @@ export const PAIR_FULL_NAMES: { [key: string]: string } = {
   'XAU/USD': 'Gold to US Dollar',
   'XAG/USD': 'Silver to US Dollar',
   'GMCI30/USD': 'GMCI30 Index to US Dollar',
-  'GMCL2/USD': 'GMCL2 Index to US Dollar',
+  'GML2/USD': 'GML2 Index to US Dollar',
   'GMMEME/USD': 'GMMEME Index to US Dollar',
   'QQQ/USD': 'Nasdaq-100 ETF to US Dollar',
-  'SPY/USD': 'S&P 500 ETF to US Dollar'
+  'SPY/USD': 'S&P 500 ETF to US Dollar',
+  'WTI/USD': 'West Texas Oil to US Dollar',
+  'NZD/USD': 'New Zealand Dollar to US Dollar',
+  'CHF/USD': 'Swiss Franc to US Dollar',
+  'AUD/USD': 'Australian Dollar to US Dollar',
+  'USD/JPY': 'US Dollar to Japanese Yen',
+  'USD/CAD': 'US Dollar to Canadian Dollar'
 };
 
 export const PAIR_SHORT_NAMES: { [key: string]: string } = {
@@ -134,10 +141,16 @@ export const PAIR_SHORT_NAMES: { [key: string]: string } = {
   'XAU/USD': 'Gold',
   'XAG/USD': 'Silver',
   'GMCI30/USD': 'GMCI30 Index',
-  'GMCL2/USD': 'GMCL2 Index',
+  'GML2/USD': 'GML2 Index',
   'GMMEME/USD': 'GMMEME Index',
   'QQQ/USD': 'Nasdaq-100 ETF',
-  'SPY/USD': 'S&P 500 ETF'
+  'SPY/USD': 'S&P 500 ETF',
+  'WTI/USD': 'West Texas Oil',
+  'NZD/USD': 'New Zealand Dollar',
+  'CHF/USD': 'Swiss Franc',
+  'AUD/USD': 'Australian Dollar',
+  'USD/JPY': 'Japanese Yen',
+  'USD/CAD': 'Canadian Dollar'
 };
 // Helper function to get the full name for a pair
   export function getPairFullName(pair: string): string {
