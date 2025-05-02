@@ -325,30 +325,9 @@ export function ConnectDashboard() {
 
   return (
     <div className="flex min-h-screen">
-      {/* Left side - Explanation */}
-      <div className="w-full md:w-[30%] bg-indigo-600 text-white p-10 flex flex-col justify-between">
-        <div className="space-y-6">
-          <div className="space-y-3">
-            <h1 className="text-4xl font-bold">
-              Swap, deposit,<br />
-              take the lead
-            </h1>
-            <p className="text-lg opacity-90">
-              UniDex is a decentralized exchange where you can execute low-fee swaps,
-              deposit tokens to earn rewards, and actively participate in the onchain economy.
-            </p>
-          </div>
-        </div>
-        
-        <Link href="/" className="flex items-center text-white opacity-80 hover:opacity-100 space-x-2 transition">
-          <ChevronLeft size={16} />
-          <span>Back to app</span>
-        </Link>
-      </div>
-
-      {/* Right side - Connect wallet */}
-      <div className="w-full md:w-[70%] bg-background flex items-center justify-center p-8">
-        <div className="max-w-md w-full space-y-8">
+      {/* Full width content */}
+      <div className="w-full bg-background flex items-center justify-center p-8">
+        <div className="max-w-md w-full space-y-6">
           <div className="flex flex-col items-center">
             {/* Updated logo with theme support */}
             <div className="mb-8 flex justify-center">
@@ -391,7 +370,15 @@ export function ConnectDashboard() {
             </div>
           </div>
 
-          <div className="text-center text-sm text-gray-500 mt-12">
+          {/* Back button moved to bottom of content area */}
+          <div className="flex justify-center my-4">
+            <Link href="/" className="flex items-center text-foreground opacity-80 hover:opacity-100 space-x-2 transition">
+              <ChevronLeft size={16} />
+              <span>Back to app</span>
+            </Link>
+          </div>
+
+          <div className="text-center text-sm text-gray-500">
             © 2025 UniDex Exchange
           </div>
         </div>
