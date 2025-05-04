@@ -234,6 +234,7 @@ export function AccountSummary({ buttonText = "Deposit / Withdraw", className = 
   const [selectedChain, setSelectedChain] = useState<"arbitrum" | "optimism">("arbitrum");
   const [amount, setAmount] = useState("");
   const summaryRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
   const { 
     smartAccount, 
     setupSessionKey, 
@@ -357,21 +358,33 @@ export function AccountSummary({ buttonText = "Deposit / Withdraw", className = 
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
+      // Close if clicking the backdrop
       if (event.target instanceof Element && 
           event.target.classList.contains('bg-black/50')) {
         setIsOpen(false);
         return;
       }
       
-      if (summaryRef.current && 
-          !summaryRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
+      // Don't close if clicking inside the trigger area OR inside the modal
+      if ((summaryRef.current && summaryRef.current.contains(event.target as Node)) ||
+          (modalRef.current && modalRef.current.contains(event.target as Node))) {
+        return;
       }
+
+      // Otherwise, close the modal
+      setIsOpen(false);
     }
 
-    document.addEventListener("mousedown", handleClickOutside);
+    // Add listener only when the modal is open
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    
+    // Cleanup listener on unmount or when isOpen changes
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [isOpen]);
 
   const modal = (
     <>
@@ -383,6 +396,7 @@ export function AccountSummary({ buttonText = "Deposit / Withdraw", className = 
         }}
       />
       <Card 
+        ref={modalRef}
         className={`
           z-[9999] 
           p-4 
