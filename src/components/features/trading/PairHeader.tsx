@@ -13,6 +13,7 @@ import { use24hChange } from "../../../hooks/use-24h-change";
 import { useGTradeMarketData } from "../../../hooks/trading-hooks/gtrade-hooks/use-gtrade-market-data";
 import { PairSelector } from "./PairSelector";
 import { useCurrentPairPrice } from "../../../hooks/use-current-pair-price";
+import { useMarketHours } from "../../../hooks/use-market-hours";
 
 interface PairHeaderProps {
   selectedPair: string;
@@ -76,6 +77,9 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
   
   // Use the new hook to get the current price
   const currentPrice = useCurrentPairPrice(selectedPair);
+
+  // Use the market hours hook
+  const marketHours = useMarketHours(selectedPair);
 
   const combinedData = useMemo(() => {
     // Default values when no data is available
@@ -294,7 +298,28 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                 </div>
               </div>
             </div>
-
+            {/* Market Hours Group (Adjusted) */}
+            <div className="flex items-center px-4 border-r min-w-[120px]">
+              {marketHours.status !== null && marketHours.timeRemaining ? (
+                // Display countdown for SPY/QQQ
+                <div>
+                  <div className="text-xs text-muted-foreground">
+                    {marketHours.status === 'open' ? 'Market Closes In' : 'Market Opens In'}
+                  </div>
+                  <div className="text-sm font-mono">
+                    {marketHours.timeRemaining}
+                  </div>
+                </div>
+              ) : (
+                // Display 24/7 for other pairs (unless hook returned error)
+                marketHours.timeRemaining !== '--:--:--' && (
+                  <div>
+                    <div className="text-xs text-muted-foreground">Market Hours</div>
+                    <div className="text-sm">24/7</div>
+                  </div>
+                )
+              )}
+            </div>
             {/* Open Interest Group */}
             <div className="flex items-center space-x-8 px-4 border-r min-w-[300px]">
               <TooltipProvider>
@@ -369,6 +394,8 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
               </TooltipProvider>
             </div>
 
+
+
             {/* Funding Rate Group */}
             <div className="flex items-center px-4 border-r min-w-[160px]">
               <TooltipProvider>
@@ -417,6 +444,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
             </div>
 
             {/* Borrow Rates Group */}
+            {/*
             <div className="flex items-center px-4 min-w-[220px]">
               <div className="flex gap-4">
                 <TooltipProvider>
@@ -483,6 +511,7 @@ export const PairHeader: React.FC<PairHeaderProps> = ({
                 </TooltipProvider>
               </div>
             </div>
+            */}
           </div>
         </div>
       </div>
