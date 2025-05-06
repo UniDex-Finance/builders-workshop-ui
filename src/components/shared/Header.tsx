@@ -4,7 +4,7 @@ import { useTheme } from "next-themes";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownSection, DropdownItem } from "@nextui-org/react";
-import { Menu, ChevronDown, Wallet, Coins, DollarSign, PiggyBank, Users2, MessageCircle, Send, Twitter, X, Settings, UnfoldHorizontal, BarChart2  } from "lucide-react";
+import { Menu, ChevronDown, Wallet, Coins, DollarSign, PiggyBank, Users2, MessageCircle, Send, Twitter, X, Settings, UnfoldHorizontal, BarChart2, TrendingUp, Repeat, Book, Landmark, Store, Database, ArrowRightLeft, Share2, BookOpen } from "lucide-react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { 
@@ -12,7 +12,12 @@ import {
   faBook, 
   faComments, 
   faBug, 
-  faChartLine 
+  faChartLine,
+  faExchangeAlt,
+  faDollarSign,
+  faShareAlt,
+  faStore,
+  faChartBar
 } from '@fortawesome/free-solid-svg-icons';
 import { AccountSummary } from "../features/trading/account/AccountSummary";
 import { getUsersnapApi } from "../../lib/usersnap";
@@ -62,46 +67,101 @@ export function Header() {
 
         {/* Desktop Navigation */}
         <nav className="h-full hidden space-x-3 md:flex items-center">
-          <div className="flex items-center h-full">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-sm font-normal h-8 flex items-center justify-center"
-              onClick={() => (window.location.href = "/")}
+          {/* Perps Dropdown */}
+          <Dropdown>
+            <DropdownTrigger>
+              <Button variant="ghost" size="sm" className="text-sm font-normal gap-1 h-8 flex items-center justify-center">
+                Perps <ChevronDown size={14} />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu
+              aria-label="Perps options"
+              className="w-[240px]"
+              itemClasses={{
+                base: "gap-4",
+                title: "text-sm",
+                description: "text-xs text-default-400",
+              }}
             >
-              Trade
-            </Button>
-          </div>
-          <div className="flex items-center h-full">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-sm font-normal h-8 flex items-center justify-center"
-              onClick={() => (window.location.href = "/markets")}
+              <DropdownItem
+                key="trade"
+                description="Access perpetuals trading"
+                startContent={<TrendingUp className="w-4 h-4" />}
+                onClick={() => (window.location.href = "/")}
+              >
+                Trade
+              </DropdownItem>
+              <DropdownItem
+                key="perps-docs"
+                description="Read the perpetuals documentation"
+                startContent={<FontAwesomeIcon icon={faBook} className="w-4 h-4" />}
+                onClick={() =>
+                  window.open(
+                    "https://docs.unidex.exchange/Leverage-Trading/Design%20overview",
+                    "_blank"
+                  )
+                }
+              >
+                Docs
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+
+          {/* Swaps Dropdown */}
+          <Dropdown>
+            <DropdownTrigger>
+              <Button variant="ghost" size="sm" className="text-sm font-normal gap-1 h-8 flex items-center justify-center">
+                Swaps <ChevronDown size={14} />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu
+              aria-label="Swaps options"
+              className="w-[240px]"
+              itemClasses={{
+                base: "gap-4",
+                title: "text-sm",
+                description: "text-xs text-default-400",
+              }}
             >
-              Markets
-            </Button>
-          </div>
-          <div className="flex items-center h-full">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-sm font-normal h-8 flex items-center justify-center"
-              onClick={() => (window.location.href = "/leaderboard")}
+              <DropdownItem
+                key="advanced-swaps"
+                description="Use the advanced swap interface"
+                startContent={<FontAwesomeIcon icon={faExchangeAlt} className="w-4 h-4" />}
+                onClick={() => (window.location.href = "/pro-swaps")}
+              >
+                Advanced Swaps
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+
+          {/* Lending Link - Changed to Dropdown */}
+          <Dropdown>
+            <DropdownTrigger>
+              <Button variant="ghost" size="sm" className="text-sm font-normal gap-1 h-8 flex items-center justify-center">
+                Lending <ChevronDown size={14} />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu
+              aria-label="Lending options"
+              className="w-[240px]"
+              itemClasses={{
+                base: "gap-4",
+                title: "text-sm",
+                description: "text-xs text-default-400",
+              }}
             >
-              Leaderboard
-            </Button>
-          </div>
-          <div className="flex items-center h-full">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-sm font-normal h-8 flex items-center justify-center"
-              onClick={() => (window.location.href = "/lending")}
-            >
-              Lending
-            </Button>
-          </div>
+              <DropdownItem
+                key="lending-overview"
+                description="View lending markets"
+                startContent={<Landmark className="w-4 h-4" />}
+                onClick={() => (window.location.href = "/lending")}
+              >
+                Lending
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+
+          {/* Earn Dropdown (no changes needed, kept for context) */}
           <Dropdown>
             <DropdownTrigger>
               <Button variant="ghost" size="sm" className="text-sm font-normal gap-1 h-8 flex items-center justify-center">
@@ -132,7 +192,7 @@ export function Header() {
                 <DropdownItem
                   key="mint-usdm"
                   description="Market make for traders and earn yield"
-                  startContent={<DollarSign className="w-4 h-4" />}
+                  startContent={<FontAwesomeIcon icon={faDollarSign} className="w-4 h-4" />}
                   onClick={() => (window.location.href = "/usdm")}
                 >
                   Mint USD.m
@@ -151,7 +211,7 @@ export function Header() {
                 <DropdownItem
                   key="referrals"
                   description="Onboard traders, earn in real-time"
-                  startContent={<Users2 className="w-4 h-4" />}
+                  startContent={<FontAwesomeIcon icon={faShareAlt} className="w-4 h-4" />}
                   onClick={() => (window.location.href = "/referrals")}
                 >
                   Refer Traders
@@ -159,14 +219,16 @@ export function Header() {
               </DropdownSection>
             </DropdownMenu>
           </Dropdown>
+
+          {/* Data Dropdown */}
           <Dropdown>
             <DropdownTrigger>
               <Button variant="ghost" size="sm" className="text-sm font-normal gap-1 h-8 flex items-center justify-center">
-                Trade Tools <ChevronDown size={14} />
+                Data <ChevronDown size={14} />
               </Button>
             </DropdownTrigger>
             <DropdownMenu
-              aria-label="Trade tools options"
+              aria-label="Data options"
               className="w-[240px]"
               itemClasses={{
                 base: "gap-4",
@@ -175,15 +237,38 @@ export function Header() {
               }}
             >
               <DropdownItem
+                key="markets"
+                description="Explore available trading markets"
+                startContent={<FontAwesomeIcon icon={faStore} className="w-4 h-4" />}
+                onClick={() => (window.location.href = "/markets")}
+              >
+                Markets
+              </DropdownItem>
+              <DropdownItem
                 key="funding-arb"
                 description="Explore funding rate arbitrage opportunities"
-                startContent={<BarChart2 className="w-4 h-4" />}
+                startContent={<FontAwesomeIcon icon={faChartBar} className="w-4 h-4" />}
                 onClick={() => (window.location.href = "/funding-arb")}
               >
                 Funding Arbitrage
               </DropdownItem>
+               <DropdownItem
+                 key="stats"
+                 description="View the latest stats"
+                 startContent={<FontAwesomeIcon icon={faChartLine} />}
+                 onClick={() =>
+                   window.open(
+                     "https://dune.com/supakawaiidesu/unidex-molten-stats",
+                     "_blank"
+                   )
+                 }
+               >
+                 Stats
+               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
+
+          {/* More Dropdown (no changes needed, kept for context) */}
           <Dropdown>
             <DropdownTrigger>
               <Button variant="ghost" size="sm" className="text-sm font-normal gap-1 h-8 flex items-center justify-center">
@@ -202,7 +287,7 @@ export function Header() {
               <DropdownItem
                 key="help"
                 description="Get help and support"
-                startContent={<FontAwesomeIcon icon={faQuestionCircle} />}
+                startContent={<FontAwesomeIcon icon={faQuestionCircle} className="w-4 h-4" />}
                 onClick={() =>
                   window.open("https://discord.gg/W2TByeuD7R", "_blank")
                 }
@@ -212,7 +297,7 @@ export function Header() {
               <DropdownItem
                 key="documentation"
                 description="Read the documentation"
-                startContent={<FontAwesomeIcon icon={faBook} />}
+                startContent={<FontAwesomeIcon icon={faBook} className="w-4 h-4" />}
                 onClick={() =>
                   window.open(
                     "https://docs.unidex.exchange/introduction",
@@ -225,7 +310,7 @@ export function Header() {
               <DropdownItem
                 key="feedback"
                 description="Provide your feedback"
-                startContent={<FontAwesomeIcon icon={faComments} />}
+                startContent={<FontAwesomeIcon icon={faComments} className="w-4 h-4" />}
                 onClick={() => {
                   const api = getUsersnapApi();
                   if (api) {
@@ -238,7 +323,7 @@ export function Header() {
               <DropdownItem
                 key="bug-bounty"
                 description="Participate in our bug bounty program"
-                startContent={<FontAwesomeIcon icon={faBug} />}
+                startContent={<FontAwesomeIcon icon={faBug} className="w-4 h-4" />}
                 onClick={() => {
                   const api = getUsersnapApi();
                   if (api) {
@@ -247,19 +332,6 @@ export function Header() {
                 }}
               >
                 Bug Bounty
-              </DropdownItem>
-              <DropdownItem
-                key="stats"
-                description="View the latest stats"
-                startContent={<FontAwesomeIcon icon={faChartLine} />}
-                onClick={() =>
-                  window.open(
-                    "https://dune.com/supakawaiidesu/unidex-molten-stats",
-                    "_blank"
-                  )
-                }
-              >
-                Stats
               </DropdownItem>
               <DropdownItem
                 key="bridge"
@@ -335,43 +407,65 @@ export function Header() {
                 {/* Navigation Items */}
                 <div className="flex-1 p-2">
                   <div className="space-y-2">
-                    {/* Trade */}
-                    <Button
-                      variant="ghost"
-                      className="justify-start w-full text-sm h-8 bg-muted/50 hover:bg-muted/70"
-                      onClick={() => (window.location.href = "/")}
-                    >
-                      Trade
-                    </Button>
+                    {/* Perps Section */}
+                    <div className="space-y-1">
+                      <div className="px-3 py-2 text-xs font-semibold text-foreground-500">
+                        Perps
+                      </div>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
+                        onClick={() => (window.location.href = "/")}
+                      >
+                        <TrendingUp className="w-4 h-4" />
+                        Trade
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
+                        onClick={() =>
+                          window.open(
+                            "https://docs.unidex.exchange/Leverage-Trading/Design%20overview",
+                            "_blank"
+                          )
+                        }
+                      >
+                        <FontAwesomeIcon icon={faBook} className="w-4 h-4" />
+                        Docs
+                      </Button>
+                    </div>
 
-                    {/* Markets */}
-                    <Button
-                      variant="ghost"
-                      className="justify-start w-full text-sm h-8 bg-muted/50 hover:bg-muted/70"
-                      onClick={() => (window.location.href = "/markets")}
-                    >
-                      Markets
-                    </Button>
+                    {/* Swaps Section */}
+                    <div className="space-y-1">
+                      <div className="px-3 py-2 text-xs font-semibold text-foreground-500">
+                        Swaps
+                      </div>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
+                        onClick={() => (window.location.href = "/pro-swaps")}
+                      >
+                        <FontAwesomeIcon icon={faExchangeAlt} className="w-4 h-4" />
+                        Advanced Swaps
+                      </Button>
+                    </div>
 
-                    {/* Leaderboard */}
-                    <Button
-                      variant="ghost"
-                      className="justify-start w-full text-sm h-8 bg-muted/50 hover:bg-muted/70"
-                      onClick={() => (window.location.href = "/leaderboard")}
-                    >
-                      Leaderboard
-                    </Button>
+                    {/* Lending Section (single item) */}
+                    <div className="space-y-1">
+                       <div className="px-3 py-2 text-xs font-semibold text-foreground-500">
+                         Lending
+                       </div>
+                       <Button
+                         variant="ghost"
+                         className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
+                         onClick={() => (window.location.href = "/lending")}
+                       >
+                         <Landmark className="w-4 h-4" />
+                         Lending
+                       </Button>
+                    </div>
 
-                    {/* Lending */}
-                    <Button
-                      variant="ghost"
-                      className="justify-start w-full text-sm h-8 bg-muted/50 hover:bg-muted/70"
-                      onClick={() => (window.location.href = "/lending")}
-                    >
-                      Lending
-                    </Button>
-
-                    {/* Earn Section */}
+                    {/* Earn Section (no changes needed) */}
                     <div className="space-y-1">
                       <div className="px-3 py-2 text-xs font-semibold text-foreground-500">
                         Earn with MOLTEN
@@ -395,7 +489,7 @@ export function Header() {
                         className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
                         onClick={() => (window.location.href = "/usdm")}
                       >
-                        <DollarSign className="w-4 h-4" />
+                        <FontAwesomeIcon icon={faDollarSign} className="w-4 h-4" />
                         Mint USD.m
                       </Button>
                       <Button
@@ -417,27 +511,51 @@ export function Header() {
                         className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
                         onClick={() => (window.location.href = "/referrals")}
                       >
-                        <Users2 className="w-4 h-4" />
+                        <FontAwesomeIcon icon={faShareAlt} className="w-4 h-4" />
                         Refer Traders
                       </Button>
                     </div>
 
-                    {/* Added Funding Arbitrage Section for Mobile */}
+                    {/* Data Section */}
                     <div className="space-y-1">
                       <div className="px-3 py-2 text-xs font-semibold text-foreground-500">
-                        Trade Tools
+                        Data
                       </div>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
+                        onClick={() => (window.location.href = "/markets")}
+                      >
+                        <FontAwesomeIcon icon={faStore} className="w-4 h-4" />
+                        Markets
+                      </Button>
                       <Button
                         variant="ghost"
                         className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
                         onClick={() => (window.location.href = "/funding-arb")}
                       >
-                        <BarChart2 className="w-4 h-4" />
+                        <FontAwesomeIcon icon={faChartBar} className="w-4 h-4" />
                         Funding Arbitrage
                       </Button>
+                       <Button
+                         variant="ghost"
+                         className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
+                         onClick={() =>
+                           window.open(
+                             "https://dune.com/supakawaiidesu/unidex-molten-stats",
+                             "_blank"
+                           )
+                         }
+                       >
+                         <FontAwesomeIcon
+                           icon={faChartLine}
+                           className="w-4 h-4"
+                         />
+                         Stats
+                       </Button>
                     </div>
 
-                    {/* More Section */}
+                    {/* More Section (removing Stats) */}
                     <div className="space-y-1">
                       <div className="px-3 py-2 text-xs font-semibold text-foreground-500">
                         More
@@ -467,22 +585,6 @@ export function Header() {
                       >
                         <FontAwesomeIcon icon={faBook} className="w-4 h-4" />
                         Documentation
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
-                        onClick={() =>
-                          window.open(
-                            "https://dune.com/supakawaiidesu/unidex-molten-stats",
-                            "_blank"
-                          )
-                        }
-                      >
-                        <FontAwesomeIcon
-                          icon={faChartLine}
-                          className="w-4 h-4"
-                        />
-                        Stats
                       </Button>
                       <Button
                         variant="ghost"
