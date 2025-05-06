@@ -108,6 +108,7 @@ export function Header() {
           </Dropdown>
 
           {/* Swaps Dropdown */}
+          {/*
           <Dropdown>
             <DropdownTrigger>
               <Button variant="ghost" size="sm" className="text-sm font-normal gap-1 h-8 flex items-center justify-center">
@@ -133,6 +134,7 @@ export function Header() {
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
+          */}
 
           {/* Lending Link - Changed to Dropdown */}
           <Dropdown>
@@ -436,6 +438,7 @@ export function Header() {
                     </div>
 
                     {/* Swaps Section */}
+                    {/*
                     <div className="space-y-1">
                       <div className="px-3 py-2 text-xs font-semibold text-foreground-500">
                         Swaps
@@ -449,6 +452,7 @@ export function Header() {
                         Advanced Swaps
                       </Button>
                     </div>
+                    */}
 
                     {/* Lending Section (single item) */}
                     <div className="space-y-1">
