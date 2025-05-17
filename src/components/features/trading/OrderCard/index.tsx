@@ -84,6 +84,12 @@ export function OrderCard({
   const [detailsExpanded, setDetailsExpanded] = useState(false);
   const [isLeverageInputEditing, setIsLeverageInputEditing] = useState(false);
   const { formatPairPrice } = usePairPrecision();
+  const [isTpslExpanded, setIsTpslExpanded] = useState(false);
+
+  // State to manage which percentage input is active
+  // null | 'tp' | 'sl'
+  const [editingPercentageFor, setEditingPercentageFor] = useState<null | 'tp' | 'sl'>(null);
+  const [tempPercentage, setTempPercentage] = useState<string>("");
 
   const {
     formState,
@@ -307,21 +313,31 @@ export function OrderCard({
       const roundedSize = Math.floor(calculatedSize * 100) / 100;
       
       if (activeTab === "limit") {
-        // Handle limit order
+        const rawTpLimit = formState.tpslEnabled ? formState.takeProfit : "";
+        const rawSlLimit = formState.tpslEnabled ? formState.stopLoss : "";
+
+        const finalTpLimit = (rawTpLimit && !isNaN(parseFloat(rawTpLimit))) ? rawTpLimit : "";
+        const finalSlLimit = (rawSlLimit && !isNaN(parseFloat(rawSlLimit))) ? rawSlLimit : "";
+        
         const limitOrderParams = {
           pair: parseInt(assetId, 10),
           isLong: formState.isLong,
           price: Number(formState.limitPrice),
           margin: calculatedMargin,
           size: roundedSize,
-          takeProfit: formState.tpslEnabled ? formState.takeProfit : "",
-          stopLoss: formState.tpslEnabled ? formState.stopLoss : "",
+          takeProfit: finalTpLimit,
+          stopLoss: finalSlLimit,
           referrer: resolvedReferrer
         };
 
         await executeLimitOrder(limitOrderParams);
       } else {
-        // Handle market order using existing routing logic
+        const rawTpMarket = formState.tpslEnabled ? formState.takeProfit : undefined;
+        const rawSlMarket = formState.tpslEnabled ? formState.stopLoss : undefined;
+
+        const finalTpMarket = (rawTpMarket && !isNaN(parseFloat(rawTpMarket))) ? rawTpMarket : undefined;
+        const finalSlMarket = (rawSlMarket && !isNaN(parseFloat(rawSlMarket))) ? rawSlMarket : undefined;
+
         const orderParams = {
           pair: parseInt(assetId, 10),
           isLong: formState.isLong,
@@ -330,8 +346,8 @@ export function OrderCard({
           margin: calculatedMargin,
           size: roundedSize,
           orderType: activeTab as "market" | "limit",
-          takeProfit: formState.tpslEnabled ? formState.takeProfit : undefined,
-          stopLoss: formState.tpslEnabled ? formState.stopLoss : undefined,
+          takeProfit: finalTpMarket,
+          stopLoss: finalSlMarket,
           referrer: resolvedReferrer
         };
     
@@ -489,6 +505,136 @@ export function OrderCard({
     // Cache the selected leverage for this pair
     localStorage.setItem(`unidex-leverage-${assetId}`, tempLeverageValue.toString());
     setLeverageDialogOpen(false);
+  };
+
+  const selectSimpleSetMode = () => {
+    setIsTpslExpanded(true);
+    setFormState(prev => ({
+      ...prev,
+      tpslEnabled: true,
+    }));
+  };
+
+  const selectNoTpslMode = () => {
+    setIsTpslExpanded(false);
+    setFormState(prev => ({
+      ...prev,
+      takeProfit: "",
+      stopLoss: "",
+      tpslEnabled: false,
+    }));
+  };
+
+  // Helper function to calculate and display entry distance
+  const calculateEntryDistanceDisplay = (
+    levelStr: string | undefined,
+    entryPriceNum: number | undefined,
+    isLong: boolean,
+    levelType: 'tp' | 'sl'
+  ): string => {
+    if (!levelStr || levelStr.trim() === "" || typeof entryPriceNum !== 'number' || isNaN(entryPriceNum) || entryPriceNum === 0) {
+      return "--%";
+    }
+    const level = parseFloat(levelStr);
+
+    if (isNaN(level)) {
+      return "--%";
+    }
+
+    const difference = level - entryPriceNum;
+    // For a long position, TP > entry is profit (+), SL < entry is loss (-)
+    // For a short position, TP < entry is profit (+), SL > entry is loss (-)
+    
+    let percentage = (difference / entryPriceNum) * 100;
+
+    if (levelType === 'tp') {
+      if (!isLong) percentage = -percentage; // Invert for short TP
+    } else { // levelType === 'sl'
+      if (isLong) percentage = -percentage; // Invert for long SL (loss is negative, but difference is negative already)
+                                         // but we want to show the "distance" from entry,
+                                         // so a SL below entry for a long is a negative outcome.
+                                         // If level = 900, entry = 1000, diff = -100. percentage = -10%. Correct.
+                                         // If level = 1100, entry = 1000, diff = 100, percentage = 10%. For SL this is positive distance but negative outcome.
+                                         // Let's re-evaluate the sign logic based on profit/loss
+    }
+    
+    // Simpler logic:
+    // Profit is when TP is higher than entry for long, or lower than entry for short.
+    // Loss is when SL is lower than entry for long, or higher than entry for short.
+    
+    let signedPercentage = (Math.abs(difference) / entryPriceNum) * 100;
+
+    // Ensure correct sign based on profit/loss direction
+    if (levelType === 'tp') {
+      if (isLong) { // Long position
+        signedPercentage = (level > entryPriceNum) ? signedPercentage : -signedPercentage;
+      } else { // Short position
+        signedPercentage = (level < entryPriceNum) ? signedPercentage : -signedPercentage;
+      }
+    } else { // levelType === 'sl'
+      if (isLong) { // Long position
+        signedPercentage = (level < entryPriceNum) ? -signedPercentage : signedPercentage; // Loss is negative
+      } else { // Short position
+        signedPercentage = (level > entryPriceNum) ? -signedPercentage : signedPercentage; // Loss is negative
+      }
+    }
+
+    if (isNaN(signedPercentage) || !isFinite(signedPercentage)) {
+      return "--%";
+    }
+    
+    return `${signedPercentage >= 0 ? "+" : ""}${Math.round(signedPercentage)}%`;
+  };
+
+  const handlePercentageInputChange = (value: string) => {
+    setTempPercentage(value);
+  };
+
+  const handlePercentageInputBlur = (levelType: 'tp' | 'sl') => {
+    const percentageValue = parseFloat(tempPercentage);
+    const entryPriceNum = formState.entryPrice as number | undefined;
+
+    if (entryPriceNum && !isNaN(percentageValue) && entryPriceNum !== 0) {
+      let newPrice;
+      // Adjust based on whether it's a positive or negative percentage for the trade direction
+      if (formState.isLong) {
+        if (levelType === 'tp') {
+          newPrice = entryPriceNum * (1 + percentageValue / 100);
+        } else { // sl
+          newPrice = entryPriceNum * (1 + percentageValue / 100); // percentageValue will be negative for desired SL
+        }
+      } else { // isShort
+        if (levelType === 'tp') {
+          newPrice = entryPriceNum * (1 - percentageValue / 100);
+        } else { // sl
+          newPrice = entryPriceNum * (1 - percentageValue / 100); // percentageValue will be negative for desired SL
+        }
+      }
+
+      if (levelType === 'tp') {
+        handleTakeProfitChange(newPrice.toFixed(formatPairPrice(currentPair, newPrice).split('.')[1]?.length || 2));
+      } else {
+        handleStopLossChange(newPrice.toFixed(formatPairPrice(currentPair, newPrice).split('.')[1]?.length || 2));
+      }
+    }
+    setEditingPercentageFor(null);
+    setTempPercentage("");
+  };
+
+  const handlePercentageClick = (levelType: 'tp' | 'sl') => {
+    setEditingPercentageFor(levelType);
+    // Initialize tempPercentage with the current display value, removing '+' and '%'
+    const currentDisplay = calculateEntryDistanceDisplay(
+      levelType === 'tp' ? formState.takeProfit : formState.stopLoss,
+      formState.entryPrice as number | undefined,
+      formState.isLong,
+      levelType
+    );
+    if (currentDisplay && currentDisplay !== '--%') {
+      setTempPercentage(currentDisplay.replace('+', '').replace('%', ''));
+    } else {
+      setTempPercentage("");
+    }
   };
 
   return (
@@ -691,7 +837,8 @@ export function OrderCard({
             </div>
           </div>
 
-          {/* Replace percentage buttons with slider */}
+          {/* Replace percentage buttons with slider -> This comment was for the slider */}
+          {/* CustomSlider for size percentage */}
           <div className="mb-3 mt-2">
             <CustomSlider
               min={0}
@@ -701,6 +848,121 @@ export function OrderCard({
               onChange={(value) => handleSliderChange([value])}
               className="mt-2"
             />
+          </div>
+
+          {/* TP/SL Collapsible Section */}
+          <div className="mb-3 mt-2">
+            {/* Header Row - now styled as plain text */}
+            <div className="flex justify-between items-center py-1"> {/* Removed box styling, added py-1 */}
+              {/* Left Side: Display current TP/SL values */}
+              <span className="text-xs font-medium">
+                { (formState.tpslEnabled && (formState.takeProfit || formState.stopLoss)) // Show values only if tpslEnabled
+                    ? `TP: ${formState.takeProfit || '--'} / SL: ${formState.stopLoss || '--'}`
+                    : "TP/SL: -- / --" }
+              </span>
+
+              {/* Right Side: Clickable Mode Selector Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-1 px-2 py-1 h-auto text-xs font-medium group data-[state=open]:bg-muted hover:bg-muted">
+                    <span>TP/SL {isTpslExpanded ? "Simple" : "No"}</span>
+                    {/* Using a text arrow, replace with a proper chevron icon if you have one */}
+                    <span className="transform transition-transform duration-200 group-data-[state=open]:rotate-180">↓</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[150px]"> {/* Adjust width as needed */}
+                  <DropdownMenuItem onClick={selectSimpleSetMode} className="text-xs cursor-pointer">
+                    Simple Set
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={selectNoTpslMode} className="text-xs cursor-pointer">
+                    No TP/SL
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Expandable Input Grid (retains its own styling) */}
+            {isTpslExpanded && (
+              <div className="mt-1 grid grid-cols-2 gap-1">
+                {/* Row 1: Take Profit */}
+                <div className="flex flex-col justify-between p-3 bg-muted/50 rounded-md h-16">
+                  <span className="text-xs text-muted-foreground">Take Profit</span>
+                  <div className="flex justify-between items-center w-full">
+                    <input
+                      type="text"
+                      placeholder="0"
+                      value={formState.takeProfit || ''}
+                      onChange={(e) => handleTakeProfitChange(e.target.value)}
+                      className="w-3/4 h-7 px-0 border-0 text-sm font-medium bg-transparent focus:outline-none"
+                      suppressHydrationWarning
+                    />
+                    <span className="text-xs text-muted-foreground">USD</span>
+                  </div>
+                </div>
+                <div className="flex flex-col justify-start p-3 bg-muted/50 rounded-md h-16">
+                  <span className="text-xs text-muted-foreground">Entry Distance</span>
+                  {editingPercentageFor === 'tp' ? (
+                    <input 
+                      type="text" 
+                      value={tempPercentage}
+                      onChange={(e) => handlePercentageInputChange(e.target.value)}
+                      onBlur={() => handlePercentageInputBlur('tp')}
+                      onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+                      className="w-full h-7 px-0 border-0 text-sm font-medium bg-transparent focus:outline-none mt-1"
+                      placeholder="--%"
+                      autoFocus
+                      inputMode="decimal" // Allows negative numbers and decimals
+                    />
+                  ) : (
+                    <span 
+                      className="text-sm font-medium mt-1 cursor-pointer hover:text-primary"
+                      onClick={() => handlePercentageClick('tp')}
+                    >
+                      {calculateEntryDistanceDisplay(formState.takeProfit, formState.entryPrice as number | undefined, formState.isLong, 'tp')}
+                    </span>
+                  )}
+                </div>
+
+                {/* Row 2: Stop Loss */}
+                <div className="flex flex-col justify-between p-3 bg-muted/50 rounded-md h-16">
+                  <span className="text-xs text-muted-foreground">Stop Loss</span>
+                  <div className="flex justify-between items-center w-full">
+                    <input
+                      type="text"
+                      placeholder="0"
+                      value={formState.stopLoss || ''}
+                      onChange={(e) => handleStopLossChange(e.target.value)}
+                      className="w-3/4 h-7 px-0 border-0 text-sm font-medium bg-transparent focus:outline-none"
+                      suppressHydrationWarning
+                    />
+                    <span className="text-xs text-muted-foreground">USD</span>
+                  </div>
+                </div>
+                <div className="flex flex-col justify-start p-3 bg-muted/50 rounded-md h-16">
+                  <span className="text-xs text-muted-foreground">Entry Distance</span>
+                  {editingPercentageFor === 'sl' ? (
+                    <input 
+                      type="text" 
+                      value={tempPercentage}
+                      onChange={(e) => handlePercentageInputChange(e.target.value)}
+                      onBlur={() => handlePercentageInputBlur('sl')}
+                      onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+                      className="w-full h-7 px-0 border-0 text-sm font-medium bg-transparent focus:outline-none mt-1"
+                      placeholder="--%"
+                      autoFocus
+                      inputMode="decimal"
+                    />
+                  ) : (
+                    <span 
+                      className="text-sm font-medium mt-1 cursor-pointer hover:text-primary"
+                      onClick={() => handlePercentageClick('sl')}
+                    >
+                      {calculateEntryDistanceDisplay(formState.stopLoss, formState.entryPrice as number | undefined, formState.isLong, 'sl')}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {!isConnected ? (
