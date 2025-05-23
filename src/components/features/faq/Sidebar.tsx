@@ -1,4 +1,4 @@
-// Sidebar navigation component
+// Sidebar navigation component - Desktop only
 import { ChevronDown } from "lucide-react";
 import { SearchInput } from "./components";
 import { Category } from "./types";
@@ -31,7 +31,7 @@ export function Sidebar({
   onToggleCategory,
 }: SidebarProps) {
   return (
-    <div className="w-80 bg-card/30 border-r border-border/50 flex flex-col">
+    <div className="w-80 bg-card/30 border-r border-border/50 flex flex-col h-full">
       {/* Search Bar */}
       <div className="p-6 border-b border-border/50">
         <SearchInput
@@ -41,7 +41,7 @@ export function Sidebar({
         />
       </div>
 
-      {/* Navigation Categories */}
+      {/* Navigation Categories - Now takes up all remaining space */}
       <div className="flex-1 p-4 space-y-2 overflow-y-auto">
         {categories.map((category) => {
           const Icon = category.icon;
@@ -108,17 +108,6 @@ export function Sidebar({
             </div>
           );
         })}
-      </div>
-
-      {/* Popular Badge */}
-      <div className="p-4 border-t border-border/50">
-        <div className="text-xs text-muted-foreground mb-2">Quick Access</div>
-        <div className="flex flex-wrap gap-1">
-          {/* This will need FAQ data passed as prop */}
-          <div className="text-xs text-muted-foreground italic">
-            Popular questions will appear here
-          </div>
-        </div>
       </div>
     </div>
   );

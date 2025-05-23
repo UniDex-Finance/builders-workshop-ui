@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { Header } from "../../shared/Header";
 import { Sidebar } from "./Sidebar";
 import { FAQContent } from "./FAQContent";
 import { ContactSection } from "./ContactSection";
+import { SearchInput } from "./components";
 import { faqData, categories } from "./data";
 
 export function FAQDashboard() {
@@ -16,6 +18,7 @@ export function FAQDashboard() {
   const [expandedCategories, setExpandedCategories] = useState<string[]>([
     "getting-started",
   ]);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const filteredFAQs = faqData.filter((item) => {
     const matchesSearch =
@@ -97,22 +100,158 @@ export function FAQDashboard() {
 
   const popularFAQs = faqData.filter((item) => item.isPopular);
 
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header />
+      
+      {/* Mobile Header with Search and Menu Button */}
+      <div className="md:hidden border-b border-border/50 bg-card/30">
+        <div className="flex items-center gap-4 p-4">
+          <button
+            onClick={toggleMobileMenu}
+            className="p-2 rounded-lg hover:bg-card/50 transition-colors"
+          >
+            {isMobileMenuOpen ? (
+              <X className="w-5 h-5" />
+            ) : (
+              <Menu className="w-5 h-5" />
+            )}
+          </button>
+          <div className="flex-1">
+            <SearchInput
+              placeholder="Search help articles..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="flex flex-1 bg-background text-foreground">
-        {/* Sidebar */}
-        <Sidebar
-          categories={categories}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          activeCategory={activeCategory}
-          activeTag={activeTag}
-          expandedCategories={expandedCategories}
-          onSelectCategory={selectCategory}
-          onSelectTag={selectTag}
-          onToggleCategory={toggleCategory}
-        />
+        {/* Desktop Sidebar - Only show on desktop */}
+        <div className="hidden md:block">
+          <Sidebar
+            categories={categories}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            activeCategory={activeCategory}
+            activeTag={activeTag}
+            expandedCategories={expandedCategories}
+            onSelectCategory={selectCategory}
+            onSelectTag={selectTag}
+            onToggleCategory={toggleCategory}
+          />
+        </div>
+
+        {/* Mobile Bottom Sheet */}
+        {isMobileMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <div 
+              className="fixed inset-0 bg-black/50 z-40 md:hidden"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+            
+            {/* Bottom Sheet */}
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-card/95 backdrop-blur-sm border-t border-border/50 rounded-t-2xl max-h-[80vh] flex flex-col"
+            >
+              {/* Drag Handle */}
+              <div className="flex justify-center py-3">
+                <div className="w-12 h-1 bg-muted-foreground/40 rounded-full" />
+              </div>
+              
+              {/* Sheet Content */}
+              <div className="flex-1 overflow-y-auto px-4 pb-8">
+                <h3 className="text-lg font-semibold mb-4">Browse Categories</h3>
+                
+                {/* Categories */}
+                <div className="space-y-2">
+                  {categories.map((category) => {
+                    const Icon = category.icon;
+                    const isExpanded = expandedCategories.includes(category.id);
+                    const isActive = activeCategory === category.id && !activeTag;
+
+                    return (
+                      <div key={category.id}>
+                        <div className="flex items-center">
+                          <button
+                            onClick={() => {
+                              selectCategory(category.id);
+                              setIsMobileMenuOpen(false);
+                            }}
+                            className={`flex-1 flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                              isActive
+                                ? "bg-primary/20 text-primary border border-primary/30"
+                                : "hover:bg-card/50 text-foreground"
+                            }`}
+                          >
+                            <Icon className="w-5 h-5 flex-shrink-0" />
+                            <span className="flex-1 text-left">{category.label}</span>
+                          </button>
+
+                          {category.tags.length > 0 && (
+                            <button
+                              onClick={() => toggleCategory(category.id)}
+                              className="p-2 ml-2 rounded-md hover:bg-card/50 transition-colors"
+                            >
+                              <ChevronDown
+                                className={`w-4 h-4 text-muted-foreground transition-transform ${
+                                  isExpanded ? "rotate-180" : ""
+                                }`}
+                              />
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Sub-tags */}
+                        {category.tags.length > 0 && isExpanded && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="ml-8 mt-2 space-y-1"
+                          >
+                            {category.tags.map((tag) => {
+                              const isTagActive =
+                                activeCategory === category.id &&
+                                activeTag === tag.id;
+
+                              return (
+                                <button
+                                  key={tag.id}
+                                  onClick={() => {
+                                    selectTag(category.id, tag.id);
+                                    setIsMobileMenuOpen(false);
+                                  }}
+                                  className={`w-full text-left px-4 py-2 rounded-md text-sm transition-all ${
+                                    isTagActive
+                                      ? "bg-primary/15 text-primary border border-primary/20"
+                                      : "hover:bg-card/40 text-muted-foreground hover:text-foreground"
+                                  }`}
+                                >
+                                  {tag.label}
+                                </button>
+                              );
+                            })}
+                          </motion.div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
 
         {/* Main Content */}
         <div className="flex-1 overflow-y-auto">
