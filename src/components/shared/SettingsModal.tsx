@@ -15,6 +15,7 @@ import {
   Check
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Switch } from "@/components/ui/switch";
@@ -39,6 +40,16 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [advancedMode, setAdvancedMode] = useState(false);
   const [analytics, setAnalytics] = useState(true);
+
+  // Simple body scroll prevention
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [isOpen]);
 
   // Handle initial theme setup after mount
   useEffect(() => {
@@ -118,78 +129,96 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   // Don't render anything until mounted to prevent hydration mismatch
   if (!mounted) return null;
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          animate={{
-            height: 480,
-            width: isMobile ? '90vw' : 380,
-            opacity: 1,
-          }}
-          initial={{
-            height: 52,
-            width: 52,
-            opacity: 0,
-          }}
-          exit={{
-            height: 52,
-            width: 52,
-            opacity: 0,
-          }}
-          className={cn(
-            "fixed z-[100] overflow-hidden rounded-2xl bg-card border border-border shadow-lg",
-            isMobile ? "top-4 left-1/2 -translate-x-1/2" : "top-16 right-4"
-          )}
-          transition={{
-            type: "spring",
-            duration: 0.6,
-            bounce: 0.2,
-          }}
-        >
+        <>
+          {/* Backdrop */}
           <motion.div
-            animate={{ opacity: 1 }}
             initial={{ opacity: 0 }}
-            transition={{ delay: 0.1 }}
-            className="flex flex-col h-full"
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                onClose();
+              }
+            }}
+            className="fixed inset-0 z-[9998] bg-black/50 backdrop-blur-sm"
+          />
+
+          {/* Drawer */}
+          <motion.div
+            initial={isMobile ? { y: "100%" } : { x: "100%" }}
+            animate={isMobile ? { y: 0 } : { x: 0 }}
+            exit={isMobile ? { y: "100%" } : { x: "100%" }}
+            transition={{
+              type: "spring",
+              damping: 30,
+              stiffness: 300,
+            }}
+            className={cn(
+              "fixed z-[9999] bg-card border border-border shadow-2xl flex flex-col",
+              isMobile 
+                ? "bottom-0 left-0 right-0 rounded-t-2xl h-[85vh]" 
+                : "top-0 right-0 h-screen w-[420px] max-w-[90vw]"
+            )}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-border">
-              <span className="text-base font-medium text-foreground">
-                Settings
-              </span>
-              <button
-                className="transition-colors duration-300 transform-gpu text-muted-foreground hover:text-foreground"
+            <div className="flex items-center justify-between p-6 border-b border-border flex-shrink-0">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">
+                  Settings
+                </h2>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Customize your experience
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={onClose}
-                type="button"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
               >
-                <XIcon className="w-5 h-5" />
-              </button>
+                <XIcon className="w-4 h-4" />
+              </Button>
             </div>
 
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto scrollbar-custom">
-              <div className="p-4 space-y-4">
-                {/* Theme Section - Visual Grid */}
-                <div className="space-y-3">
-                  <h3 className="text-xs font-medium text-muted-foreground">
-                    APPEARANCE
-                  </h3>
-                  <div className="grid grid-cols-1 gap-2">
+            {/* Scrollable Content */}
+            <div 
+              className={cn(
+                "flex-1 overflow-y-scroll",
+                isMobile ? "" : "scrollbar-custom"
+              )}
+              style={{
+                WebkitOverflowScrolling: 'touch'
+              }}
+            >
+              <div className="p-6 space-y-6">
+                {/* Theme Section */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-foreground mb-1">
+                      Appearance
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Choose your preferred theme
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3">
                     {themeOptions.map((option, index) => (
                       <button
                         key={option.value}
                         onClick={() => handleThemeChange(index)}
                         className={cn(
-                          "flex items-center gap-3 p-2.5 rounded-lg border-2 transition-all duration-200 hover:scale-[1.02]",
+                          "flex items-center gap-4 p-3 rounded-xl border-2 transition-all duration-200",
                           index === selected
-                            ? "border-accent bg-accent/10"
-                            : "border-border hover:border-accent/50"
+                            ? "border-accent bg-accent/10 ring-2 ring-accent/20"
+                            : "border-border hover:border-accent/50 hover:bg-accent/5"
                         )}
                       >
-                        {/* Color Preview Square */}
+                        {/* Color Preview */}
                         <div 
-                          className="w-8 h-8 rounded-md border flex items-center justify-center relative overflow-hidden"
+                          className="w-10 h-10 rounded-lg border flex items-center justify-center relative overflow-hidden"
                           style={{ 
                             background: option.gradient,
                             borderColor: option.border
@@ -197,7 +226,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         >
                           {index === selected && (
                             <Check 
-                              className="w-4 h-4 text-white drop-shadow-sm" 
+                              className="w-5 h-5 text-white drop-shadow-sm" 
                               style={{ color: option.badgeColor }}
                             />
                           )}
@@ -208,162 +237,210 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                           <div className="text-sm font-medium text-foreground">
                             {option.label}
                           </div>
+                          <div className="text-xs text-muted-foreground">
+                            {option.label === 'Light' && 'Clean and minimal'}
+                            {option.label === 'Dark' && 'Easy on the eyes'}
+                            {option.label === 'Greenify' && 'Fresh and natural'}
+                            {option.label === 'Hotline' && 'Bold and vibrant'}
+                            {option.label === 'OLED' && 'Pure black theme'}
+                          </div>
                         </div>
 
-                        {/* Theme Badge */}
-                        <div 
-                          className="px-2 py-1 rounded-md text-xs font-medium border"
-                          style={{ 
-                            backgroundColor: option.badgeBg,
-                            color: option.badgeColor,
-                            borderColor: option.border
-                          }}
-                        >
-                          <option.icon className="w-3 h-3 inline mr-1" />
-                          {option.label}
-                        </div>
+                        {/* Icon */}
+                        <option.icon className="w-4 h-4 text-muted-foreground" />
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Divider */}
-                <div className="border-t border-border" />
-
                 {/* User Experience Section */}
-                <div className="space-y-3">
-                  <h3 className="text-xs font-medium text-muted-foreground">
-                    USER EXPERIENCE
-                  </h3>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-foreground mb-1">
+                      User Experience
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Customize your interaction preferences
+                    </p>
+                  </div>
                   
-                  <div className="space-y-2.5">
+                  <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Bell className="h-4 w-4 text-muted-foreground" />
-                        <Label htmlFor="notifications" className="text-sm font-medium cursor-pointer">
-                          Push Notifications
-                        </Label>
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <Bell className="h-4 w-4 text-accent" />
+                        </div>
+                        <div>
+                          <Label htmlFor="notifications" className="text-sm font-medium cursor-pointer">
+                            Push Notifications
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Get notified about important updates
+                          </p>
+                        </div>
                       </div>
                       <Switch 
                         id="notifications" 
                         checked={notifications}
                         onCheckedChange={setNotifications}
-                        className="data-[state=checked]:bg-[var(--main-accent)]"
+                        className="data-[state=checked]:bg-accent"
                       />
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Volume2 className="h-4 w-4 text-muted-foreground" />
-                        <Label htmlFor="sound" className="text-sm font-medium cursor-pointer">
-                          Sound Effects
-                        </Label>
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <Volume2 className="h-4 w-4 text-accent" />
+                        </div>
+                        <div>
+                          <Label htmlFor="sound" className="text-sm font-medium cursor-pointer">
+                            Sound Effects
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Play sounds for interactions
+                          </p>
+                        </div>
                       </div>
                       <Switch 
                         id="sound" 
                         checked={soundEffects}
                         onCheckedChange={setSoundEffects}
-                        className="data-[state=checked]:bg-[var(--main-accent)]"
+                        className="data-[state=checked]:bg-accent"
                       />
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Zap className="h-4 w-4 text-muted-foreground" />
-                        <Label htmlFor="auto-refresh" className="text-sm font-medium cursor-pointer">
-                          Auto Refresh Data
-                        </Label>
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <Zap className="h-4 w-4 text-accent" />
+                        </div>
+                        <div>
+                          <Label htmlFor="auto-refresh" className="text-sm font-medium cursor-pointer">
+                            Auto Refresh Data
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Automatically update market data
+                          </p>
+                        </div>
                       </div>
                       <Switch 
                         id="auto-refresh" 
                         checked={autoRefresh}
                         onCheckedChange={setAutoRefresh}
-                        className="data-[state=checked]:bg-[var(--main-accent)]"
+                        className="data-[state=checked]:bg-accent"
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Divider */}
-                <div className="border-t border-border" />
-
                 {/* Privacy & Security Section */}
-                <div className="space-y-3">
-                  <h3 className="text-xs font-medium text-muted-foreground">
-                    PRIVACY & SECURITY
-                  </h3>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-foreground mb-1">
+                      Privacy & Security
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Control your data and privacy
+                    </p>
+                  </div>
                   
-                  <div className="space-y-2.5">
+                  <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Eye className="h-4 w-4 text-muted-foreground" />
-                        <Label htmlFor="private-mode" className="text-sm font-medium cursor-pointer">
-                          Private Mode
-                        </Label>
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <Eye className="h-4 w-4 text-accent" />
+                        </div>
+                        <div>
+                          <Label htmlFor="private-mode" className="text-sm font-medium cursor-pointer">
+                            Private Mode
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Hide sensitive information
+                          </p>
+                        </div>
                       </div>
                       <Switch 
                         id="private-mode" 
                         checked={privateMode}
                         onCheckedChange={setPrivateMode}
-                        className="data-[state=checked]:bg-[var(--main-accent)]"
+                        className="data-[state=checked]:bg-accent"
                       />
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                        <Label htmlFor="analytics" className="text-sm font-medium cursor-pointer">
-                          Usage Analytics
-                        </Label>
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <BarChart3 className="h-4 w-4 text-accent" />
+                        </div>
+                        <div>
+                          <Label htmlFor="analytics" className="text-sm font-medium cursor-pointer">
+                            Usage Analytics
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Help improve the platform
+                          </p>
+                        </div>
                       </div>
                       <Switch 
                         id="analytics" 
                         checked={analytics}
                         onCheckedChange={setAnalytics}
-                        className="data-[state=checked]:bg-[var(--main-accent)]"
+                        className="data-[state=checked]:bg-accent"
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Divider */}
-                <div className="border-t border-border" />
-
                 {/* Advanced Section */}
-                <div className="space-y-3">
-                  <h3 className="text-xs font-medium text-muted-foreground">
-                    ADVANCED
-                  </h3>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-foreground mb-1">
+                      Advanced
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Power user features
+                    </p>
+                  </div>
                   
-                  <div className="space-y-2.5">
+                  <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Shield className="h-4 w-4 text-muted-foreground" />
-                        <Label htmlFor="advanced-mode" className="text-sm font-medium cursor-pointer">
-                          Advanced Mode
-                        </Label>
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <Shield className="h-4 w-4 text-accent" />
+                        </div>
+                        <div>
+                          <Label htmlFor="advanced-mode" className="text-sm font-medium cursor-pointer">
+                            Advanced Mode
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Enable additional features
+                          </p>
+                        </div>
                       </div>
                       <Switch 
                         id="advanced-mode" 
                         checked={advancedMode}
                         onCheckedChange={setAdvancedMode}
-                        className="data-[state=checked]:bg-[var(--main-accent)]"
+                        className="data-[state=checked]:bg-accent"
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Footer Note */}
-                <div className="pt-2 mt-4 border-t border-border">
-                  <div className="text-xs text-muted-foreground">
-                    Settings are automatically saved.
+                {/* Footer */}
+                <div className="border-t border-border pt-4 pb-2">
+                  <div className="text-xs text-muted-foreground text-center">
+                    Settings are automatically saved
                   </div>
                 </div>
               </div>
             </div>
           </motion.div>
-        </motion.div>
+        </>
       )}
     </AnimatePresence>
   );
+
+  // Use portal to render outside the header hierarchy
+  return typeof window !== 'undefined' ? createPortal(modalContent, document.body) : null;
 } 
