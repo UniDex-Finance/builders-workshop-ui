@@ -297,6 +297,14 @@ export function Header() {
                 Help & Support
               </DropdownItem>
               <DropdownItem
+                key="faq"
+                description="Frequently asked questions"
+                startContent={<FontAwesomeIcon icon={faQuestionCircle} className="w-4 h-4" />}
+                onClick={() => (window.location.href = "/faq")}
+              >
+                FAQ
+              </DropdownItem>
+              <DropdownItem
                 key="documentation"
                 description="Read the documentation"
                 startContent={<FontAwesomeIcon icon={faBook} className="w-4 h-4" />}
@@ -576,6 +584,17 @@ export function Header() {
                           className="w-4 h-4"
                         />
                         Help & Support
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
+                        onClick={() => (window.location.href = "/faq")}
+                      >
+                        <FontAwesomeIcon
+                          icon={faQuestionCircle}
+                          className="w-4 h-4"
+                        />
+                        FAQ
                       </Button>
                       <Button
                         variant="ghost"
