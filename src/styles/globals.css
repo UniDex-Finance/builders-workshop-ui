@@ -150,6 +150,23 @@
       );
     }
   }
+
+  /* Custom search input styling to prevent white outline flash */
+  .search-input-custom {
+    outline: none !important;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+  
+  .search-input-custom:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.5) !important;
+  }
+  
+  .search-input-custom::-webkit-focus-ring-color {
+    color: transparent !important;
+  }
 }
 
 html,
