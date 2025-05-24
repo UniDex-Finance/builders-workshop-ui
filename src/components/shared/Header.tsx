@@ -4,7 +4,7 @@ import { useTheme } from "next-themes";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownSection, DropdownItem } from "@nextui-org/react";
-import { Menu, ChevronDown, Wallet, Coins, DollarSign, PiggyBank, Users2, MessageCircle, Send, Twitter, X, Settings, UnfoldHorizontal, BarChart2, TrendingUp, Repeat, Book, Landmark, Store, Database, ArrowRightLeft, Share2, BookOpen, GitBranch } from "lucide-react";
+import { Menu, ChevronDown, Wallet, Coins, DollarSign, PiggyBank, Users2, MessageCircle, Send, Twitter, X, Settings, UnfoldHorizontal, BarChart2, TrendingUp, Repeat, Book, Landmark, Store, Database, ArrowRightLeft, Share2, BookOpen, GitBranch, Trophy } from "lucide-react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { 
@@ -217,6 +217,17 @@ export function Header() {
                   onClick={() => (window.location.href = "/referrals")}
                 >
                   Refer Traders
+                </DropdownItem>
+              </DropdownSection>
+
+              <DropdownSection title="Level Up & Earn">
+                <DropdownItem
+                  key="xp-tracker"
+                  description="Trade to earn XP and unlock rewards"
+                  startContent={<Trophy className="w-4 h-4" />}
+                  onClick={() => (window.location.href = "/xp-tracker")}
+                >
+                  XP Tracker
                 </DropdownItem>
               </DropdownSection>
             </DropdownMenu>
@@ -533,6 +544,20 @@ export function Header() {
                       >
                         <FontAwesomeIcon icon={faShareAlt} className="w-4 h-4" />
                         Refer Traders
+                      </Button>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="px-3 py-2 text-xs font-semibold text-foreground-500">
+                        Level Up & Earn
+                      </div>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
+                        onClick={() => (window.location.href = "/xp-tracker")}
+                      >
+                        <Trophy className="w-4 h-4" />
+                        XP Tracker
                       </Button>
                     </div>
 
