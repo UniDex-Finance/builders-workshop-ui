@@ -33,13 +33,14 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [selected, setSelected] = useState(0);
   const isMobile = useIsMobile();
 
-  // Mock settings state
-  const [notifications, setNotifications] = useState(true);
-  const [soundEffects, setSoundEffects] = useState(false);
-  const [privateMode, setPrivateMode] = useState(false);
-  const [autoRefresh, setAutoRefresh] = useState(true);
-  const [advancedMode, setAdvancedMode] = useState(false);
-  const [analytics, setAnalytics] = useState(true);
+  // Real settings state
+  const [hidePnL, setHidePnL] = useState(false);
+  const [hideSize, setHideSize] = useState(false);
+  const [showAllWarnings, setShowAllWarnings] = useState(true);
+  const [soundForFills, setSoundForFills] = useState(true);
+  const [lowPowerMode, setLowPowerMode] = useState(false);
+  const [persistConnection, setPersistConnection] = useState(true);
+  const [skipConfirmations, setSkipConfirmations] = useState(true);
 
   // Simple body scroll prevention
   useEffect(() => {
@@ -253,94 +254,14 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   </div>
                 </div>
 
-                {/* User Experience Section */}
+                {/* Display & Privacy Section */}
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-sm font-medium text-foreground mb-1">
-                      User Experience
+                      Display & Privacy
                     </h3>
                     <p className="text-xs text-muted-foreground">
-                      Customize your interaction preferences
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-accent/10">
-                          <Bell className="h-4 w-4 text-accent" />
-                        </div>
-                        <div>
-                          <Label htmlFor="notifications" className="text-sm font-medium cursor-pointer">
-                            Push Notifications
-                          </Label>
-                          <p className="text-xs text-muted-foreground">
-                            Get notified about important updates
-                          </p>
-                        </div>
-                      </div>
-                      <Switch 
-                        id="notifications" 
-                        checked={notifications}
-                        onCheckedChange={setNotifications}
-                        className="data-[state=checked]:bg-accent"
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-accent/10">
-                          <Volume2 className="h-4 w-4 text-accent" />
-                        </div>
-                        <div>
-                          <Label htmlFor="sound" className="text-sm font-medium cursor-pointer">
-                            Sound Effects
-                          </Label>
-                          <p className="text-xs text-muted-foreground">
-                            Play sounds for interactions
-                          </p>
-                        </div>
-                      </div>
-                      <Switch 
-                        id="sound" 
-                        checked={soundEffects}
-                        onCheckedChange={setSoundEffects}
-                        className="data-[state=checked]:bg-accent"
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-accent/10">
-                          <Zap className="h-4 w-4 text-accent" />
-                        </div>
-                        <div>
-                          <Label htmlFor="auto-refresh" className="text-sm font-medium cursor-pointer">
-                            Auto Refresh Data
-                          </Label>
-                          <p className="text-xs text-muted-foreground">
-                            Automatically update market data
-                          </p>
-                        </div>
-                      </div>
-                      <Switch 
-                        id="auto-refresh" 
-                        checked={autoRefresh}
-                        onCheckedChange={setAutoRefresh}
-                        className="data-[state=checked]:bg-accent"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Privacy & Security Section */}
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-foreground mb-1">
-                      Privacy & Security
-                    </h3>
-                    <p className="text-xs text-muted-foreground">
-                      Control your data and privacy
+                      Control what information is displayed
                     </p>
                   </div>
                   
@@ -351,54 +272,163 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                           <Eye className="h-4 w-4 text-accent" />
                         </div>
                         <div>
-                          <Label htmlFor="private-mode" className="text-sm font-medium cursor-pointer">
-                            Private Mode
+                          <Label htmlFor="hide-pnl" className="text-sm font-medium cursor-pointer">
+                            Hide PnL
                           </Label>
                           <p className="text-xs text-muted-foreground">
-                            Hide sensitive information
+                            Hide profit and loss information
                           </p>
                         </div>
                       </div>
                       <Switch 
-                        id="private-mode" 
-                        checked={privateMode}
-                        onCheckedChange={setPrivateMode}
-                        className="data-[state=checked]:bg-accent"
+                        id="hide-pnl" 
+                        checked={hidePnL}
+                        onCheckedChange={setHidePnL}
+                        className="data-[state=checked]:border-accent"
+                        style={{
+                          backgroundColor: hidePnL ? 'var(--main-accent)' : undefined
+                        }}
                       />
                     </div>
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="p-2 rounded-lg bg-accent/10">
-                          <BarChart3 className="h-4 w-4 text-accent" />
+                          <Shield className="h-4 w-4 text-accent" />
                         </div>
                         <div>
-                          <Label htmlFor="analytics" className="text-sm font-medium cursor-pointer">
-                            Usage Analytics
+                          <Label htmlFor="hide-size" className="text-sm font-medium cursor-pointer">
+                            Hide Size/Margin
                           </Label>
                           <p className="text-xs text-muted-foreground">
-                            Help improve the platform
+                            Hide position size and margin info
                           </p>
                         </div>
                       </div>
                       <Switch 
-                        id="analytics" 
-                        checked={analytics}
-                        onCheckedChange={setAnalytics}
-                        className="data-[state=checked]:bg-accent"
+                        id="hide-size" 
+                        checked={hideSize}
+                        onCheckedChange={setHideSize}
+                        className="data-[state=checked]:border-accent"
+                        style={{
+                          backgroundColor: hideSize ? 'var(--main-accent)' : undefined
+                        }}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <Bell className="h-4 w-4 text-accent" />
+                        </div>
+                        <div>
+                          <Label htmlFor="show-warnings" className="text-sm font-medium cursor-pointer">
+                            Show All Warnings
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Display all risk and safety warnings
+                          </p>
+                        </div>
+                      </div>
+                      <Switch 
+                        id="show-warnings" 
+                        checked={showAllWarnings}
+                        onCheckedChange={setShowAllWarnings}
+                        className="data-[state=checked]:border-accent"
+                        style={{
+                          backgroundColor: showAllWarnings ? 'var(--main-accent)' : undefined
+                        }}
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Advanced Section */}
+                {/* Audio & Notifications Section */}
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-sm font-medium text-foreground mb-1">
-                      Advanced
+                      Audio & Notifications
                     </h3>
                     <p className="text-xs text-muted-foreground">
-                      Power user features
+                      Configure audio feedback
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <Volume2 className="h-4 w-4 text-accent" />
+                        </div>
+                        <div>
+                          <Label htmlFor="sound-fills" className="text-sm font-medium cursor-pointer">
+                            Sound for Fills/Liquidations
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Play audio alerts for order fills and liquidations
+                          </p>
+                        </div>
+                      </div>
+                      <Switch 
+                        id="sound-fills" 
+                        checked={soundForFills}
+                        onCheckedChange={setSoundForFills}
+                        className="data-[state=checked]:border-accent"
+                        style={{
+                          backgroundColor: soundForFills ? 'var(--main-accent)' : undefined
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Performance Section */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-foreground mb-1">
+                      Performance
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Optimize app performance
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <Zap className="h-4 w-4 text-accent" />
+                        </div>
+                        <div>
+                          <Label htmlFor="low-power" className="text-sm font-medium cursor-pointer">
+                            Low Power Mode
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Disable CPU intensive animations
+                          </p>
+                        </div>
+                      </div>
+                      <Switch 
+                        id="low-power" 
+                        checked={lowPowerMode}
+                        onCheckedChange={setLowPowerMode}
+                        className="data-[state=checked]:border-accent"
+                        style={{
+                          backgroundColor: lowPowerMode ? 'var(--main-accent)' : undefined
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Trading Section */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-foreground mb-1">
+                      Trading
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Trading experience preferences
                     </p>
                   </div>
                   
@@ -409,19 +439,47 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                           <Shield className="h-4 w-4 text-accent" />
                         </div>
                         <div>
-                          <Label htmlFor="advanced-mode" className="text-sm font-medium cursor-pointer">
-                            Advanced Mode
+                          <Label htmlFor="persist-connection" className="text-sm font-medium cursor-pointer">
+                            Persist Trading Connection
                           </Label>
                           <p className="text-xs text-muted-foreground">
-                            Enable additional features
+                            Keep wallet connected on page refresh
                           </p>
                         </div>
                       </div>
                       <Switch 
-                        id="advanced-mode" 
-                        checked={advancedMode}
-                        onCheckedChange={setAdvancedMode}
-                        className="data-[state=checked]:bg-accent"
+                        id="persist-connection" 
+                        checked={persistConnection}
+                        onCheckedChange={setPersistConnection}
+                        className="data-[state=checked]:border-accent"
+                        style={{
+                          backgroundColor: persistConnection ? 'var(--main-accent)' : undefined
+                        }}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <BarChart3 className="h-4 w-4 text-accent" />
+                        </div>
+                        <div>
+                          <Label htmlFor="skip-confirmations" className="text-sm font-medium cursor-pointer">
+                            Skip Order Confirmations
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Execute orders without confirmation dialogs
+                          </p>
+                        </div>
+                      </div>
+                      <Switch 
+                        id="skip-confirmations" 
+                        checked={skipConfirmations}
+                        onCheckedChange={setSkipConfirmations}
+                        className="data-[state=checked]:border-accent"
+                        style={{
+                          backgroundColor: skipConfirmations ? 'var(--main-accent)' : undefined
+                        }}
                       />
                     </div>
                   </div>
