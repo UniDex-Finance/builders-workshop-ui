@@ -2,10 +2,25 @@
 
 import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
-import { XIcon, SunIcon, MoonIcon } from "lucide-react";
+import { 
+  XIcon, 
+  SunIcon, 
+  MoonIcon, 
+  Bell, 
+  Volume2, 
+  Eye, 
+  Zap, 
+  Shield, 
+  BarChart3,
+  Check
+} from "lucide-react";
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -18,10 +33,28 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [selected, setSelected] = useState(0);
   const isMobile = useIsMobile();
 
+  // Real settings state
+  const [hidePnL, setHidePnL] = useState(false);
+  const [hideSize, setHideSize] = useState(false);
+  const [showAllWarnings, setShowAllWarnings] = useState(true);
+  const [soundForFills, setSoundForFills] = useState(true);
+  const [lowPowerMode, setLowPowerMode] = useState(false);
+  const [persistConnection, setPersistConnection] = useState(true);
+  const [skipConfirmations, setSkipConfirmations] = useState(true);
+
+  // Simple body scroll prevention
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [isOpen]);
+
   // Handle initial theme setup after mount
   useEffect(() => {
     setMounted(true);
-    // console.log('Current theme:', theme);
     switch (theme) {
       case 'dark':
         setSelected(1);
@@ -32,22 +65,64 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       case 'hotline':
         setSelected(3);
         break;
+      case 'oled':
+        setSelected(4);
+        break;
       default:
         setSelected(0);
     }
   }, [theme]);
 
   const themeOptions = [
-    { label: "Light", icon: SunIcon, value: 'light' },
-    { label: "Dark", icon: MoonIcon, value: 'dark' },
-    { label: "Greenify", icon: SunIcon, value: 'greenify' },
-    { label: "Hotline", icon: MoonIcon, value: 'hotline' },
-    { label: "OLED", icon: MoonIcon, value: 'oled' },
+    { 
+      label: "Light", 
+      icon: SunIcon, 
+      value: 'light',
+      gradient: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)',
+      badgeColor: '#1e293b',
+      badgeBg: '#f1f5f9',
+      border: '#e2e8f0'
+    },
+    { 
+      label: "Dark", 
+      icon: MoonIcon, 
+      value: 'dark',
+      gradient: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)',
+      badgeColor: '#f1f5f9',
+      badgeBg: '#1e293b',
+      border: '#334155'
+    },
+    { 
+      label: "Greenify", 
+      icon: SunIcon, 
+      value: 'greenify',
+      gradient: 'linear-gradient(135deg, #064e3b 0%, #059669 50%, #10b981 100%)',
+      badgeColor: '#ecfdf5',
+      badgeBg: '#064e3b',
+      border: '#059669'
+    },
+    { 
+      label: "Hotline", 
+      icon: MoonIcon, 
+      value: 'hotline',
+      gradient: 'linear-gradient(135deg, #701a75 0%, #be185d 50%, #ec4899 100%)',
+      badgeColor: '#fdf2f8',
+      badgeBg: '#701a75',
+      border: '#be185d'
+    },
+    { 
+      label: "OLED", 
+      icon: MoonIcon, 
+      value: 'oled',
+      gradient: 'linear-gradient(135deg, #000000 0%, #111111 50%, #1a1a1a 100%)',
+      badgeColor: '#ffffff',
+      badgeBg: '#000000',
+      border: '#333333'
+    },
   ];
 
   const handleThemeChange = (index: number) => {
     const newTheme = themeOptions[index].value;
-    console.log('Switching to theme:', newTheme);
     setSelected(index);
     setTheme(newTheme);
   };
@@ -55,99 +130,375 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   // Don't render anything until mounted to prevent hydration mismatch
   if (!mounted) return null;
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          animate={{
-            height: 240,
-            width: isMobile ? '90vw' : 380,
-            opacity: 1,
-          }}
-          initial={{
-            height: 52,
-            width: 52,
-            opacity: 0,
-          }}
-          exit={{
-            height: 52,
-            width: 52,
-            opacity: 0,
-          }}
-          className={cn(
-            "fixed z-[100] overflow-hidden rounded-2xl bg-card border border-border shadow-lg",
-            isMobile ? "top-4 left-1/2 -translate-x-1/2" : "top-16 right-4"
-          )}
-          transition={{
-            type: "spring",
-            duration: 0.6,
-            bounce: 0.2,
-          }}
-        >
+        <>
+          {/* Backdrop */}
           <motion.div
-            animate={{ opacity: 1 }}
             initial={{ opacity: 0 }}
-            transition={{ delay: 0.1 }}
-            className="flex flex-col h-full"
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                onClose();
+              }
+            }}
+            className="fixed inset-0 z-[9998] bg-black/50 backdrop-blur-sm"
+          />
+
+          {/* Drawer */}
+          <motion.div
+            initial={isMobile ? { y: "100%" } : { x: "100%" }}
+            animate={isMobile ? { y: 0 } : { x: 0 }}
+            exit={isMobile ? { y: "100%" } : { x: "100%" }}
+            transition={{
+              type: "spring",
+              damping: 30,
+              stiffness: 300,
+            }}
+            className={cn(
+              "fixed z-[9999] bg-card border border-border shadow-2xl flex flex-col",
+              isMobile 
+                ? "bottom-0 left-0 right-0 rounded-t-2xl h-[85vh]" 
+                : "top-0 right-0 h-screen w-[420px] max-w-[90vw]"
+            )}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-border">
-              <span className="text-base font-medium text-foreground">
-                Settings
-              </span>
-              <button
-                className="transition-colors duration-300 transform-gpu text-muted-foreground hover:text-foreground"
+            <div className="flex items-center justify-between p-6 border-b border-border flex-shrink-0">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">
+                  Settings
+                </h2>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Customize your experience
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={onClose}
-                type="button"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
               >
-                <XIcon className="w-5 h-5" />
-              </button>
+                <XIcon className="w-4 h-4" />
+              </Button>
             </div>
 
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto scrollbar-custom">
-              <div className="p-4 space-y-6">
+            {/* Scrollable Content */}
+            <div 
+              className={cn(
+                "flex-1 overflow-y-scroll",
+                isMobile ? "" : "scrollbar-custom"
+              )}
+              style={{
+                WebkitOverflowScrolling: 'touch'
+              }}
+            >
+              <div className="p-6 space-y-6">
                 {/* Theme Section */}
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium text-muted-foreground">
-                    Theme
-                  </h3>
-                  <div className="grid grid-cols-2 gap-2">
-                    {themeOptions.map((item, index) => (
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-foreground mb-1">
+                      Appearance
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Choose your preferred theme
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3">
+                    {themeOptions.map((option, index) => (
                       <button
-                        className={cn(
-                          "inline-flex transform-gpu items-center justify-center gap-2 rounded-md px-3 py-2 text-sm transition-colors duration-300",
-                          index === selected
-                            ? "bg-accent text-accent-foreground"
-                            : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
-                        )}
-                        key={item.label}
+                        key={option.value}
                         onClick={() => handleThemeChange(index)}
-                        type="button"
+                        className={cn(
+                          "flex items-center gap-4 p-3 rounded-xl border-2 transition-all duration-200",
+                          index === selected
+                            ? "border-accent bg-accent/10 ring-2 ring-accent/20"
+                            : "border-border hover:border-accent/50 hover:bg-accent/5"
+                        )}
                       >
-                        <item.icon className="size-4" />
-                        {item.label}
+                        {/* Color Preview */}
+                        <div 
+                          className="w-10 h-10 rounded-lg border flex items-center justify-center relative overflow-hidden"
+                          style={{ 
+                            background: option.gradient,
+                            borderColor: option.border
+                          }}
+                        >
+                          {index === selected && (
+                            <Check 
+                              className="w-5 h-5 text-white drop-shadow-sm" 
+                              style={{ color: option.badgeColor }}
+                            />
+                          )}
+                        </div>
+
+                        {/* Theme Info */}
+                        <div className="flex-1 text-left">
+                          <div className="text-sm font-medium text-foreground">
+                            {option.label}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {option.label === 'Light' && 'Clean and minimal'}
+                            {option.label === 'Dark' && 'Easy on the eyes'}
+                            {option.label === 'Greenify' && 'Fresh and natural'}
+                            {option.label === 'Hotline' && 'Bold and vibrant'}
+                            {option.label === 'OLED' && 'Pure black theme'}
+                          </div>
+                        </div>
+
+                        {/* Icon */}
+                        <option.icon className="w-4 h-4 text-muted-foreground" />
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Future sections can be added here */}
-                {/* Example:
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium text-muted-foreground">
-                    Other Settings
-                  </h3>
-                  <div className="...">
-                    // Content
+                {/* Display & Privacy Section */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-foreground mb-1">
+                      Display & Privacy
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Control what information is displayed
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <Eye className="h-4 w-4 text-accent" />
+                        </div>
+                        <div>
+                          <Label htmlFor="hide-pnl" className="text-sm font-medium cursor-pointer">
+                            Hide PnL
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Hide profit and loss information
+                          </p>
+                        </div>
+                      </div>
+                      <Switch 
+                        id="hide-pnl" 
+                        checked={hidePnL}
+                        onCheckedChange={setHidePnL}
+                        className="data-[state=checked]:border-accent"
+                        style={{
+                          backgroundColor: hidePnL ? 'var(--main-accent)' : undefined
+                        }}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <Shield className="h-4 w-4 text-accent" />
+                        </div>
+                        <div>
+                          <Label htmlFor="hide-size" className="text-sm font-medium cursor-pointer">
+                            Hide Size/Margin
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Hide position size and margin info
+                          </p>
+                        </div>
+                      </div>
+                      <Switch 
+                        id="hide-size" 
+                        checked={hideSize}
+                        onCheckedChange={setHideSize}
+                        className="data-[state=checked]:border-accent"
+                        style={{
+                          backgroundColor: hideSize ? 'var(--main-accent)' : undefined
+                        }}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <Bell className="h-4 w-4 text-accent" />
+                        </div>
+                        <div>
+                          <Label htmlFor="show-warnings" className="text-sm font-medium cursor-pointer">
+                            Show All Warnings
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Display all risk and safety warnings
+                          </p>
+                        </div>
+                      </div>
+                      <Switch 
+                        id="show-warnings" 
+                        checked={showAllWarnings}
+                        onCheckedChange={setShowAllWarnings}
+                        className="data-[state=checked]:border-accent"
+                        style={{
+                          backgroundColor: showAllWarnings ? 'var(--main-accent)' : undefined
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
-                */}
+
+                {/* Audio & Notifications Section */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-foreground mb-1">
+                      Audio & Notifications
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Configure audio feedback
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <Volume2 className="h-4 w-4 text-accent" />
+                        </div>
+                        <div>
+                          <Label htmlFor="sound-fills" className="text-sm font-medium cursor-pointer">
+                            Sound for Fills/Liquidations
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Play audio alerts for order fills and liquidations
+                          </p>
+                        </div>
+                      </div>
+                      <Switch 
+                        id="sound-fills" 
+                        checked={soundForFills}
+                        onCheckedChange={setSoundForFills}
+                        className="data-[state=checked]:border-accent"
+                        style={{
+                          backgroundColor: soundForFills ? 'var(--main-accent)' : undefined
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Performance Section */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-foreground mb-1">
+                      Performance
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Optimize app performance
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <Zap className="h-4 w-4 text-accent" />
+                        </div>
+                        <div>
+                          <Label htmlFor="low-power" className="text-sm font-medium cursor-pointer">
+                            Low Power Mode
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Disable CPU intensive animations
+                          </p>
+                        </div>
+                      </div>
+                      <Switch 
+                        id="low-power" 
+                        checked={lowPowerMode}
+                        onCheckedChange={setLowPowerMode}
+                        className="data-[state=checked]:border-accent"
+                        style={{
+                          backgroundColor: lowPowerMode ? 'var(--main-accent)' : undefined
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Trading Section */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-foreground mb-1">
+                      Trading
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Trading experience preferences
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <Shield className="h-4 w-4 text-accent" />
+                        </div>
+                        <div>
+                          <Label htmlFor="persist-connection" className="text-sm font-medium cursor-pointer">
+                            Persist Trading Connection
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Keep wallet connected on page refresh
+                          </p>
+                        </div>
+                      </div>
+                      <Switch 
+                        id="persist-connection" 
+                        checked={persistConnection}
+                        onCheckedChange={setPersistConnection}
+                        className="data-[state=checked]:border-accent"
+                        style={{
+                          backgroundColor: persistConnection ? 'var(--main-accent)' : undefined
+                        }}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <BarChart3 className="h-4 w-4 text-accent" />
+                        </div>
+                        <div>
+                          <Label htmlFor="skip-confirmations" className="text-sm font-medium cursor-pointer">
+                            Skip Order Confirmations
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Execute orders without confirmation dialogs
+                          </p>
+                        </div>
+                      </div>
+                      <Switch 
+                        id="skip-confirmations" 
+                        checked={skipConfirmations}
+                        onCheckedChange={setSkipConfirmations}
+                        className="data-[state=checked]:border-accent"
+                        style={{
+                          backgroundColor: skipConfirmations ? 'var(--main-accent)' : undefined
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="border-t border-border pt-4 pb-2">
+                  <div className="text-xs text-muted-foreground text-center">
+                    Settings are automatically saved
+                  </div>
+                </div>
               </div>
             </div>
           </motion.div>
-        </motion.div>
+        </>
       )}
     </AnimatePresence>
   );
+
+  // Use portal to render outside the header hierarchy
+  return typeof window !== 'undefined' ? createPortal(modalContent, document.body) : null;
 } 
