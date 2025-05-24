@@ -5,6 +5,7 @@ import { useChainId } from 'wagmi';
 import { Settings } from "lucide-react";
 import { FavoritesTicker } from "./FavoritesTicker";
 import { FooterSettings } from "./FooterSettings";
+import { getLatestVersion } from "../features/changelog/changelog";
 import {
   Popover,
   PopoverContent,
@@ -19,6 +20,9 @@ export function Footer() {
   const [isPaused, setIsPaused] = useState(false);
   const [showPrice, setShowPrice] = useState(true);
   const [tickerDisplayMode, setTickerDisplayMode] = useState<'none' | 'all' | 'favorites'>('all');
+
+  // Get the latest version from changelog
+  const latestVersion = getLatestVersion();
 
   useEffect(() => {
     const metaBuildId = (document.querySelector('meta[name="build-id"]') as HTMLMetaElement)?.content;
@@ -106,10 +110,18 @@ export function Footer() {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>
-              <span className="text-sm text-muted-foreground">v1.0.0</span>
+              <button 
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                onClick={() => (window.location.href = "/changelog")}
+              >
+                v{latestVersion.version}
+              </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-sm">Build: {buildId}</p>
+              <div className="text-sm">
+                <p>Build: {buildId}</p>
+                <p className="text-xs text-muted-foreground mt-1">Click to view changelog</p>
+              </div>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

@@ -4,7 +4,7 @@ import { useTheme } from "next-themes";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownSection, DropdownItem } from "@nextui-org/react";
-import { Menu, ChevronDown, Wallet, Coins, DollarSign, PiggyBank, Users2, MessageCircle, Send, Twitter, X, Settings, UnfoldHorizontal, BarChart2, TrendingUp, Repeat, Book, Landmark, Store, Database, ArrowRightLeft, Share2, BookOpen } from "lucide-react";
+import { Menu, ChevronDown, Wallet, Coins, DollarSign, PiggyBank, Users2, MessageCircle, Send, Twitter, X, Settings, UnfoldHorizontal, BarChart2, TrendingUp, Repeat, Book, Landmark, Store, Database, ArrowRightLeft, Share2, BookOpen, GitBranch } from "lucide-react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { 
@@ -305,6 +305,14 @@ export function Header() {
                 FAQ
               </DropdownItem>
               <DropdownItem
+                key="changelog"
+                description="Track updates and releases"
+                startContent={<GitBranch className="w-4 h-4" />}
+                onClick={() => (window.location.href = "/changelog")}
+              >
+                Changelog
+              </DropdownItem>
+              <DropdownItem
                 key="documentation"
                 description="Read the documentation"
                 startContent={<FontAwesomeIcon icon={faBook} className="w-4 h-4" />}
@@ -595,6 +603,14 @@ export function Header() {
                           className="w-4 h-4"
                         />
                         FAQ
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2 text-sm h-8 bg-muted/50 hover:bg-muted/70"
+                        onClick={() => (window.location.href = "/changelog")}
+                      >
+                        <GitBranch className="w-4 h-4" />
+                        Changelog
                       </Button>
                       <Button
                         variant="ghost"
