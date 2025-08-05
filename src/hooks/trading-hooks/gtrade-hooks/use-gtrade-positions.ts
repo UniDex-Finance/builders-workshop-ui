@@ -75,8 +75,10 @@ export function useGTradePositions() {
     try {
       const response = await fetch(`${GTRADE_API_URL}?address=${address}`);
       if (!response.ok) {
-         // Throw error to be caught below
-         throw new Error(`Failed to fetch gTrade positions: ${response.statusText} (Status: ${response.status})`);
+         // Log error but don't throw - just return empty data
+         console.error(`Failed to fetch gTrade positions: ${response.statusText} (Status: ${response.status})`);
+         setRawGTradeData([]);
+         return;
       }
       const fetchedPositions: RawGTradePosition[] = await response.json();
 
@@ -90,10 +92,9 @@ export function useGTradePositions() {
        }
     } catch (err) {
       console.error('Error fetching gTrade positions:', err);
-      // Set error state only if it was an explicit load request OR if we don't have any positions yet
-      if (setLoadingState || positions.length === 0) {
-           setError(err instanceof Error ? err : new Error('Failed to fetch gTrade positions'));
-      }
+      // Don't set error state - just log and continue with empty positions
+      // This allows UniDex positions to still be displayed
+      setRawGTradeData([]);
     } finally {
       isFetching.current = false;
        // Ensure loading is set back to false only if it was explicitly set true for this fetch

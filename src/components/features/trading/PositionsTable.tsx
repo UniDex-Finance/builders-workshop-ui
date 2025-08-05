@@ -52,8 +52,8 @@ export function PositionsTable({ address }: PositionsTableProps) {
   const { prices } = usePrices();
 
   const combinedPositions = [...unidexPositions, ...gtradePositions];
-  const combinedLoading = unidexLoading || gtradeLoading;
-  const combinedError = unidexError || gtradeError;
+  const combinedLoading = unidexLoading && gtradeLoading;
+  const combinedError = null; // Never show error, just display whatever positions we have
 
   useEffect(() => {
     if (activeTab === "orders") {

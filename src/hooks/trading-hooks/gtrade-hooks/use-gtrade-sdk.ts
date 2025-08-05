@@ -4,7 +4,7 @@ import { TradingSDK, SupportedChainId } from "@gainsnetwork/trading-sdk";
 import { usePublicClient } from 'wagmi';
 
 // Define the specific RPC URL
-const nodiesRpcUrl = "https://arbitrum-one-rpc.publicnode.com";
+const nodiesRpcUrl = "https://obsidian-rpc-v2.up.railway.app/rpc";
 
 export function useGTradeSdk() {
   const publicClient = usePublicClient();
