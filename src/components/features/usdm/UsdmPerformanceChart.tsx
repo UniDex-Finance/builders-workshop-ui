@@ -100,7 +100,7 @@ export function UsdmPerformanceChart() {
           />
           <YAxis 
             tick={{ fontSize: 12 }}
-            tickFormatter={(value) => `$${value}`}
+            tickFormatter={(value) => `$${parseFloat(value).toFixed(4)}`}
             domain={yAxisDomain}
             axisLine={{ stroke: 'var(--muted-foreground)', strokeWidth: 1 }}
             tickLine={{ stroke: 'var(--muted-foreground)' }}

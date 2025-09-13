@@ -11,6 +11,13 @@ const vaultABI = [
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalUSD",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
   }
 ] as const
 
@@ -52,12 +59,14 @@ export function useVaultBreakdown() {
         address: VAULT_ADDRESS,
         abi: vaultABI,
         functionName: 'getVaultUSDBalance',
+        chainId: 42161, // Arbitrum One
       },
       {
         address: AUSDC_TOKEN_ADDRESS,
         abi: erc20ABI,
         functionName: 'balanceOf',
         args: [VAULT_ADDRESS],
+        chainId: 42161, // Arbitrum One
       },
     ],
     query: {
@@ -66,6 +75,7 @@ export function useVaultBreakdown() {
   })
 
   const calculatedBreakdown = useMemo(() => {
+    console.log('Vault breakdown data:', data)
     if (!data?.[0].result || !data?.[1].result) return null
 
     // Convert values from BigInt
